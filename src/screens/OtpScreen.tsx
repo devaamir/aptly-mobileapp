@@ -1,0 +1,132 @@
+import React, { useRef, useState } from 'react';
+import { View, Text, TextInput, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import PrimaryButton from '../components/PrimaryButton';
+import ArrowRightWhite from '../assets/icons/arrow-right-white.svg';
+import ArrowRight from '../assets/icons/arrow-right-grey.svg';
+import BackArrow from '../assets/icons/back-arrows.svg';
+import colors from '../themes/colors';
+import { SIZE } from '../themes/sizes';
+
+const OTP_LENGTH = 4;
+
+export default function OtpScreen() {
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
+  const inputs = useRef<(TextInput | null)[]>([]);
+  const navigation = useNavigation();
+
+  const handleChange = (text: string, index: number) => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+    if (text && index < OTP_LENGTH - 1) inputs.current[index + 1]?.focus();
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+      inputs.current[index - 1]?.focus();
+    }
+  };
+
+  const isFilled = otp.every(d => d !== '');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <BackArrow width={SIZE(24)} height={SIZE(24)} />
+      </TouchableOpacity>
+      <Text style={styles.title}>Verification Code</Text>
+      <Text style={styles.subtitle}>{"We've sent an sms with a verification code to "}<Text style={styles.phone}>+91 9048678290</Text>{" to proceed"}</Text>
+
+      <View style={styles.otpRow}>
+        {otp.map((digit, index) => (
+          <TextInput
+            key={index}
+            ref={ref => (inputs.current[index] = ref)}
+            style={[styles.otpBox, digit ? styles.otpBoxFilled : null]}
+            value={digit}
+            onChangeText={text => handleChange(text.slice(-1), index)}
+            onKeyPress={e => handleKeyPress(e, index)}
+            placeholder="0"
+            placeholderTextColor={colors.border}
+            maxLength={1}
+            textAlign="center"
+          />
+        ))}
+      </View>
+
+      <PrimaryButton
+        label="Verify"
+        onPress={() => navigation.navigate('CreateProfile' as never)}
+        disabled={!isFilled}
+        icon={!isFilled ? <ArrowRight width={SIZE(18)} height={SIZE(18)} /> : <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />}
+      />
+      <Text style={styles.resend}>Didn't receive code? <Text style={styles.resendLink}>Resend</Text></Text>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+    paddingHorizontal: SIZE(25),
+  },
+  backButton: {
+    marginTop: SIZE(17),
+    marginBottom: SIZE(38),
+    alignSelf: 'flex-start',
+  },
+  title: {
+    fontFamily: 'Manrope-ExtraBold',
+    fontSize: SIZE(24),
+    color: colors.textPrimary,
+    marginBottom: SIZE(8),
+    marginRight: SIZE(29),
+  },
+  subtitle: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(14),
+    color: colors.textSecondary,
+    marginBottom: SIZE(43),
+    marginRight: SIZE(29),
+    width: '80%',
+    lineHeight: SIZE(22),
+  },
+  resend: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: SIZE(25),
+  },
+  resendLink: {
+    fontFamily: 'Manrope-SemiBold',
+    color: colors.primary,
+  },
+  phone: {
+    fontFamily: 'Manrope-SemiBold',
+    color: colors.textPrimary,
+  },
+  otpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: SIZE(28),
+
+  },
+  otpBox: {
+    width: SIZE(66),
+    height: SIZE(53),
+    borderBottomWidth: 2,
+    borderBottomColor: colors.border,
+    borderRadius: 0,
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(24),
+    color: colors.textPrimary,
+  },
+  otpBoxFilled: {
+    borderBottomColor: colors.primary,
+  },
+});

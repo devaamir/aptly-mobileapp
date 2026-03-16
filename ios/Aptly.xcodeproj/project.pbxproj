@@ -7,11 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		015361892870CE2052A06099 /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FD89621E82D2E00FE08EDF9A /* Manrope-Medium.ttf */; };
 		066A930B63DA968CB6B132D4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		0C80B921A6F3F58F76C31292 /* libPods-Aptly.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-Aptly.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		13C371F81CD3DC58619BA156 /* Manrope-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 21B9438D43E0463041D3946E /* Manrope-ExtraLight.ttf */; };
+		417C0731A5FFADF68EEDC5C5 /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6A88123619B6869F17B0D822 /* Manrope-Regular.ttf */; };
+		6FB58BB5ABE832711C263DE0 /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC149514123BD7022DA6D13B /* Manrope-SemiBold.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		893C6EDD02C265B2E1044775 /* Manrope-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 73E13D4ABE26D2EFC4D45799 /* Manrope-Light.ttf */; };
+		8C28EA3F421C1FA213CE5E4B /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C3ADCD1442A3DBBC99F23CE0 /* Manrope-Bold.ttf */; };
+		D8611C2F56204760F81C0EB6 /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E54158208E280F2490B59211 /* Manrope-ExtraBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,12 +26,19 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Aptly/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Aptly/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = Aptly/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		21B9438D43E0463041D3946E /* Manrope-ExtraLight.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Manrope-ExtraLight.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-Aptly.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Aptly.debug.xcconfig"; path = "Target Support Files/Pods-Aptly/Pods-Aptly.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-Aptly.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Aptly.release.xcconfig"; path = "Target Support Files/Pods-Aptly/Pods-Aptly.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-Aptly.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Aptly.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6A88123619B6869F17B0D822 /* Manrope-Regular.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Manrope-Regular.ttf"; sourceTree = "<group>"; };
+		73E13D4ABE26D2EFC4D45799 /* Manrope-Light.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Manrope-Light.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Aptly/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Aptly/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		C3ADCD1442A3DBBC99F23CE0 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Manrope-Bold.ttf"; sourceTree = "<group>"; };
+		DC149514123BD7022DA6D13B /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
+		E54158208E280F2490B59211 /* Manrope-ExtraBold.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Manrope-ExtraBold.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		FD89621E82D2E00FE08EDF9A /* Manrope-Medium.ttf */ = {isa = PBXFileReference; includeInIndex = 1; path = "Manrope-Medium.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +61,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				AC510E47F3CA2C4F62F86A3D /* Fonts */,
 			);
 			name = Aptly;
 			sourceTree = "<group>";
@@ -87,6 +102,21 @@
 				13B07F961A680F5B00A75B9A /* Aptly.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AC510E47F3CA2C4F62F86A3D /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				C3ADCD1442A3DBBC99F23CE0 /* Manrope-Bold.ttf */,
+				E54158208E280F2490B59211 /* Manrope-ExtraBold.ttf */,
+				21B9438D43E0463041D3946E /* Manrope-ExtraLight.ttf */,
+				73E13D4ABE26D2EFC4D45799 /* Manrope-Light.ttf */,
+				FD89621E82D2E00FE08EDF9A /* Manrope-Medium.ttf */,
+				6A88123619B6869F17B0D822 /* Manrope-Regular.ttf */,
+				DC149514123BD7022DA6D13B /* Manrope-SemiBold.ttf */,
+			);
+			name = Fonts;
+			path = Aptly/Fonts;
 			sourceTree = "<group>";
 		};
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
@@ -161,6 +191,13 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				066A930B63DA968CB6B132D4 /* PrivacyInfo.xcprivacy in Resources */,
+				8C28EA3F421C1FA213CE5E4B /* Manrope-Bold.ttf in Resources */,
+				D8611C2F56204760F81C0EB6 /* Manrope-ExtraBold.ttf in Resources */,
+				13C371F81CD3DC58619BA156 /* Manrope-ExtraLight.ttf in Resources */,
+				893C6EDD02C265B2E1044775 /* Manrope-Light.ttf in Resources */,
+				015361892870CE2052A06099 /* Manrope-Medium.ttf in Resources */,
+				417C0731A5FFADF68EEDC5C5 /* Manrope-Regular.ttf in Resources */,
+				6FB58BB5ABE832711C263DE0 /* Manrope-SemiBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
