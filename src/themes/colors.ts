@@ -14,6 +14,7 @@ const colors = {
   textDark: '#1D1E21',
   textMuted: '#768492',
   textSecondary: '#7E8695',
+  borderMuted: '#E0E2E6CC',
 };
 
 export default colors;
