@@ -22,7 +22,8 @@
     "react-native-responsive-screen": "^1.4.2",
     "react-native-safe-area-context": "^5.7.0",
     "react-native-screens": "^4.24.0",
-    "react-native-svg": "^15.15.3"
+    "react-native-svg": "^15.15.3",
+    "react-native-video": "^6.19.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

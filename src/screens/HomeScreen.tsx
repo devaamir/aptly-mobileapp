@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Text, FlatList, Animated } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform } from 'react-native';
+import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -25,6 +26,16 @@ const CLINICS = [
 const ListHeader = ({ onTokenPress }: { onTokenPress: () => void }) => (
   <>
     <View style={styles.bannerCard}>
+      {Platform.OS === 'android' && (
+        <Video
+          source={require('../assets/images/background-video.mp4')}
+          style={StyleSheet.absoluteFill}
+          resizeMode="cover"
+          repeat
+          muted
+          disableFocus
+        />
+      )}
       <TouchableOpacity activeOpacity={0.7} onPress={onTokenPress}>
         <View style={styles.livebadge}>
           <View style={styles.greenDot} />
@@ -105,6 +116,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       {/* Header */}
       <View style={styles.header}>
         <Image source={require('../assets/images/aptly-logo.png')} style={styles.logo} />
@@ -115,7 +127,9 @@ export default function HomeScreen() {
 
       {/* Search - stays fixed */}
       <View style={styles.searchWrapper}>
-        <SearchBar placeholder='Search for "Skin Doctor"' />
+        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Search')}>
+          <SearchBar placeholder='Search for "Skin Doctor"' editable={false} />
+        </TouchableOpacity>
       </View>
 
       {/* Everything below scrolls */}

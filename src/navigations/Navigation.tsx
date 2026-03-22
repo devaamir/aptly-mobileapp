@@ -7,6 +7,7 @@ import OtpScreen from '../screens/OtpScreen';
 import CreateProfileScreen from '../screens/CreateProfileScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 import TokenDetailScreen from '../screens/TokenDetailScreen';
+import SearchScreen from '../screens/SearchScreen';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
@@ -14,6 +15,7 @@ export type RootStackParamList = {
   CreateProfile: undefined;
   Main: undefined;
   TokenDetail: undefined;
+  Search: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -40,6 +42,11 @@ export default function Navigation() {
           name="TokenDetail"
           component={TokenDetailScreen}
           options={{animation: 'slide_from_bottom'}}
+        />
+        <Stack.Screen
+          name="Search"
+          component={SearchScreen}
+          options={{animation: 'fade'}}
         />
       </Stack.Navigator>
     </NavigationContainer>

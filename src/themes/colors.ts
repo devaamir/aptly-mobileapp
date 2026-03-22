@@ -6,6 +6,7 @@ const colors = {
   backgroundLight: '#F8F9FB',
   backgroundMuted: '#E8EDF1',
   backgroundSubtle: '#F6F6F6',
+  backgroundGrey: '#F5F5F6',
 
   // Borders
   border: '#E0E2E6',
@@ -19,6 +20,7 @@ const colors = {
   borderMuted: '#E0E2E6CC',
   cardBorder: '#F1F2F4',
   danger: '#FF5A4F',
+  accent: '#FF7B63',
   primaryLight: '#EAF3FF',
   primaryAccent: '#418EFD',
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
@@ -8,9 +8,11 @@ type Props = {
   placeholder?: string;
   value?: string;
   onChangeText?: (text: string) => void;
+  editable?: boolean;
+  autoFocus?: boolean;
 };
 
-export default function SearchBar({ placeholder = 'Search...', value, onChangeText }: Props) {
+export default function SearchBar({ placeholder = 'Search...', value, onChangeText, editable = true, autoFocus = false }: Props) {
   const [focused, setFocused] = useState(false);
 
   return (
@@ -21,11 +23,17 @@ export default function SearchBar({ placeholder = 'Search...', value, onChangeTe
         placeholderTextColor={colors.textSecondary}
         value={value}
         onChangeText={onChangeText}
+        editable={editable}
+        autoFocus={autoFocus}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
-      <TouchableOpacity style={styles.iconContainer}>
-        <SearchIcon width={SIZE(20)} height={SIZE(20)} />
+      <TouchableOpacity style={styles.iconContainer} onPress={() => value && onChangeText?.('')}>
+        {value ? (
+          <Text style={styles.clearText}>✕</Text>
+        ) : (
+          <SearchIcon width={SIZE(20)} height={SIZE(20)} />
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -57,5 +65,12 @@ const styles = StyleSheet.create({
     paddingLeft: SIZE(12),
     borderLeftWidth: 1,
     borderLeftColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clearText: {
+    fontSize: SIZE(14),
+    color: colors.textSecondary,
+    fontFamily: 'Manrope-Medium',
   },
 });
