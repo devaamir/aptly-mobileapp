@@ -5,9 +5,11 @@ const colors = {
   white: '#fff',
   backgroundLight: '#F8F9FB',
   backgroundMuted: '#E8EDF1',
+  backgroundSubtle: '#F6F6F6',
 
   // Borders
   border: '#E0E2E6',
+  borderLowOpacity: '#E0E2E64D',
 
   // Text
   textPrimary: '#1C1E22',
@@ -15,6 +17,10 @@ const colors = {
   textMuted: '#768492',
   textSecondary: '#7E8695',
   borderMuted: '#E0E2E6CC',
+  cardBorder: '#F1F2F4',
+  danger: '#FF5A4F',
+  primaryLight: '#EAF3FF',
+  primaryAccent: '#418EFD',
 };
 
 export default colors;

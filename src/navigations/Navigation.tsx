@@ -6,8 +6,17 @@ import PhoneNumberScreen from '../screens/PhoneNumberScreen';
 import OtpScreen from '../screens/OtpScreen';
 import CreateProfileScreen from '../screens/CreateProfileScreen';
 import BottomTabNavigator from './BottomTabNavigator';
+import TokenDetailScreen from '../screens/TokenDetailScreen';
 
-const Stack = createNativeStackNavigator();
+export type RootStackParamList = {
+  PhoneNumber: undefined;
+  Otp: undefined;
+  CreateProfile: undefined;
+  Main: undefined;
+  TokenDetail: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function Navigation() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -27,6 +36,11 @@ export default function Navigation() {
         <Stack.Screen name="Otp" component={OtpScreen} />
         <Stack.Screen name="CreateProfile" component={CreateProfileScreen} />
         <Stack.Screen name="Main" component={BottomTabNavigator} />
+        <Stack.Screen
+          name="TokenDetail"
+          component={TokenDetailScreen}
+          options={{animation: 'slide_from_bottom'}}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,6 +1,9 @@
-import React, {useEffect, useRef} from 'react';
-import {View, Image, TouchableOpacity, StyleSheet, Text, FlatList, Animated} from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Image, TouchableOpacity, StyleSheet, Text, FlatList, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigations/Navigation';
 import SearchBar from '../components/SearchBar';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
@@ -10,6 +13,8 @@ import ArrowRight from '../assets/icons/arrow-right.svg';
 import PhoneIcon from '../assets/icons/phone-icon.svg';
 import MapIcon from '../assets/icons/map-icon.svg';
 
+type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
+
 const CLINICS = [
   { id: '1', name: 'Apollo Clinic', speciality: 'Multi-speciality', location: 'Bandra, Mumbai', image: 'https://placehold.co/92x92/png' },
   { id: '2', name: 'Fortis Health', speciality: 'Cardiology', location: 'Andheri, Mumbai', image: 'https://placehold.co/92x92/png' },
@@ -17,10 +22,10 @@ const CLINICS = [
   { id: '4', name: 'Narayana Health', speciality: 'Orthopaedics', location: 'Thane, Mumbai', image: 'https://placehold.co/92x92/png' },
 ];
 
-const ListHeader = () => (
+const ListHeader = ({ onTokenPress }: { onTokenPress: () => void }) => (
   <>
     <View style={styles.bannerCard}>
-      <View>
+      <TouchableOpacity activeOpacity={0.7} onPress={onTokenPress}>
         <View style={styles.livebadge}>
           <View style={styles.greenDot} />
           <Text style={styles.liveText}>Live</Text>
@@ -41,7 +46,7 @@ const ListHeader = () => (
             </View>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
       <View style={styles.hospitalStrip}>
         <View style={styles.hospitalTop}>
           <View style={styles.hospitalLeft}>
@@ -96,6 +101,8 @@ const ListHeader = () => (
 );
 
 export default function HomeScreen() {
+  const navigation = useNavigation<HomeNavProp>();
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -117,7 +124,7 @@ export default function HomeScreen() {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<ListHeader />}
+        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} />}
         // style={styles.flatList}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.clinicCard} activeOpacity={0.8}>
