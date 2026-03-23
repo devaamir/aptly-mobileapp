@@ -34,6 +34,8 @@ const colors = {
   warningDot: '#F79009',
   available: '#489B48',
   primaryBorder: '#DEECFE',
+  tokenBg: '#FFF4E6',
+  tokenLabel: '#00001D',
 };
 
 export default colors;

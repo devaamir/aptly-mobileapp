@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
-import BookingsScreen from '../screens/BookingsScreen';
+import AppointmentScreen from '../screens/AppointmentScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import HomeActive from '../assets/icons/home-active.svg';
 import HomeInactive from '../assets/icons/home-inactive.svg';
@@ -38,7 +38,7 @@ export default function BottomTabNavigator() {
       />
       <Tab.Screen
         name="Appointments"
-        component={BookingsScreen}
+        component={AppointmentScreen}
         options={{
           tabBarIcon: ({ focused }) => focused ? <BookingsActive width={ICON_SIZE} height={ICON_SIZE} /> : <BookingsInactive width={ICON_SIZE} height={ICON_SIZE} />,
         }}
