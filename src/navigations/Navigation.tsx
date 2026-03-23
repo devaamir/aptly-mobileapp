@@ -10,6 +10,7 @@ import TokenDetailScreen from '../screens/TokenDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
 import SpecialistScreen from '../screens/SpecialistScreen';
 import SpecialistDetailScreen from '../screens/SpecialistDetailScreen';
+import DoctorsScreen from '../screens/DoctorsScreen';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
@@ -20,6 +21,7 @@ export type RootStackParamList = {
   Search: undefined;
   Specialist: undefined;
   SpecialistDetail: { name: string; desc: string; clinics: number; doctors: number };
+  Doctors: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -54,6 +56,7 @@ export default function Navigation() {
         />
         <Stack.Screen name="Specialist" component={SpecialistScreen} />
         <Stack.Screen name="SpecialistDetail" component={SpecialistDetailScreen} />
+        <Stack.Screen name="Doctors" component={DoctorsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

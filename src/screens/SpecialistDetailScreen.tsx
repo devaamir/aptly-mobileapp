@@ -12,10 +12,10 @@ import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
 
 const DOCTORS = [
-  { id: '1', name: 'Dr. Rodger Struck', type: 'Cardiologist', hospital: 'Sunrise Hospital', clinicType: 'Multi Speciality', experience: '8 yrs exp', location: 'Bandra, Mumbai', rating: '4.8' },
-  { id: '2', name: 'Dr. Sarah Collins', type: 'Neurologist', hospital: 'Apollo Clinic', clinicType: 'Clinic', experience: '12 yrs exp', location: 'Andheri, Mumbai', rating: '4.9' },
-  { id: '3', name: 'Dr. James Patel', type: 'Dermatologist', hospital: 'Max Care', clinicType: 'Clinic', experience: '5 yrs exp', location: 'Powai, Mumbai', rating: '4.6' },
-  { id: '4', name: 'Dr. Meera Nair', type: 'Orthopaedic', hospital: 'Narayana Health', clinicType: 'Multi Speciality', experience: '10 yrs exp', location: 'Thane, Mumbai', rating: '4.7' },
+  { id: '1', name: 'Dr. Rodger Struck', type: 'Cardiologist', hospital: 'Sunrise Hospital', clinicType: 'Multi Speciality', experience: '8 yrs exp', location: 'Bandra, Mumbai', rating: '4.8', status: 'Booking Opened' },
+  { id: '2', name: 'Dr. Sarah Collins', type: 'Neurologist', hospital: 'Apollo Clinic', clinicType: 'Clinic', experience: '12 yrs exp', location: 'Andheri, Mumbai', rating: '4.9', status: 'Not Started' },
+  { id: '3', name: 'Dr. James Patel', type: 'Dermatologist', hospital: 'Max Care', clinicType: 'Clinic', experience: '5 yrs exp', location: 'Powai, Mumbai', rating: '4.6', status: 'Booking Opened' },
+  { id: '4', name: 'Dr. Meera Nair', type: 'Orthopaedic', hospital: 'Narayana Health', clinicType: 'Multi Speciality', experience: '10 yrs exp', location: 'Thane, Mumbai', rating: '4.7', status: 'Not Started' },
 ];
 
 const CLINICS = [
@@ -86,6 +86,7 @@ export default function SpecialistDetailScreen({ navigation, route }: Props) {
               hospital={item.hospital}
               clinicType={item.clinicType}
               experience={item.experience}
+              status={item.status as 'Booking Opened' | 'Not Started'}
             />
           )}
         />

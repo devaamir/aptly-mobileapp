@@ -26,6 +26,12 @@ const colors = {
   primaryAccent: '#418EFD',
   gold: '#9C8658',
   inputBg: '#F2F4F7',
+  successLight: '#ECFDF3',
+  successText: '#027A48',
+  successDot: '#12B76A',
+  warningLight: '#FFFAEB',
+  warningText: '#B54708',
+  warningDot: '#F79009',
 };
 
 export default colors;

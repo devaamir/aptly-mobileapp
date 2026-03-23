@@ -9,9 +9,25 @@ type Props = {
   hospital: string;
   clinicType: string;
   experience: string;
+  status?: 'Booking Opened' | 'Not Started';
 };
 
-const DoctorCard = ({ name, type, hospital, clinicType, experience }: Props) => (
+const statusConfig = {
+  'Booking Opened': {
+    bg: colors.successLight,
+    text: colors.successText,
+    dot: colors.successDot,
+  },
+  'Not Started': {
+    bg: colors.warningLight,
+    text: colors.warningText,
+    dot: colors.warningDot,
+  },
+};
+
+const DoctorCard = ({ name, type, hospital, clinicType, experience, status = 'Booking Opened' }: Props) => {
+  const s = statusConfig[status];
+  return (
   <View style={styles.card}>
     <View style={styles.topCard}>
       <View style={styles.cardTop}>
@@ -38,13 +54,14 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience }: Props) => 
     </View>
     <View style={styles.cardFooter}>
       <Text style={styles.bookingTime}>Booking available at 8:00am - 6:30pm</Text>
-      <View style={styles.statusBadge}>
-        <View style={styles.statusDot} />
-        <Text style={styles.statusText}>Booking Opened</Text>
+      <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
+        <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
+        <Text style={[styles.statusText, { color: s.text }]}>{status}</Text>
       </View>
     </View>
   </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   card: {
@@ -149,17 +166,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(4),
+    backgroundColor: colors.successLight,
+    paddingHorizontal: SIZE(8),
+    paddingVertical: SIZE(4),
+    borderRadius: SIZE(20),
   },
   statusDot: {
     width: SIZE(6),
     height: SIZE(6),
     borderRadius: SIZE(3),
-    backgroundColor: '#22C55E',
+    backgroundColor: colors.successDot,
   },
   statusText: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(11),
-    color: '#22C55E',
+    color: colors.successText,
   },
 });
 
