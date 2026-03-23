@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
@@ -9,7 +9,7 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import CalendarIcon from '../assets/icons/calendar-icon.svg';
 import AddIconBlue from '../assets/icons/add-icon-blue.svg';
-import ArrowRightBlue from '../assets/icons/arrow-right-blue.svg';
+import SwipeToBook from '../components/SwipeToBook';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookAppointment'>;
 
@@ -36,101 +36,99 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
-          <BackArrow width={SIZE(26)} height={SIZE(26)} />
-        </TouchableOpacity>
-        <View style={styles.headerAvatar} />
-        <Text style={styles.title}>{name}</Text>
-      </View>
-      <View style={styles.divider} />
-      <View style={styles.statusBar}>
-        <Text style={styles.bookingTime}>Booking available at 7:00am - 6:30 pm</Text>
-        <View style={styles.statusRight}>
-          <View style={styles.statusBadge}>
-            <View style={styles.statusDot} />
-            <Text style={styles.statusText}>Booking Opened</Text>
-          </View>
-          <DownArrowGrey width={SIZE(20)} height={SIZE(20)} />
-        </View>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Date picker */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Select Date</Text>
-          <TouchableOpacity activeOpacity={0.7}>
-            <CalendarIcon width={SIZE(20)} height={SIZE(20)} />
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+            <BackArrow width={SIZE(26)} height={SIZE(26)} />
           </TouchableOpacity>
+          <View style={styles.headerAvatar} />
+          <Text style={styles.title}>{name}</Text>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysRow}>
-          {DAYS.map((d, i) => (
-            <TouchableOpacity
-              key={i}
-              style={[styles.dayChip, selectedDay === i && styles.dayChipActive]}
-              onPress={() => { setSelectedDay(i); setSelectedSlot(null); }}
-              activeOpacity={0.8}>
-              <Text style={[styles.dayLabel, selectedDay === i && styles.dayLabelActive]}>{d.weekday}</Text>
-              <Text style={[styles.dayDate, selectedDay === i && styles.dayLabelActive]}>{d.dateMonth}</Text>
+        <View style={styles.divider} />
+        <View style={styles.statusBar}>
+          <Text style={styles.bookingTime}>Booking available at 7:00am - 6:30 pm</Text>
+          <View style={styles.statusRight}>
+            <View style={styles.statusBadge}>
+              <View style={styles.statusDot} />
+              <Text style={styles.statusText}>Booking Opened</Text>
+            </View>
+            <DownArrowGrey width={SIZE(20)} height={SIZE(20)} />
+          </View>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Date picker */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Select Date</Text>
+            <TouchableOpacity activeOpacity={0.7}>
+              <CalendarIcon width={SIZE(20)} height={SIZE(20)} />
             </TouchableOpacity>
-          ))}
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysRow}>
+            {DAYS.map((d, i) => (
+              <TouchableOpacity
+                key={i}
+                style={[styles.dayChip, selectedDay === i && styles.dayChipActive]}
+                onPress={() => setSelectedDay(i)}
+                activeOpacity={0.8}>
+                <Text style={[styles.dayLabel, selectedDay === i && styles.dayLabelActive]}>{d.weekday}</Text>
+                <Text style={[styles.dayDate, selectedDay === i && styles.dayLabelActive]}>{d.dateMonth}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <View style={styles.slotCard}>
+            <Text style={styles.slotTime}>8:00am - 11:30am</Text>
+            <Text style={styles.slotTickets}>110 tickets available</Text>
+          </View>
+
+          {/* Select patient */}
+          <Text style={styles.sectionTitle}>Select Patient</Text>
+          <View style={styles.patientsContainer}>
+            {PATIENTS.map((p, index) => (
+              <View key={p.id}>
+                <TouchableOpacity
+                  style={styles.patientCard}
+                  onPress={() => setSelectedPatient(p.id)}
+                  activeOpacity={0.8}>
+                  <View style={[styles.radio, selectedPatient === p.id && styles.radioActive]}>
+                    {selectedPatient === p.id && <View style={styles.radioDot} />}
+                  </View>
+                  <View>
+                    <Text style={styles.patientName}>{p.name}</Text>
+                    <View style={styles.patientMeta}>
+                      <Text style={styles.metaText}>{p.phone}</Text>
+                      <Text style={styles.metaDot}>|</Text>
+                      <Text style={styles.metaText}>Age: {p.age}</Text>
+                      <Text style={styles.metaDot}>|</Text>
+                      <Text style={styles.metaText}>Gender: {p.gender}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                {index < PATIENTS.length - 1 && <View style={styles.patientDivider} />}
+              </View>
+            ))}
+          </View>
+          <TouchableOpacity style={styles.addMemberBtn} activeOpacity={0.7}>
+            <AddIconBlue width={SIZE(18)} height={SIZE(18)} />
+            <Text style={styles.addMemberText}>Add new member</Text>
+          </TouchableOpacity>
         </ScrollView>
 
-        <View style={styles.slotCard}>
-          <Text style={styles.slotTime}>8:00am - 11:30am</Text>
-          <Text style={styles.slotTickets}>110 tickets available</Text>
+        <View style={styles.stickyFooter}>
+          <SwipeToBook
+            disabled={!selectedPatient}
+            onSwipeComplete={() => {
+              // TODO: handle booking confirmation
+            }}
+          />
         </View>
-
-        {/* Select patient */}
-        <Text style={styles.sectionTitle}>Select Patient</Text>
-        <View style={styles.patientsContainer}>
-          {PATIENTS.map((p, index) => (
-            <View key={p.id}>
-              <TouchableOpacity
-                style={styles.patientCard}
-                onPress={() => setSelectedPatient(p.id)}
-                activeOpacity={0.8}>
-                <View style={[styles.radio, selectedPatient === p.id && styles.radioActive]}>
-                  {selectedPatient === p.id && <View style={styles.radioDot} />}
-                </View>
-                <View>
-                  <Text style={styles.patientName}>{p.name}</Text>
-                  <View style={styles.patientMeta}>
-                    <Text style={styles.metaText}>{p.phone}</Text>
-                    <Text style={styles.metaDot}>|</Text>
-                    <Text style={styles.metaText}>Age: {p.age}</Text>
-                    <Text style={styles.metaDot}>|</Text>
-                    <Text style={styles.metaText}>Gender: {p.gender}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-              {index < PATIENTS.length - 1 && <View style={styles.patientDivider} />}
-            </View>
-          ))}
-        </View>
-        <TouchableOpacity style={styles.addMemberBtn} activeOpacity={0.7}>
-          <AddIconBlue width={SIZE(18)} height={SIZE(18)} />
-          <Text style={styles.addMemberText}>Add new member</Text>
-        </TouchableOpacity>
-      </ScrollView>
-
-      {/* Confirm */}
-      <View style={styles.stickyFooter}>
-        <TouchableOpacity
-          style={[styles.confirmBtn, !selectedPatient && styles.confirmBtnDisabled]}
-          activeOpacity={0.8}
-          disabled={!selectedPatient}>
-          <View style={styles.swipeIcon}>
-            <ArrowRightBlue width={SIZE(26)} height={SIZE(26)} />
-          </View>
-          <Text style={styles.confirmBtnText}>Swipe to Book</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
@@ -397,8 +395,7 @@ const styles = StyleSheet.create({
     borderRadius: SIZE(12),
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: SIZE(10),
+    justifyContent: 'space-between',
   },
   swipeIcon: {
     width: SIZE(36),
@@ -410,8 +407,10 @@ const styles = StyleSheet.create({
   },
   confirmBtnDisabled: { opacity: 0.5 },
   confirmBtnText: {
+    flex: 1,
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(15),
     color: colors.white,
+    textAlign: 'center',
   },
 });
