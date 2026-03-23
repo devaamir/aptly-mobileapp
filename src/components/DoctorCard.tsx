@@ -28,38 +28,38 @@ const statusConfig = {
 const DoctorCard = ({ name, type, hospital, clinicType, experience, status = 'Booking Opened' }: Props) => {
   const s = statusConfig[status];
   return (
-  <View style={styles.card}>
-    <View style={styles.topCard}>
-      <View style={styles.cardTop}>
-        <View style={styles.avatar} />
-        <View style={styles.cardTopInfo}>
-          <Text style={styles.primaryText}>{name}</Text>
-          <Text style={styles.secondaryText}>{type}</Text>
+    <TouchableOpacity style={styles.card} activeOpacity={0.6}>
+      <View style={styles.topCard}>
+        <View style={styles.cardTop}>
+          <View style={styles.avatar} />
+          <View style={styles.cardTopInfo}>
+            <Text style={styles.primaryText}>{name}</Text>
+            <Text style={styles.secondaryText}>{type}</Text>
+          </View>
+        </View>
+        <View style={styles.cardBottom}>
+          <Text style={styles.hospitalText}>{hospital}</Text>
+          <Text style={styles.clinicTypeText}>{clinicType}</Text>
+        </View>
+        <View style={styles.divider} />
+        <View style={styles.cardCenter}>
+          <View>
+            <Text style={styles.expYears}>{experience.replace(' exp', '')}</Text>
+            <Text style={styles.expLabel}>Experience</Text>
+          </View>
+          <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8}>
+            <Text style={styles.bookBtnText}>Book Appointment</Text>
+          </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.cardBottom}>
-        <Text style={styles.hospitalText}>{hospital}</Text>
-        <Text style={styles.clinicTypeText}>{clinicType}</Text>
-      </View>
-      <View style={styles.divider} />
-      <View style={styles.cardCenter}>
-        <View>
-          <Text style={styles.expYears}>{experience.replace(' exp', '')}</Text>
-          <Text style={styles.expLabel}>Experience</Text>
+      <View style={styles.cardFooter}>
+        <Text style={styles.bookingTime}>Booking available at 8:00am - 6:30pm</Text>
+        <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
+          <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
+          <Text style={[styles.statusText, { color: s.text }]}>{status}</Text>
         </View>
-        <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8}>
-          <Text style={styles.bookBtnText}>Book Appointment</Text>
-        </TouchableOpacity>
       </View>
-    </View>
-    <View style={styles.cardFooter}>
-      <Text style={styles.bookingTime}>Booking available at 8:00am - 6:30pm</Text>
-      <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
-        <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
-        <Text style={[styles.statusText, { color: s.text }]}>{status}</Text>
-      </View>
-    </View>
-  </View>
+    </TouchableOpacity>
   );
 };
 
