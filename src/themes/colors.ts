@@ -32,6 +32,8 @@ const colors = {
   warningLight: '#FFFAEB',
   warningText: '#B54708',
   warningDot: '#F79009',
+  available: '#489B48',
+  primaryBorder: '#DEECFE',
 };
 
 export default colors;

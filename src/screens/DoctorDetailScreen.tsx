@@ -81,7 +81,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
       </ScrollView>
 
       <View style={styles.stickyFooter}>
-        <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', { name, type, hospital })}>
           <Text style={styles.bookBtnText}>Book Appointment</Text>
         </TouchableOpacity>
       </View>
