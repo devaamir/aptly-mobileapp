@@ -14,6 +14,7 @@ const colors = {
 
   // Text
   textPrimary: '#1C1E22',
+  textSubdued: '#494F5A',
   textDark: '#1D1E21',
   textMuted: '#768492',
   textSecondary: '#7E8695',

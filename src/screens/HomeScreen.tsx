@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import SearchBar from '../components/SearchBar';
+import ClinicCard from '../components/ClinicCard';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import NotificationIcon from '../assets/icons/notification-icon-grey.svg';
@@ -141,22 +142,12 @@ export default function HomeScreen() {
         ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onSpecialistPress={() => navigation.navigate('Specialist')} />}
         // style={styles.flatList}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.clinicCard} activeOpacity={0.8}>
-            <Image source={{ uri: item.image }} style={styles.clinicImage} />
-            <View style={styles.clinicInfo}>
-              <View>
-                <Text style={styles.clinicName}>{item.name}</Text>
-                <Text style={styles.clinicSpeciality}>{item.speciality}</Text>
-              </View>
-              <View style={styles.locationRow}>
-                <LocationIcon width={SIZE(14)} height={SIZE(14)} />
-                <Text style={styles.locationText}>{item.location}</Text>
-              </View>
-            </View>
-            <View style={styles.arrowContainer}>
-              <ArrowRight width={SIZE(18)} height={SIZE(18)} />
-            </View>
-          </TouchableOpacity>
+          <ClinicCard
+            name={item.name}
+            subType={item.speciality}
+            location={item.location}
+            image={item.image}
+          />
         )}
       />
     </SafeAreaView>

@@ -8,12 +8,14 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
+import ClinicCard from '../components/ClinicCard';
+import DoctorCard from '../components/DoctorCard';
 
 const DOCTORS = [
-  { id: '1', name: 'Dr. Rodger Struck', experience: '8 yrs exp', location: 'Bandra, Mumbai', rating: '4.8' },
-  { id: '2', name: 'Dr. Sarah Collins', experience: '12 yrs exp', location: 'Andheri, Mumbai', rating: '4.9' },
-  { id: '3', name: 'Dr. James Patel', experience: '5 yrs exp', location: 'Powai, Mumbai', rating: '4.6' },
-  { id: '4', name: 'Dr. Meera Nair', experience: '10 yrs exp', location: 'Thane, Mumbai', rating: '4.7' },
+  { id: '1', name: 'Dr. Rodger Struck', type: 'Cardiologist', hospital: 'Sunrise Hospital', clinicType: 'Multi Speciality', experience: '8 yrs exp', location: 'Bandra, Mumbai', rating: '4.8' },
+  { id: '2', name: 'Dr. Sarah Collins', type: 'Neurologist', hospital: 'Apollo Clinic', clinicType: 'Clinic', experience: '12 yrs exp', location: 'Andheri, Mumbai', rating: '4.9' },
+  { id: '3', name: 'Dr. James Patel', type: 'Dermatologist', hospital: 'Max Care', clinicType: 'Clinic', experience: '5 yrs exp', location: 'Powai, Mumbai', rating: '4.6' },
+  { id: '4', name: 'Dr. Meera Nair', type: 'Orthopaedic', hospital: 'Narayana Health', clinicType: 'Multi Speciality', experience: '10 yrs exp', location: 'Thane, Mumbai', rating: '4.7' },
 ];
 
 const CLINICS = [
@@ -78,20 +80,13 @@ export default function SpecialistDetailScreen({ navigation, route }: Props) {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} activeOpacity={0.8}>
-              <View style={styles.avatar} />
-              <View style={styles.info}>
-                <Text style={styles.primaryText}>{item.name}</Text>
-                <Text style={styles.secondaryText}>{item.experience}</Text>
-                <View style={styles.locationRow}>
-                  <LocationIcon width={SIZE(12)} height={SIZE(12)} />
-                  <Text style={styles.locationText}>{item.location}</Text>
-                </View>
-              </View>
-              <View style={styles.ratingBadge}>
-                <Text style={styles.ratingText}>⭐ {item.rating}</Text>
-              </View>
-            </TouchableOpacity>
+            <DoctorCard
+              name={item.name}
+              type={item.type}
+              hospital={item.hospital}
+              clinicType={item.clinicType}
+              experience={item.experience}
+            />
           )}
         />
       ) : (
@@ -102,20 +97,11 @@ export default function SpecialistDetailScreen({ navigation, route }: Props) {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} activeOpacity={0.8}>
-              <View style={styles.avatar} />
-              <View style={styles.info}>
-                <Text style={styles.primaryText}>{item.name}</Text>
-                <Text style={styles.secondaryText}>{item.type}</Text>
-                <View style={styles.locationRow}>
-                  <LocationIcon width={SIZE(12)} height={SIZE(12)} />
-                  <Text style={styles.locationText}>{item.location}</Text>
-                </View>
-              </View>
-              <View style={styles.ratingBadge}>
-                <Text style={styles.ratingText}>⭐ {item.rating}</Text>
-              </View>
-            </TouchableOpacity>
+            <ClinicCard
+              name={item.name}
+              subType={item.type}
+              location={item.location}
+            />
           )}
         />
       )}
@@ -177,57 +163,7 @@ const styles = StyleSheet.create({
     marginTop: SIZE(6),
   },
   listContent: {
-    paddingHorizontal: SIZE(18),
     paddingBottom: SIZE(24),
     gap: SIZE(12),
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SIZE(14),
-    padding: SIZE(14),
-    borderRadius: SIZE(12),
-    borderWidth: 1,
-    borderColor: '#F1F2F4',
-  },
-  avatar: {
-    width: SIZE(52),
-    height: SIZE(52),
-    borderRadius: SIZE(26),
-    backgroundColor: colors.backgroundLight,
-  },
-  info: { flex: 1 },
-  primaryText: {
-    fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(14),
-    color: colors.textPrimary,
-  },
-  secondaryText: {
-    fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(12),
-    color: colors.textSecondary,
-    marginTop: SIZE(2),
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SIZE(4),
-    marginTop: SIZE(4),
-  },
-  locationText: {
-    fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(11),
-    color: colors.textSecondary,
-  },
-  ratingBadge: {
-    backgroundColor: colors.backgroundLight,
-    borderRadius: SIZE(8),
-    paddingHorizontal: SIZE(8),
-    paddingVertical: SIZE(4),
-  },
-  ratingText: {
-    fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(12),
-    color: colors.textPrimary,
   },
 });
