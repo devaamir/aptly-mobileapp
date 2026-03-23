@@ -23,6 +23,8 @@ const colors = {
   accent: '#FF7B63',
   primaryLight: '#EAF3FF',
   primaryAccent: '#418EFD',
+  gold: '#9C8658',
+  inputBg: '#F2F4F7',
 };
 
 export default colors;

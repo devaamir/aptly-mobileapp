@@ -8,6 +8,8 @@ import CreateProfileScreen from '../screens/CreateProfileScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 import TokenDetailScreen from '../screens/TokenDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
+import SpecialistScreen from '../screens/SpecialistScreen';
+import SpecialistDetailScreen from '../screens/SpecialistDetailScreen';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
@@ -16,6 +18,8 @@ export type RootStackParamList = {
   Main: undefined;
   TokenDetail: undefined;
   Search: undefined;
+  Specialist: undefined;
+  SpecialistDetail: { name: string; desc: string; clinics: number; doctors: number };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -48,6 +52,8 @@ export default function Navigation() {
           component={SearchScreen}
           options={{animation: 'fade'}}
         />
+        <Stack.Screen name="Specialist" component={SpecialistScreen} />
+        <Stack.Screen name="SpecialistDetail" component={SpecialistDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

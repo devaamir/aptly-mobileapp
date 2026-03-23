@@ -23,7 +23,7 @@ const CLINICS = [
   { id: '4', name: 'Narayana Health', speciality: 'Orthopaedics', location: 'Thane, Mumbai', image: 'https://placehold.co/92x92/png' },
 ];
 
-const ListHeader = ({ onTokenPress }: { onTokenPress: () => void }) => (
+const ListHeader = ({ onTokenPress, onSpecialistPress }: { onTokenPress: () => void; onSpecialistPress: () => void }) => (
   <>
     <View style={styles.bannerCard}>
       {Platform.OS === 'android' && (
@@ -84,7 +84,7 @@ const ListHeader = ({ onTokenPress }: { onTokenPress: () => void }) => (
       </View>
     </View>
     <View style={styles.cardsRow}>
-      <TouchableOpacity style={styles.card} activeOpacity={0.7}>
+      <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onSpecialistPress}>
         <Text style={styles.cardTitle}>All specialist</Text>
         <View style={styles.iconsRow}>
           {[0, 1, 2].map(i => <View key={i} style={styles.iconBox} />)}
@@ -138,7 +138,7 @@ export default function HomeScreen() {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} />}
+        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onSpecialistPress={() => navigation.navigate('Specialist')} />}
         // style={styles.flatList}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.clinicCard} activeOpacity={0.8}>

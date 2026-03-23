@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity, Text, ViewStyle } from 'react-native';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
@@ -10,13 +10,14 @@ type Props = {
   onChangeText?: (text: string) => void;
   editable?: boolean;
   autoFocus?: boolean;
+  style?: ViewStyle;
 };
 
-export default function SearchBar({ placeholder = 'Search...', value, onChangeText, editable = true, autoFocus = false }: Props) {
+export default function SearchBar({ placeholder = 'Search...', value, onChangeText, editable = true, autoFocus = false, style }: Props) {
   const [focused, setFocused] = useState(false);
 
   return (
-    <View style={[styles.container, focused && styles.focused]}>
+    <View style={[styles.container, focused && styles.focused, style]}>
       <TextInput
         style={styles.input}
         placeholder={placeholder}
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: SIZE(14),
     paddingVertical: SIZE(8),
-    backgroundColor: colors.white,
+    backgroundColor: colors.inputBg,
   },
   focused: {
     borderColor: colors.primary,
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   iconContainer: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.inputBg,
     paddingVertical: SIZE(9),
     paddingLeft: SIZE(12),
     borderLeftWidth: 1,
