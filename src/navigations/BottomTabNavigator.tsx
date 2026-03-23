@@ -37,7 +37,7 @@ export default function BottomTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Bookings"
+        name="Appointments"
         component={BookingsScreen}
         options={{
           tabBarIcon: ({ focused }) => focused ? <BookingsActive width={ICON_SIZE} height={ICON_SIZE} /> : <BookingsInactive width={ICON_SIZE} height={ICON_SIZE} />,

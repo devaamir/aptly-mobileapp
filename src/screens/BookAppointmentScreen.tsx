@@ -123,7 +123,12 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           <SwipeToBook
             disabled={!selectedPatient}
             onSwipeComplete={() => {
-              // TODO: handle booking confirmation
+              navigation.navigate('BookingConfirmed', {
+                token: Math.floor(Math.random() * 90) + 10,
+                doctorName: name,
+                hospital,
+                date: DAYS[selectedDay].dateMonth,
+              });
             }}
           />
         </View>
