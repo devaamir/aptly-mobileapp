@@ -10,6 +10,7 @@ type Props = {
   clinicType: string;
   experience: string;
   status?: 'Booking Opened' | 'Not Started';
+  onPress?: () => void;
 };
 
 const statusConfig = {
@@ -25,10 +26,10 @@ const statusConfig = {
   },
 };
 
-const DoctorCard = ({ name, type, hospital, clinicType, experience, status = 'Booking Opened' }: Props) => {
+const DoctorCard = ({ name, type, hospital, clinicType, experience, status = 'Booking Opened', onPress }: Props) => {
   const s = statusConfig[status];
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.6}>
+    <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onPress}>
       <View style={styles.topCard}>
         <View style={styles.cardTop}>
           <View style={styles.avatar} />

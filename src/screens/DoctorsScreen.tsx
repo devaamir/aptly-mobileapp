@@ -52,6 +52,16 @@ export default function DoctorsScreen({ navigation }: Props) {
             clinicType={item.clinicType}
             experience={item.experience}
             status={item.status as 'Booking Opened' | 'Not Started'}
+            onPress={() => navigation.navigate('DoctorDetail', {
+              name: item.name,
+              type: item.type,
+              hospital: item.hospital,
+              clinicType: item.clinicType,
+              experience: item.experience,
+              location: '',
+              rating: '',
+              status: item.status,
+            })}
           />
         )}
       />
