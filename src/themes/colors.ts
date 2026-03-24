@@ -36,6 +36,7 @@ const colors = {
   primaryBorder: '#DEECFE',
   tokenBg: '#FFF4E6',
   tokenLabel: '#00001D',
+  appointmentDate: '#32363E',
 };
 
 export default colors;

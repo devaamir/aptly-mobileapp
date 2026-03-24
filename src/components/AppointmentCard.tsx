@@ -16,11 +16,11 @@ type Props = {
   status: Status;
 };
 
-const statusColors: Record<Status, { bg: string; text: string }> = {
-  Live:      { bg: colors.successLight, text: colors.successText },
-  Upcoming:  { bg: colors.primaryLight, text: colors.primary },
-  Completed: { bg: colors.successLight, text: colors.successText },
-  Cancelled: { bg: '#FEF3F2', text: '#B42318' },
+const statusColors: Record<Status, { bg: string; dot: string }> = {
+  Live: { bg: colors.successLight, dot: colors.successDot },
+  Upcoming: { bg: colors.primaryLight, dot: colors.primary },
+  Completed: { bg: colors.successLight, dot: colors.successDot },
+  Cancelled: { bg: '#FEF3F2', dot: '#B42318' },
 };
 
 export default function AppointmentCard({ doctor, type, hospital, date, time, token, status }: Props) {
@@ -29,9 +29,9 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
     <View style={styles.card}>
       {/* Top bar */}
       <View style={styles.topBar}>
-        <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
-          <View style={[styles.statusDot, { backgroundColor: s.text }]} />
-          <Text style={[styles.statusText, { color: s.text }]}>{status}</Text>
+        <View style={styles.statusBadge}>
+          <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
+          <Text style={styles.statusText}>{status}</Text>
         </View>
         <ArrowRight width={SIZE(18)} height={SIZE(18)} />
       </View>
@@ -49,11 +49,27 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
         <Text style={styles.doctorSep}>|</Text>
         <Text style={styles.doctorType}>{type}</Text>
       </View>
-      <View style={styles.tokenCard}>
-        <Text style={styles.tokenLabel}>Your token number</Text>
-        <Text style={styles.tokenNumber}>{token}</Text>
+      {status === 'Live' && (
+        <View style={[styles.tokenCard, { backgroundColor: '#2879E4' }]}>
+          <Text style={styles.tokenLabel}>Your token number</Text>
+          <View style={styles.tokenQueue}>
+            <Text style={styles.tokenNextPrev}>{token - 3}</Text>
+            <Text style={styles.tokenCurrent}>{token - 2}</Text>
+            <Text style={styles.tokenNextPrev}>{token - 1}</Text>
+            <Text style={styles.ourTokenNumber}>{token}</Text>
+          </View>
+        </View>
+      )}
+      {status === 'Upcoming' && (
+        <View style={[styles.tokenCard, { backgroundColor: colors.tokenBg }]}>
+          <Text style={styles.tokenLabel}>Your token number</Text>
+          <Text style={styles.tokenNumber}>{token}</Text>
+        </View>
+      )}
+      <View style={styles.appointmentTime}>
+        <Text style={styles.appointmentOn}>Appointment on </Text>
+        <Text style={styles.appointmentDate}>{date}, {time}</Text>
       </View>
-      <Text style={styles.appointmentTime}>Appointment on {date}, {time}</Text>
     </View>
   );
 }
@@ -134,6 +150,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(8),
     paddingVertical: SIZE(3),
     borderRadius: SIZE(20),
+    borderWidth: 1,
+    borderColor: '#E4E4E4',
   },
   statusDot: {
     width: SIZE(6),
@@ -143,6 +161,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(11),
+    color: '#121314',
   },
   divider: { height: 1, backgroundColor: colors.cardBorder },
   dashedDivider: {
@@ -173,13 +192,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.tokenBg,
+    backgroundColor: colors.primaryLight,
     paddingHorizontal: SIZE(14),
     paddingVertical: SIZE(10),
     marginHorizontal: SIZE(14),
     marginTop: SIZE(18),
     marginBottom: SIZE(12),
-    borderRadius: SIZE(8),
+    borderRadius: SIZE(10),
   },
   tokenLabel: {
     fontFamily: 'Manrope-Regular',
@@ -191,13 +210,44 @@ const styles = StyleSheet.create({
     fontSize: SIZE(18),
     color: colors.primaryAccent,
   },
+  tokenQueue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(8),
+  },
+  tokenNextPrev: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(10),
+    color: '#C1C5CD',
+  },
+  tokenCurrent: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(16),
+    color: '#F9F9FA',
+  },
+  ourTokenNumber: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(23),
+    color: '#F9F9FA',
+    marginLeft: SIZE(11),
+  },
   appointmentTime: {
-    fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(12),
-    color: colors.textSecondary,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: SIZE(14),
     paddingBottom: SIZE(14),
     marginTop: SIZE(4),
+  },
+  appointmentOn: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.textSecondary,
+    marginRight: SIZE(4),
+  },
+  appointmentDate: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.appointmentDate,
   },
   cardBottom: {
     flexDirection: 'row',
