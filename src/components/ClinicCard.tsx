@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     marginHorizontal: SIZE(18),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: '#F1F2F4',
+    borderColor: colors.cardBorder,
     backgroundColor: colors.white,
   },
   image: {

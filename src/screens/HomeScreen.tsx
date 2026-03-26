@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     width: SIZE(8),
     height: SIZE(8),
     borderRadius: SIZE(4),
-    backgroundColor: '#22C55E',
+    backgroundColor: colors.onlineIndicator,
   },
   liveText: {
     fontFamily: 'Manrope-SemiBold',
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: SIZE(22),
     padding: SIZE(18),
-    backgroundColor: '#F3F5F7',
+    backgroundColor: colors.surfaceLight,
   },
   cardTitle: {
     fontFamily: 'Manrope-SemiBold',
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(18),
     paddingVertical: SIZE(12),
     // marginBottom: SIZE(12),
-    backgroundColor: '#F3F5F733',
+    backgroundColor: colors.surfaceLightFaded,
   },
   sectionTitle: {
     fontFamily: 'Manrope-Medium',
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     marginHorizontal: SIZE(18),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: '#F1F2F4',
+    borderColor: colors.cardBorder,
     backgroundColor: colors.white,
     padding: SIZE(4),
     gap: SIZE(12),

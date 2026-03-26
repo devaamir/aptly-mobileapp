@@ -37,6 +37,15 @@ const colors = {
   tokenBg: '#FFF4E6',
   tokenLabel: '#00001D',
   appointmentDate: '#32363E',
+  cancelledBg: '#FEF3F2',
+  cancelledDot: '#B42318',
+  statusBorder: '#E4E4E4',
+  statusText: '#121314',
+  tokenNextPrevColor: '#C1C5CD',
+  tokenWhite: '#F9F9FA',
+  onlineIndicator: '#22C55E',
+  surfaceLight: '#F3F5F7',
+  surfaceLightFaded: '#F3F5F733',
 };
 
 export default colors;

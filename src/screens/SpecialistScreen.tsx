@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     padding: SIZE(14),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: '#F1F2F4',
+    borderColor: colors.cardBorder,
     backgroundColor: colors.white,
   },
   avatar: {

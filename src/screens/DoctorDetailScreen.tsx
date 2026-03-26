@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     padding: SIZE(8),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: '#F1F2F4',
+    borderColor: colors.cardBorder,
   },
   hospitalImage: {
     width: SIZE(46),
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   scheduleCard: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: '#F1F2F4',
+    borderColor: colors.cardBorder,
     overflow: 'hidden',
   },
   scheduleRow: {
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(14),
     paddingVertical: SIZE(10),
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F2F4',
+    borderBottomColor: colors.cardBorder,
   },
   dayText: {
     fontFamily: 'Manrope-Medium',

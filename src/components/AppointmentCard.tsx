@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Video from 'react-native-video';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import ArrowRight from '../assets/icons/arrow-right.svg';
@@ -20,7 +21,7 @@ const statusColors: Record<Status, { bg: string; dot: string }> = {
   Live: { bg: colors.successLight, dot: colors.successDot },
   Upcoming: { bg: colors.primaryLight, dot: colors.primary },
   Completed: { bg: colors.successLight, dot: colors.successDot },
-  Cancelled: { bg: '#FEF3F2', dot: '#B42318' },
+  Cancelled: { bg: colors.cancelledBg, dot: colors.cancelledDot },
 };
 
 export default function AppointmentCard({ doctor, type, hospital, date, time, token, status }: Props) {
@@ -50,8 +51,24 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
         <Text style={styles.doctorType}>{type}</Text>
       </View>
       {status === 'Live' && (
-        <View style={[styles.tokenCard, { backgroundColor: '#2879E4' }]}>
-          <Text style={styles.tokenLabel}>Your token number</Text>
+        <View style={styles.tokenCard}>
+          <Video
+            source={require('../assets/images/background-video.mp4')}
+            style={{
+              width: SIZE(580),
+              height: SIZE(100),
+              borderRadius: SIZE(10),
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              bottom: 0,
+              right: 0,
+            }}
+            resizeMode="cover"
+            repeat
+            muted
+          />
+          <Text style={[styles.tokenLabel, styles.tokenLabelLive]}>Your token number</Text>
           <View style={styles.tokenQueue}>
             <Text style={styles.tokenNextPrev}>{token - 3}</Text>
             <Text style={styles.tokenCurrent}>{token - 2}</Text>
@@ -92,7 +109,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(5),
-    backgroundColor: '#ECFDF3',
+    backgroundColor: colors.successLight,
     paddingHorizontal: SIZE(8),
     paddingVertical: SIZE(3),
     borderRadius: SIZE(20),
@@ -151,7 +168,7 @@ const styles = StyleSheet.create({
     paddingVertical: SIZE(3),
     borderRadius: SIZE(20),
     borderWidth: 1,
-    borderColor: '#E4E4E4',
+    borderColor: colors.statusBorder,
   },
   statusDot: {
     width: SIZE(6),
@@ -161,7 +178,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(11),
-    color: '#121314',
+    color: colors.statusText,
   },
   divider: { height: 1, backgroundColor: colors.cardBorder },
   dashedDivider: {
@@ -199,11 +216,17 @@ const styles = StyleSheet.create({
     marginTop: SIZE(18),
     marginBottom: SIZE(12),
     borderRadius: SIZE(10),
+    overflow: 'hidden',
   },
   tokenLabel: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
     color: colors.tokenLabel,
+  },
+  tokenLabelLive: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(11),
+    color: colors.border,
   },
   tokenNumber: {
     fontFamily: 'Manrope-Bold',
@@ -218,17 +241,17 @@ const styles = StyleSheet.create({
   tokenNextPrev: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(10),
-    color: '#C1C5CD',
+    color: colors.tokenNextPrevColor,
   },
   tokenCurrent: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(16),
-    color: '#F9F9FA',
+    color: colors.tokenWhite,
   },
   ourTokenNumber: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(23),
-    color: '#F9F9FA',
+    color: colors.tokenWhite,
     marginLeft: SIZE(11),
   },
   appointmentTime: {

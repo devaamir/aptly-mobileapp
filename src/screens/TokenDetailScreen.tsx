@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     width: SIZE(8),
     height: SIZE(8),
     borderRadius: SIZE(4),
-    backgroundColor: '#22C55E'
+    backgroundColor: colors.onlineIndicator,
   },
   liveText: {
     fontFamily: 'Manrope-SemiBold',
