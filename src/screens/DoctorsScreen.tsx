@@ -62,6 +62,11 @@ export default function DoctorsScreen({ navigation }: Props) {
               rating: '',
               status: item.status,
             })}
+            onBookPress={() => navigation.navigate('BookAppointment', {
+              name: item.name,
+              type: item.type,
+              hospital: item.hospital,
+            })}
           />
         )}
       />

@@ -77,7 +77,7 @@ export default function SpecialistDetailScreen({ navigation, route }: Props) {
           key="doctors"
           data={filteredDoctors}
           keyExtractor={item => item.id}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, tab === 'doctors' && { paddingHorizontal: SIZE(18) }]}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <DoctorCard
@@ -97,6 +97,11 @@ export default function SpecialistDetailScreen({ navigation, route }: Props) {
                 rating: item.rating,
                 status: item.status,
               })}
+              onBookPress={() => navigation.navigate('BookAppointment', {
+                name: item.name,
+                type: item.type,
+                hospital: item.hospital,
+              })}
             />
           )}
         />
@@ -112,6 +117,7 @@ export default function SpecialistDetailScreen({ navigation, route }: Props) {
               name={item.name}
               subType={item.type}
               location={item.location}
+              onPress={() => navigation.navigate('HospitalDetail', { name: item.name, speciality: item.type, location: item.location })}
             />
           )}
         />

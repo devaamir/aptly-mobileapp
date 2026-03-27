@@ -147,6 +147,7 @@ export default function HomeScreen() {
             subType={item.speciality}
             location={item.location}
             image={item.image}
+            onPress={() => navigation.navigate('HospitalDetail', { name: item.name, speciality: item.speciality, location: item.location })}
           />
         )}
       />

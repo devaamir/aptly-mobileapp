@@ -6,13 +6,9 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
-import DangerIcon from '../assets/icons/danger-icon.svg'
-import ArrowRight from '../assets/icons/arrow-right.svg'
-import MapIcon from '../assets/icons/map-icon.svg'
-import WebIcon from '../assets/icons/web-icon.svg'
-import LocationIcon from '../assets/icons/location-icon-light.svg'
-import PhoneIcon from '../assets/icons/phone-icon.svg';
+import DangerIcon from '../assets/icons/danger-icon.svg';
 import BottomModal from '../components/BottomModal';
+import AppointmentInfoCard from '../components/AppointmentInfoCard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TokenDetail'>;
 
@@ -58,47 +54,14 @@ export default function TokenDetailScreen({ navigation }: Props) {
 
       {/* BOTTOM */}
       <View style={styles.bottom}>
-        <View style={styles.hospitalCard}>
-          <View style={styles.hospitalTop}>
-            <View style={styles.hospitalLeft}>
-              <View style={styles.hospitalAvatar} />
-              <View>
-                <Text style={styles.hospitalName}>Sunrise Hospital</Text>
-                <Text style={styles.hospitalType}>Multi Speciality</Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.locationContainer}>
-            <LocationIcon width={SIZE(14)} height={SIZE(14)} />
-            <Text style={styles.locationText}>Kakkanad, Kochi - 682030, Kerala, India.</Text>
-          </View>
-          <View style={styles.hospitalActions}>
-            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-              <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-              <MapIcon width={SIZE(22)} height={SIZE(22)} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-              <WebIcon width={SIZE(22)} height={SIZE(22)} />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.divider}>
-            <View style={styles.dashedLine} />
-          </View>
-          <TouchableOpacity style={styles.hospitalBottom} activeOpacity={0.7}>
-            <View style={styles.doctorAvatar} />
-            <View style={styles.doctorInfo}>
-              <Text style={styles.doctorName}>Dr. Rodger Struck</Text>
-              <Text style={styles.doctorSpeciality}>Cardiologist</Text>
-            </View>
-            <ArrowRight width={SIZE(18)} height={SIZE(18)} />
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity onPress={() => setCancelVisible(true)} activeOpacity={0.7} style={styles.cancelBtn}>
-          <Text style={styles.cancelText}>Cancel Token</Text>
-        </TouchableOpacity>
+        <AppointmentInfoCard
+          hospital="Sunrise Hospital"
+          hospitalType="Multi Speciality"
+          location="Kakkanad, Kochi - 682030, Kerala, India."
+          doctor="Dr. Rodger Struck"
+          doctorSpeciality="Cardiologist"
+          onCancelPress={() => setCancelVisible(true)}
+        />
       </View>
 
       {/* Cancel Modal */}

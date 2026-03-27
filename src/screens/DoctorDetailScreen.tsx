@@ -44,7 +44,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
 
         {/* Info rows */}
         <Text style={styles.sectionTitle}>Working Hospital</Text>
-        <TouchableOpacity style={styles.hospitalCard} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.hospitalCard} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', { name: hospital, speciality: clinicType, location })}>
           <View style={styles.hospitalImage} />
           <View style={styles.hospitalInfo}>
             <Text style={styles.hospitalName}>{hospital}</Text>

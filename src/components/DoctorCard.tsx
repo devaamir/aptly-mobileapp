@@ -11,6 +11,7 @@ type Props = {
   experience: string;
   status?: 'Booking Opened' | 'Not Started';
   onPress?: () => void;
+  onBookPress?: () => void;
 };
 
 const statusConfig = {
@@ -26,7 +27,7 @@ const statusConfig = {
   },
 };
 
-const DoctorCard = ({ name, type, hospital, clinicType, experience, status = 'Booking Opened', onPress }: Props) => {
+const DoctorCard = ({ name, type, hospital, clinicType, experience, status = 'Booking Opened', onPress, onBookPress }: Props) => {
   const s = statusConfig[status];
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onPress}>
@@ -48,7 +49,7 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, status = 'Bo
             <Text style={styles.expYears}>{experience.replace(' exp', '')}</Text>
             <Text style={styles.expLabel}>Experience</Text>
           </View>
-          <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={onBookPress}>
             <Text style={styles.bookBtnText}>Book Appointment</Text>
           </TouchableOpacity>
         </View>
@@ -66,7 +67,7 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, status = 'Bo
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: SIZE(18),
+    marginHorizontal: 0,
     borderRadius: SIZE(12),
     backgroundColor: colors.cardBorder,
   },

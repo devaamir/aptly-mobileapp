@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import AppointmentCard from '../components/AppointmentCard';
+
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 type Tab = 'Upcoming' | 'Completed' | 'Cancelled';
 
@@ -17,6 +22,7 @@ const APPOINTMENTS = [
 const TABS: Tab[] = ['Upcoming', 'Completed', 'Cancelled'];
 
 export default function AppointmentScreen() {
+  const navigation = useNavigation<Nav>();
   const [tab, setTab] = useState<Tab>('Upcoming');
   const filtered = APPOINTMENTS.filter(a =>
     tab === 'Upcoming' ? (a.status === 'Upcoming' || a.status === 'Live') : a.status === tab
@@ -45,15 +51,25 @@ export default function AppointmentScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={<Text style={styles.empty}>No {tab.toLowerCase()} appointments</Text>}
         renderItem={({ item }) => (
-          <AppointmentCard
-            doctor={item.doctor}
-            type={item.type}
-            hospital={item.hospital}
-            date={item.date}
-            time={item.time}
-            token={item.token}
-            status={item.status}
-          />
+          <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('AppointmentDetail', {
+            doctor: item.doctor,
+            type: item.type,
+            hospital: item.hospital,
+            date: item.date,
+            time: item.time,
+            token: item.token,
+            status: item.status,
+          })}>
+            <AppointmentCard
+              doctor={item.doctor}
+              type={item.type}
+              hospital={item.hospital}
+              date={item.date}
+              time={item.time}
+              token={item.token}
+              status={item.status}
+            />
+          </TouchableOpacity>
         )}
       />
     </SafeAreaView>
