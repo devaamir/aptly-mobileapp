@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 
@@ -9,6 +9,7 @@ type Props = {
   hospital: string;
   clinicType: string;
   experience: string;
+  image?: string;
   status?: 'Booking Opened' | 'Not Started';
   onPress?: () => void;
   onBookPress?: () => void;
@@ -27,13 +28,15 @@ const statusConfig = {
   },
 };
 
-const DoctorCard = ({ name, type, hospital, clinicType, experience, status = 'Booking Opened', onPress, onBookPress }: Props) => {
+const DoctorCard = ({ name, type, hospital, clinicType, experience, image, status = 'Booking Opened', onPress, onBookPress }: Props) => {
   const s = statusConfig[status];
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onPress}>
       <View style={styles.topCard}>
         <View style={styles.cardTop}>
-          <View style={styles.avatar} />
+          <View style={styles.avatar}>
+            {image ? <Image source={{uri: image}} style={styles.avatarImg} /> : null}
+          </View>
           <View style={styles.cardTopInfo}>
             <Text style={styles.primaryText}>{name}</Text>
             <Text style={styles.secondaryText}>{type}</Text>
@@ -88,6 +91,11 @@ const styles = StyleSheet.create({
     height: SIZE(56),
     borderRadius: SIZE(28),
     backgroundColor: colors.backgroundLight,
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
   },
   cardTopInfo: { flex: 1 },
   primaryText: {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,14 +12,32 @@ import ArrowRight from '../assets/icons/arrow-right-grey.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import AppInput from '../components/AppInput';
+import { createPatient } from '../services/api';
 
 export default function CreateProfileScreen() {
   const navigation = useNavigation();
   const [name, setName] = useState('');
   const [gender, setGender] = useState('');
   const [dob, setDob] = useState<Date | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const isValid = !!name && !!gender && !!dob;
+
+  const handleContinue = async () => {
+    try {
+      setLoading(true);
+      const [tokenEntry, phoneEntry] = await AsyncStorage.multiGet(['accessToken', 'phoneNumber']);
+      const phoneNumber = phoneEntry[1] ?? '';
+      const dateOfBirth = dob!.toISOString().split('T')[0];
+      await createPatient(name, phoneNumber, gender.toLowerCase(), dateOfBirth);
+      await AsyncStorage.setItem('name', name);
+      navigation.navigate('Main' as never);
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Failed to create profile');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -55,11 +73,9 @@ export default function CreateProfileScreen() {
       </View>
       <PrimaryButton
         label="Continue"
-        onPress={async () => {
-          await AsyncStorage.setItem('isLoggedIn', 'true');
-          navigation.navigate('Main' as never);
-        }}
-        disabled={!isValid}
+        onPress={handleContinue}
+        disabled={!isValid || loading}
+        loading={loading}
         icon={!isValid ? <ArrowRight width={SIZE(18)} height={SIZE(18)} /> : <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />}
       />
     </SafeAreaView>

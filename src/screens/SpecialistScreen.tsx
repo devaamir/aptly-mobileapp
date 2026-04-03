@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -8,26 +8,22 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
-
-const SPECIALISTS = [
-  { id: '1', name: 'Cardiologist', desc: 'For heart-related, Pre and Post nutrition', clinics: 20, doctors: 45 },
-  { id: '2', name: 'Dermatologist', desc: 'Skin, hair & nails', clinics: 15, doctors: 30 },
-  { id: '3', name: 'Neurologist', desc: 'Brain & nervous system', clinics: 12, doctors: 28 },
-  { id: '4', name: 'Orthopaedic', desc: 'Bones & joints', clinics: 18, doctors: 40 },
-  { id: '5', name: 'Paediatrician', desc: 'Child health', clinics: 22, doctors: 50 },
-  { id: '6', name: 'Gynaecologist', desc: 'Women\'s health', clinics: 16, doctors: 35 },
-  { id: '7', name: 'Ophthalmologist', desc: 'Eyes & vision', clinics: 10, doctors: 22 },
-  { id: '8', name: 'ENT Specialist', desc: 'Ear, nose & throat', clinics: 14, doctors: 32 },
-  { id: '9', name: 'Psychiatrist', desc: 'Mental health', clinics: 8, doctors: 18 },
-  { id: '10', name: 'Urologist', desc: 'Urinary tract', clinics: 11, doctors: 24 },
-];
+import { getSpecialities, Speciality } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Specialist'>;
 
 export default function SpecialistScreen({ navigation }: Props) {
   const [query, setQuery] = useState('');
+  const [specialities, setSpecialities] = useState<Speciality[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = SPECIALISTS.filter(s =>
+  useEffect(() => {
+    getSpecialities()
+      .then(res => setSpecialities(res.data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = specialities.filter(s =>
     s.name.toLowerCase().includes(query.toLowerCase())
   );
 
@@ -50,23 +46,26 @@ export default function SpecialistScreen({ navigation }: Props) {
       </View>
 
       {/* List */}
-      <FlatList
-        data={filtered}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('SpecialistDetail', { name: item.name, desc: item.desc, clinics: item.clinics, doctors: item.doctors })}>
-            <Image source={require('../assets/images/heart.png')} style={styles.avatar} />
-            <View style={styles.info}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.desc}>{item.desc}</Text>
-              <Text style={styles.meta}>{item.clinics}+ Clinics  •  {item.doctors}+ Doctors</Text>
-            </View>
-            <ArrowRight width={SIZE(18)} height={SIZE(18)} />
-          </TouchableOpacity>
-        )}
-      />
+      {loading ? (
+        <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('SpecialistDetail', { name: item.name, desc: item.description, clinics: 0, doctors: 0 })}>
+              <Image source={{ uri: item.icon }} style={styles.avatar} />
+              <View style={styles.info}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.desc}>{item.description}</Text>
+              </View>
+              <ArrowRight width={SIZE(18)} height={SIZE(18)} />
+            </TouchableOpacity>
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 }

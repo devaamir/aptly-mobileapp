@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform } from 'react-native';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,17 +14,11 @@ import LocationIcon from '../assets/icons/location-icon.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import PhoneIcon from '../assets/icons/phone-icon.svg';
 import MapIcon from '../assets/icons/map-icon.svg';
+import { getHomeData, Speciality, Doctor, Clinic } from '../services/api';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const CLINICS = [
-  { id: '1', name: 'Apollo Clinic', speciality: 'Multi-speciality', location: 'Bandra, Mumbai', image: 'https://placehold.co/92x92/png' },
-  { id: '2', name: 'Fortis Health', speciality: 'Cardiology', location: 'Andheri, Mumbai', image: 'https://placehold.co/92x92/png' },
-  { id: '3', name: 'Max Care', speciality: 'Dermatology', location: 'Powai, Mumbai', image: 'https://placehold.co/92x92/png' },
-  { id: '4', name: 'Narayana Health', speciality: 'Orthopaedics', location: 'Thane, Mumbai', image: 'https://placehold.co/92x92/png' },
-];
-
-const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress }: { onTokenPress: () => void; onSpecialistPress: () => void; onDoctorsPress: () => void }) => (
+const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress, specialities, doctors, totalDoctorCount }: { onTokenPress: () => void; onSpecialistPress: () => void; onDoctorsPress: () => void; specialities: Speciality[]; doctors: Doctor[]; totalDoctorCount: number }) => (
   <>
     <View style={styles.bannerCard}>
       {Platform.OS === 'android' && (
@@ -88,16 +82,26 @@ const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress }: { onTok
       <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onSpecialistPress}>
         <Text style={styles.cardTitle}>All specialist</Text>
         <View style={styles.iconsRow}>
-          {[0, 1, 2].map(i => <View key={i} style={styles.iconBox} />)}
+          {specialities.slice(0, 3).map(s => (
+            <View key={s.id} style={styles.iconBox}>
+              <Image source={{uri: s.icon}} style={styles.iconImg} />
+            </View>
+          ))}
         </View>
       </TouchableOpacity>
       <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onDoctorsPress}>
         <Text style={styles.cardTitle}>All doctors</Text>
         <View style={styles.avatarRow}>
-          {[0, 1, 2].map(i => (
-            <View key={i} style={[styles.avatarCircle, { marginLeft: i === 0 ? 0 : -SIZE(12) }]} />
+          {doctors.slice(0, 3).map((d, i) => (
+            <View key={d.id} style={[styles.avatarCircle, {marginLeft: i === 0 ? 0 : -SIZE(12)}]}>
+              {d.profilePicture ? (
+                <Image source={{uri: d.profilePicture}} style={styles.avatarImg} />
+              ) : null}
+            </View>
           ))}
-          <Text style={styles.avatarCount}>42+</Text>
+          {totalDoctorCount > 3 && (
+            <Text style={styles.avatarCount}>{totalDoctorCount - 3}+</Text>
+          )}
         </View>
       </TouchableOpacity>
     </View>
@@ -114,6 +118,19 @@ const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress }: { onTok
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
+  const [specialities, setSpecialities] = useState<Speciality[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [totalDoctorCount, setTotalDoctorCount] = useState(0);
+
+  useEffect(() => {
+    getHomeData().then(res => {
+      setSpecialities(res.data.specialities);
+      setDoctors(res.data.doctors as Doctor[]);
+      setClinics(res.data.topClinics);
+      setTotalDoctorCount(res.data.totalDoctorCount);
+    }).catch(() => {});
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -135,19 +152,18 @@ export default function HomeScreen() {
 
       {/* Everything below scrolls */}
       <FlatList
-        data={CLINICS}
+        data={clinics}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onSpecialistPress={() => navigation.navigate('Specialist')} onDoctorsPress={() => navigation.navigate('Doctors')} />}
-        // style={styles.flatList}
+        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onSpecialistPress={() => navigation.navigate('Specialist')} onDoctorsPress={() => navigation.navigate('Doctors')} specialities={specialities} doctors={doctors} totalDoctorCount={totalDoctorCount} />}
         renderItem={({ item }) => (
           <ClinicCard
             name={item.name}
-            subType={item.speciality}
-            location={item.location}
-            image={item.image}
-            onPress={() => navigation.navigate('HospitalDetail', { name: item.name, speciality: item.speciality, location: item.location })}
+            subType={item.specialities[0]?.name ?? item.type}
+            location={`${item.district}, ${item.state}`}
+            image={item.profilePicture}
+            onPress={() => navigation.navigate('HospitalDetail', {name: item.name, speciality: item.specialities[0]?.name ?? '', location: item.address})}
           />
         )}
       />
@@ -345,6 +361,14 @@ const styles = StyleSheet.create({
     height: SIZE(40),
     borderRadius: SIZE(10),
     backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  iconImg: {
+    width: SIZE(28),
+    height: SIZE(28),
+    resizeMode: 'contain',
   },
   avatarRow: { flexDirection: 'row', alignItems: 'center' },
   avatarCircle: {
@@ -354,6 +378,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundLight,
     borderWidth: 2,
     borderColor: colors.white,
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: SIZE(20),
   },
   avatarCount: {
     fontFamily: 'Manrope-Medium',

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import ArrowRight from '../assets/icons/arrow-right.svg';
@@ -16,6 +17,15 @@ const MENU_ITEMS = [
 ];
 
 export default function ProfileScreen() {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+
+  useEffect(() => {
+    AsyncStorage.multiGet(['name', 'phoneNumber']).then(([nameEntry, phoneEntry]) => {
+      setName(nameEntry[1] ?? '');
+      setPhone(phoneEntry[1] ?? '');
+    });
+  }, []);
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
@@ -28,8 +38,8 @@ export default function ProfileScreen() {
         <View style={styles.profileCard}>
           <View style={styles.avatar} />
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>Alen Thomas</Text>
-            <Text style={styles.phone}>+91 98765 43210</Text>
+            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.phone}>+91 {phone}</Text>
           </View>
           <TouchableOpacity style={styles.editBtn} activeOpacity={0.7}>
             <Text style={styles.editText}>Edit</Text>

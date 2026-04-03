@@ -6,7 +6,9 @@ import {
   StyleSheet,
   Image,
   StatusBar,
+  Alert,
 } from 'react-native';
+import { sendOtp } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -20,7 +22,20 @@ type RootStackParamList = { PhoneNumber: undefined; Otp: undefined };
 
 export default function PhoneNumberScreen() {
   const [phone, setPhone] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const handleContinue = async () => {
+    try {
+      setLoading(true);
+      const res = await sendOtp(phone);
+      navigation.navigate('Otp', {phone, code: res.data.code});
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Failed to send OTP');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,9 +61,10 @@ export default function PhoneNumberScreen() {
 
       <PrimaryButton
         label="Continue"
-        onPress={() => navigation.navigate('Otp')}
-        disabled={!phone}
-        icon={!phone ? <ArrowRight width={18} height={18} /> : <ArrowRightWhite width={18} height={18} />}
+        onPress={handleContinue}
+        disabled={!phone || loading}
+        icon={loading ? undefined : (!phone ? <ArrowRight width={18} height={18} /> : <ArrowRightWhite width={18} height={18} />)}
+        loading={loading}
       />
     </SafeAreaView>
   );

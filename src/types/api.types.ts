@@ -1,0 +1,142 @@
+export interface SendOtpResponse {
+  success: boolean;
+  message: string;
+  data: {
+    expiresAt: string;
+    resendWaitTime: number;
+    code: number;
+  };
+}
+
+export interface VerifyOtpResponse {
+  success: boolean;
+  verified: boolean;
+  message: string;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    user: {
+      id: string;
+      name: string | null;
+      phoneNumber: string;
+      emailAddress: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+}
+
+export interface CreatePatientResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    referenceId: string;
+    phoneNumber: string;
+    gender: string;
+    dateOfBirth: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: null | string;
+  };
+}
+
+export interface Speciality {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MedicalCenter {
+  id: string;
+  name: string;
+  type: string;
+  phoneNumber: string;
+  emailAddress: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+  district: string;
+  state: string;
+  country: string;
+  about: string;
+  alternatePhoneNumber: string;
+  websiteUrl: string;
+  profilePicture: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MedicalSystem {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Doctor {
+  id: string;
+  name: string;
+  phoneNumber: string;
+  emailAddress: string;
+  yearsOfExperience: number;
+  advanceBookingLimit: number;
+  estimateConsultationTime: number;
+  latitude: number;
+  longitude: number;
+  address: string;
+  district: string;
+  state: string;
+  country: string;
+  about: string;
+  consultationFee: number;
+  profilePicture: string;
+  createdAt: string;
+  updatedAt: string;
+  specialities: Speciality[];
+  medicalCenters: MedicalCenter[];
+  medicalSystem: MedicalSystem;
+  qualifications: {id: string; name: string; createdAt: string; updatedAt: string}[];
+}
+
+export interface Clinic {
+  id: string;
+  name: string;
+  type: string;
+  phoneNumber: string;
+  emailAddress: string;
+  latitude: number;
+  longitude: number;
+  address: string;
+  district: string;
+  state: string;
+  country: string;
+  about: string;
+  alternatePhoneNumber: string;
+  websiteUrl: string;
+  profilePicture: string;
+  createdAt: string;
+  updatedAt: string;
+  specialities: Speciality[];
+  medicalSystem: MedicalSystem;
+}
+
+export interface Pagination {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  limit: number;
+  hasNextPage: boolean;
+}
+
+export interface HomeData {
+  specialities: Speciality[];
+  doctors: Pick<Doctor, 'id' | 'name' | 'phoneNumber' | 'emailAddress' | 'about' | 'consultationFee' | 'yearsOfExperience' | 'advanceBookingLimit' | 'estimateConsultationTime' | 'latitude' | 'longitude' | 'address' | 'district' | 'state' | 'country' | 'profilePicture' | 'createdAt' | 'updatedAt'>[];
+  totalDoctorCount: number;
+  topClinics: Clinic[];
+}

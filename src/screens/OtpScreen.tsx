@@ -1,18 +1,26 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import PrimaryButton from '../components/PrimaryButton';
 import ArrowRightWhite from '../assets/icons/arrow-right-white.svg';
 import ArrowRight from '../assets/icons/arrow-right-grey.svg';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { RootStackParamList } from '../navigations/Navigation';
+import { verifyOtp } from '../services/api';
 
 const OTP_LENGTH = 4;
 
 export default function OtpScreen() {
-  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
+  const route = useRoute<RouteProp<RootStackParamList, 'Otp'>>();
+  const { phone, code } = route.params;
+
+  const prefilled = String(code).padStart(OTP_LENGTH, '0').split('').slice(0, OTP_LENGTH);
+  const [otp, setOtp] = useState<string[]>(prefilled);
+  const [loading, setLoading] = useState(false);
   const inputs = useRef<(TextInput | null)[]>([]);
   const navigation = useNavigation();
 
@@ -29,6 +37,27 @@ export default function OtpScreen() {
     }
   };
 
+  const handleVerify = async () => {
+    try {
+      setLoading(true);
+      const res = await verifyOtp(phone, otp.join(''));
+      const { accessToken, refreshToken, user } = res.data;
+      await AsyncStorage.multiSet([
+        ['accessToken', accessToken],
+        ['refreshToken', refreshToken],
+        ['userId', user.id],
+        ['phoneNumber', user.phoneNumber],
+        ['email', user.emailAddress ?? ''],
+        ['name', user.name ?? ''],
+      ]);
+      navigation.navigate(user.name ? ('Main' as never) : ('CreateProfile' as never));
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Verification failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const isFilled = otp.every(d => d !== '');
 
   return (
@@ -38,7 +67,7 @@ export default function OtpScreen() {
         <BackArrow width={SIZE(24)} height={SIZE(24)} />
       </TouchableOpacity>
       <Text style={styles.title}>Verification Code</Text>
-      <Text style={styles.subtitle}>{"We've sent an sms with a verification code to "}<Text style={styles.phone}>+91 9048678290</Text>{" to proceed"}</Text>
+      <Text style={styles.subtitle}>{"We've sent an sms with a verification code to "}<Text style={styles.phone}>+91 {phone}</Text>{" to proceed"}</Text>
 
       <View style={styles.otpRow}>
         {otp.map((digit, index) => (
@@ -59,8 +88,9 @@ export default function OtpScreen() {
 
       <PrimaryButton
         label="Verify"
-        onPress={() => navigation.navigate('CreateProfile' as never)}
-        disabled={!isFilled}
+        onPress={handleVerify}
+        disabled={!isFilled || loading}
+        loading={loading}
         icon={!isFilled ? <ArrowRight width={SIZE(18)} height={SIZE(18)} /> : <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />}
       />
       <Text style={styles.resend}>Didn't receive code? <Text style={styles.resendLink}>Resend</Text></Text>

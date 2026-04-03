@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -8,22 +8,22 @@ import DoctorCard from '../components/DoctorCard';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
-
-const DOCTORS = [
-  { id: '1', name: 'Dr. Rodger Struck', type: 'Cardiologist', hospital: 'Sunrise Hospital', clinicType: 'Multi Speciality', experience: '8 yrs exp', status: 'Booking Opened' },
-  { id: '2', name: 'Dr. Sarah Collins', type: 'Neurologist', hospital: 'Apollo Clinic', clinicType: 'Clinic', experience: '12 yrs exp', status: 'Not Started' },
-  { id: '3', name: 'Dr. James Patel', type: 'Dermatologist', hospital: 'Max Care', clinicType: 'Clinic', experience: '5 yrs exp', status: 'Booking Opened' },
-  { id: '4', name: 'Dr. Meera Nair', type: 'Orthopaedic', hospital: 'Narayana Health', clinicType: 'Multi Speciality', experience: '10 yrs exp', status: 'Not Started' },
-];
+import { getDoctors, Doctor } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Doctors'>;
 
 export default function DoctorsScreen({ navigation }: Props) {
   const [query, setQuery] = useState('');
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = DOCTORS.filter(d =>
+  useEffect(() => {
+    getDoctors().then(res => setDoctors(res.data)).finally(() => setLoading(false));
+  }, []);
+
+  const filtered = doctors.filter(d =>
     d.name.toLowerCase().includes(query.toLowerCase()) ||
-    d.type.toLowerCase().includes(query.toLowerCase()),
+    d.specialities.some(s => s.name.toLowerCase().includes(query.toLowerCase())),
   );
 
   return (
@@ -39,37 +39,47 @@ export default function DoctorsScreen({ navigation }: Props) {
       <View style={styles.searchWrapper}>
         <SearchBar placeholder="Search doctors..." value={query} onChangeText={setQuery} style={{ borderWidth: 0 }} />
       </View>
-      <FlatList
-        data={filtered}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <DoctorCard
-            name={item.name}
-            type={item.type}
-            hospital={item.hospital}
-            clinicType={item.clinicType}
-            experience={item.experience}
-            status={item.status as 'Booking Opened' | 'Not Started'}
-            onPress={() => navigation.navigate('DoctorDetail', {
-              name: item.name,
-              type: item.type,
-              hospital: item.hospital,
-              clinicType: item.clinicType,
-              experience: item.experience,
-              location: '',
-              rating: '',
-              status: item.status,
-            })}
-            onBookPress={() => navigation.navigate('BookAppointment', {
-              name: item.name,
-              type: item.type,
-              hospital: item.hospital,
-            })}
-          />
-        )}
-      />
+      {loading ? (
+        <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => {
+            const speciality = item.specialities[0]?.name ?? '';
+            const hospital = item.medicalCenters[0]?.name ?? '';
+            const clinicType = item.medicalCenters[0]?.type ?? '';
+            return (
+              <DoctorCard
+                name={item.name}
+                type={speciality}
+                hospital={hospital}
+                clinicType={clinicType}
+                experience={`${item.yearsOfExperience} yrs exp`}
+                image={item.profilePicture}
+                status="Booking Opened"
+                onPress={() => navigation.navigate('DoctorDetail', {
+                  name: item.name,
+                  type: speciality,
+                  hospital,
+                  clinicType,
+                  experience: `${item.yearsOfExperience} yrs exp`,
+                  location: item.address,
+                  rating: '',
+                  status: 'Booking Opened',
+                })}
+                onBookPress={() => navigation.navigate('BookAppointment', {
+                  name: item.name,
+                  type: speciality,
+                  hospital,
+                })}
+              />
+            );
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -90,5 +100,5 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   searchWrapper: { paddingHorizontal: SIZE(18), marginBottom: SIZE(20), },
-  listContent: { paddingBottom: SIZE(24), gap: SIZE(12) },
+  listContent: { paddingBottom: SIZE(24), gap: SIZE(12), paddingHorizontal: SIZE(20) },
 });

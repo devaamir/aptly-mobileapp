@@ -19,7 +19,7 @@ import HospitalDetailScreen from '../screens/HospitalDetailScreen';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
-  Otp: undefined;
+  Otp: { phone: string; code: number };
   CreateProfile: undefined;
   Main: undefined;
   TokenDetail: undefined;
@@ -37,18 +37,24 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function Navigation() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [initialRoute, setInitialRoute] = useState<'PhoneNumber' | 'CreateProfile' | 'Main' | null>(null);
 
   useEffect(() => {
-    AsyncStorage.getItem('isLoggedIn').then(val => setIsLoggedIn(val === 'true'));
+    AsyncStorage.multiGet(['accessToken', 'name']).then(([tokenEntry, nameEntry]) => {
+      const token = tokenEntry[1];
+      const name = nameEntry[1];
+      if (!token) setInitialRoute('PhoneNumber');
+      else if (!name) setInitialRoute('CreateProfile');
+      else setInitialRoute('Main');
+    });
   }, []);
 
-  if (isLoggedIn === null) return null;
+  if (initialRoute === null) return null;
 
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName={isLoggedIn ? 'Main' : 'PhoneNumber'}
+        initialRouteName={initialRoute}
         screenOptions={{headerShown: false}}>
         <Stack.Screen name="PhoneNumber" component={PhoneNumberScreen} />
         <Stack.Screen name="Otp" component={OtpScreen} />
