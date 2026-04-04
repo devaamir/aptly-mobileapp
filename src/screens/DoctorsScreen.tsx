@@ -12,7 +12,7 @@ import { getDoctors, getDoctor, Doctor } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Doctors'>;
 
-const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 function getBookingStatus(doctor: Doctor): 'Booking Opened' | 'Not Started' {
   const today = DAYS[new Date().getDay()];
@@ -73,7 +73,7 @@ export default function DoctorsScreen({ navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text style={styles.title}>Doctors</Text>
+        <Text allowFontScaling={false} style={styles.title}>Doctors</Text>
         <View style={styles.backBtn} />
       </View>
       <View style={styles.searchWrapper}>
@@ -101,8 +101,8 @@ export default function DoctorsScreen({ navigation }: Props) {
                 image={item.profilePicture}
                 status={getBookingStatus(item)}
                 bookingTime={getBookingTime(item)}
-                onPress={() => navigation.navigate('DoctorDetail', {doctorId: item.id})}
-                onBookPress={() => navigation.navigate('BookAppointment', {doctor: item})}
+                onPress={() => navigation.navigate('DoctorDetail', { doctorId: item.id })}
+                onBookPress={() => navigation.navigate('BookAppointment', { doctor: item })}
               />
             );
           }}

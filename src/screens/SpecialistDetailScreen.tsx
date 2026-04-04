@@ -45,7 +45,7 @@ export default function SpecialistDetailScreen({ navigation, route }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text style={styles.title}>{name}</Text>
+        <Text allowFontScaling={false} style={styles.title}>{name}</Text>
         <View style={styles.backBtn} />
       </View>
 
@@ -63,7 +63,7 @@ export default function SpecialistDetailScreen({ navigation, route }: Props) {
       <View style={styles.tabs}>
         {(['clinics', 'doctors'] as Tab[]).map(t => (
           <TouchableOpacity key={t} style={styles.tab} onPress={() => { setTab(t); setQuery(''); }} activeOpacity={0.8}>
-            <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
+            <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </Text>
             {tab === t && <View style={styles.tabUnderline} />}

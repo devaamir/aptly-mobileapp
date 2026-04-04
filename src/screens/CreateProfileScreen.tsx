@@ -48,8 +48,8 @@ export default function CreateProfileScreen() {
         <BackArrow width={SIZE(24)} height={SIZE(24)} />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Welcome to APTLY</Text>
-      <Text style={styles.subtitle}>Create your profile to book appointments, track tokens, and manage your clinic visits easily.</Text>
+      <Text allowFontScaling={false} style={styles.title}>Welcome to APTLY</Text>
+      <Text allowFontScaling={false} style={styles.subtitle}>Create your profile to book appointments, track tokens, and manage your clinic visits easily.</Text>
 
       <AppInput
         value={name}

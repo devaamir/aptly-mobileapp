@@ -31,7 +31,7 @@ export default function AppointmentDetailScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={SIZE(10)}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text style={styles.title}>Appointment Details</Text>
+        <Text allowFontScaling={false} style={styles.title}>Appointment Details</Text>
         <View style={{ width: SIZE(22) }} />
       </View>
 
@@ -59,27 +59,27 @@ export default function AppointmentDetailScreen() {
             )}
             <View style={styles.statusBadge}>
               <View style={[styles.statusDot, { backgroundColor: status === 'Upcoming' ? colors.upcomingDot : colors.successDot }]} />
-              <Text style={styles.statusText}>{status}</Text>
+              <Text allowFontScaling={false} style={styles.statusText}>{status}</Text>
             </View>
             <View style={styles.liveRight}>
               {status === 'Live' && (
                 <View style={styles.tokenQueue}>
-                  <Text style={styles.tokenNextPrev}>{token - 2}</Text>
-                  <Text style={styles.tokenCurrent}>{token - 1}</Text>
-                  <Text style={styles.tokenNextPrev}>{token}</Text>
+                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>{token - 2}</Text>
+                  <Text allowFontScaling={false} style={styles.tokenCurrent}>{token - 1}</Text>
+                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>{token}</Text>
                 </View>
               )}
               <View style={styles.liveTokenContent}>
-                <Text style={[styles.liveLabel, status === 'Upcoming' && { color: colors.textMuted }]}>Your token number</Text>
-                <Text style={[styles.liveToken, status === 'Upcoming' && { color: colors.textPrimary }]}>{token}</Text>
-                {status === 'Live' && <Text style={styles.liveEstimated}>Estimated 2:30pm</Text>}
+                <Text allowFontScaling={false} style={[styles.liveLabel, status === 'Upcoming' && { color: colors.textMuted }]}>Your token number</Text>
+                <Text allowFontScaling={false} style={[styles.liveToken, status === 'Upcoming' && { color: colors.textPrimary }]}>{token}</Text>
+                {status === 'Live' && <Text allowFontScaling={false} style={styles.liveEstimated}>Estimated 2:30pm</Text>}
               </View>
             </View>
           </View>
         )}
 
         {/* Clinic & Doctor Information */}
-        <Text style={styles.sectionLabel}>Clinic & Doctor Information</Text>
+        <Text allowFontScaling={false} style={styles.sectionLabel}>Clinic & Doctor Information</Text>
         <AppointmentInfoCard
           hospital={hospital}
           hospitalType={type}
@@ -100,11 +100,11 @@ export default function AppointmentDetailScreen() {
         />
 
         {/* Patient Details */}
-        <Text style={[styles.sectionLabel, { marginTop: SIZE(24) }]}>Patient Details</Text>
+        <Text allowFontScaling={false} style={[styles.sectionLabel, { marginTop: SIZE(24) }]}>Patient Details</Text>
         <PatientSelector patients={[PATIENTS[0]]} showRadio={false} />
 
         {/* Meta */}
-        <Text style={[styles.sectionLabel, { marginTop: SIZE(24) }]}>Appointment Info</Text>
+        <Text allowFontScaling={false} style={[styles.sectionLabel, { marginTop: SIZE(24) }]}>Appointment Info</Text>
         <View style={styles.section}>
           {[
             { label: 'Appointment ID', value: '#APT-00' + token },
@@ -115,8 +115,8 @@ export default function AppointmentDetailScreen() {
           ].map((item, index, arr) => (
             <View key={item.label}>
               <View style={styles.infoRow}>
-                <Text style={styles.metaLabel}>{item.label}</Text>
-                <Text style={styles.metaValue}>{item.value}</Text>
+                <Text allowFontScaling={false} style={styles.metaLabel}>{item.label}</Text>
+                <Text allowFontScaling={false} style={styles.metaValue}>{item.value}</Text>
               </View>
               {index < arr.length - 1 && <View style={styles.divider} />}
             </View>

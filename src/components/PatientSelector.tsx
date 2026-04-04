@@ -36,13 +36,13 @@ export default function PatientSelector({ patients, selectedId, onSelect, showRa
                 </View>
               )}
               <View>
-                <Text style={styles.patientName}>{p.name}</Text>
+                <Text allowFontScaling={false} style={styles.patientName}>{p.name}</Text>
                 <View style={styles.patientMeta}>
-                  <Text style={styles.metaText}>{p.phone}</Text>
-                  <Text style={styles.metaDot}>|</Text>
-                  <Text style={styles.metaText}>Age: {p.age}</Text>
-                  <Text style={styles.metaDot}>|</Text>
-                  <Text style={styles.metaText}>Gender: {p.gender}</Text>
+                  <Text allowFontScaling={false} style={styles.metaText}>{p.phone}</Text>
+                  <Text allowFontScaling={false} style={styles.metaDot}>|</Text>
+                  <Text allowFontScaling={false} style={styles.metaText}>Age: {p.age}</Text>
+                  <Text allowFontScaling={false} style={styles.metaDot}>|</Text>
+                  <Text allowFontScaling={false} style={styles.metaText}>Gender: {p.gender}</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -53,7 +53,7 @@ export default function PatientSelector({ patients, selectedId, onSelect, showRa
       {onAddMember && (
         <TouchableOpacity style={styles.addMemberBtn} activeOpacity={0.7} onPress={onAddMember}>
           <AddIconBlue width={SIZE(18)} height={SIZE(18)} />
-          <Text style={styles.addMemberText}>Add new member</Text>
+          <Text allowFontScaling={false} style={styles.addMemberText}>Add new member</Text>
         </TouchableOpacity>
       )}
     </>

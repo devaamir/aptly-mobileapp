@@ -40,11 +40,11 @@ export default function HospitalDetailScreen() {
 
         {/* Info card */}
         <View style={styles.sheet}>
-          <Text style={styles.clinicTitle}>{name}</Text>
-          <Text style={styles.clinicSpeciality}>{speciality}</Text>
+          <Text allowFontScaling={false} style={styles.clinicTitle}>{name}</Text>
+          <Text allowFontScaling={false} style={styles.clinicSpeciality}>{speciality}</Text>
           <View style={styles.locationRow}>
             <LocationIcon width={SIZE(12)} height={SIZE(12)} />
-            <Text style={styles.clinicLocation}>{location}</Text>
+            <Text allowFontScaling={false} style={styles.clinicLocation}>{location}</Text>
           </View>
           <View style={styles.actions}>
             <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
@@ -61,11 +61,11 @@ export default function HospitalDetailScreen() {
           {/* Tabs */}
           <View style={styles.tabs}>
             <TouchableOpacity onPress={() => setTab('Doctors')} style={styles.tab} activeOpacity={0.8}>
-              <Text style={[styles.tabText, tab === 'Doctors' && styles.tabTextActive]}>Doctors</Text>
+              <Text allowFontScaling={false} style={[styles.tabText, tab === 'Doctors' && styles.tabTextActive]}>Doctors</Text>
               {tab === 'Doctors' && <View style={styles.tabUnderline} />}
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setTab('Details')} style={styles.tab} activeOpacity={0.8}>
-              <Text style={[styles.tabText, tab === 'Details' && styles.tabTextActive]}>Details</Text>
+              <Text allowFontScaling={false} style={[styles.tabText, tab === 'Details' && styles.tabTextActive]}>Details</Text>
               {tab === 'Details' && <View style={styles.tabUnderline} />}
             </TouchableOpacity>
           </View>
@@ -87,15 +87,15 @@ export default function HospitalDetailScreen() {
                   clinicType: speciality, experience: '5 years',
                   location, rating: '4.8', status: 'Booking Opened',
                 })}
-              onBookPress={() => navigation.navigate('BookAppointment', {
-                name: doc.name, type: doc.type, hospital: name,
-              })}
+                onBookPress={() => navigation.navigate('BookAppointment', {
+                  name: doc.name, type: doc.type, hospital: name,
+                })}
               />
             </View>
           ))}
 
           {tab === 'Details' && (
-            <Text style={styles.detailsText}>Hospital details coming soon.</Text>
+            <Text allowFontScaling={false} style={styles.detailsText}>Hospital details coming soon.</Text>
           )}
         </View>
       </ScrollView>

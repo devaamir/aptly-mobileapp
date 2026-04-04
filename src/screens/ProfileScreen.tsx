@@ -24,7 +24,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
+        <Text allowFontScaling={false} style={styles.title}>Profile</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
@@ -32,27 +32,27 @@ export default function ProfileScreen() {
         <View style={styles.profileCard}>
           <View style={styles.avatar} />
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>{user?.name}</Text>
-            <Text style={styles.phone}>{user?.phoneNumber}</Text>
+            <Text allowFontScaling={false} style={styles.name}>{user?.name}</Text>
+            <Text allowFontScaling={false} style={styles.phone}>{user?.phoneNumber}</Text>
           </View>
           <TouchableOpacity style={styles.editBtn} activeOpacity={0.7}>
-            <Text style={styles.editText}>Edit</Text>
+            <Text allowFontScaling={false} style={styles.editText}>Edit</Text>
           </TouchableOpacity>
         </View>
 
         {/* Patients */}
-        <Text style={styles.sectionLabel}>My Patients</Text>
-        {user && <PatientSelector patients={[{id: user.patientId, name: user.name, phone: user.phoneNumber, age: 0, gender: ''}]} showRadio={false} onAddMember={() => {}} />}
+        <Text allowFontScaling={false} style={styles.sectionLabel}>My Patients</Text>
+        {user && <PatientSelector patients={[{ id: user.patientId, name: user.name, phone: user.phoneNumber, age: 0, gender: '' }]} showRadio={false} onAddMember={() => { }} />}
 
         {/* Menu sections */}
         {MENU_ITEMS.map(section => (
           <View key={section.section}>
-            <Text style={styles.sectionLabel}>{section.section}</Text>
+            <Text allowFontScaling={false} style={styles.sectionLabel}>{section.section}</Text>
             <View style={styles.menuCard}>
               {section.items.map((item, i) => (
                 <View key={item}>
                   <TouchableOpacity style={styles.menuRow} activeOpacity={0.7}>
-                    <Text style={styles.menuText}>{item}</Text>
+                    <Text allowFontScaling={false} style={styles.menuText}>{item}</Text>
                     <ArrowRight width={SIZE(16)} height={SIZE(16)} />
                   </TouchableOpacity>
                   {i < section.items.length - 1 && <View style={styles.divider} />}
@@ -64,7 +64,7 @@ export default function ProfileScreen() {
 
         {/* Logout */}
         <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Log Out</Text>
+          <Text allowFontScaling={false} style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

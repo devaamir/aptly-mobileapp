@@ -36,33 +36,33 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, statu
       <View style={styles.topCard}>
         <View style={styles.cardTop}>
           <View style={styles.avatar}>
-            {image ? <Image source={{uri: image}} style={styles.avatarImg} /> : null}
+            {image ? <Image source={{ uri: image }} style={styles.avatarImg} /> : null}
           </View>
           <View style={styles.cardTopInfo}>
-            <Text style={styles.primaryText}>{name}</Text>
-            <Text style={styles.secondaryText}>{type}</Text>
+            <Text allowFontScaling={false} style={styles.primaryText}>{name}</Text>
+            <Text allowFontScaling={false} style={styles.secondaryText}>{type}</Text>
           </View>
         </View>
         <View style={styles.cardBottom}>
-          <Text style={styles.hospitalText}>{hospital}</Text>
-          <Text style={styles.clinicTypeText}>{clinicType}</Text>
+          <Text allowFontScaling={false} style={styles.hospitalText}>{hospital}</Text>
+          <Text allowFontScaling={false} style={styles.clinicTypeText}>{clinicType}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.cardCenter}>
           <View>
-            <Text style={styles.expYears}>{experience.replace(' exp', '')}</Text>
-            <Text style={styles.expLabel}>Experience</Text>
+            <Text allowFontScaling={false} style={styles.expYears}>{experience.replace(' exp', '')}</Text>
+            <Text allowFontScaling={false} style={styles.expLabel}>Experience</Text>
           </View>
           <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={onBookPress}>
-            <Text style={styles.bookBtnText}>Book Appointment</Text>
+            <Text allowFontScaling={false} style={styles.bookBtnText}>Book Appointment</Text>
           </TouchableOpacity>
         </View>
       </View>
       <View style={styles.cardFooter}>
-        <Text style={styles.bookingTime}>{bookingTime ?? 'No sessions today'}</Text>
+        <Text allowFontScaling={false} style={styles.bookingTime}>{bookingTime ?? 'No sessions today'}</Text>
         <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
           <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
-          <Text style={[styles.statusText, { color: s.text }]}>{status}</Text>
+          <Text allowFontScaling={false} style={[styles.statusText, { color: s.text }]}>{status}</Text>
         </View>
       </View>
     </TouchableOpacity>

@@ -37,18 +37,18 @@ export default function BookingConfirmedScreen({ navigation, route }: Props) {
       )}
 
       <View style={styles.content}>
-        <Text style={styles.tokenLabel}>Your Token Number</Text>
-        <Text style={styles.tokenNumber}>{token}</Text>
+        <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token Number</Text>
+        <Text allowFontScaling={false} style={styles.tokenNumber}>{token}</Text>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.successTitle}>Successfully Booked</Text>
-        <Text style={styles.successDesc}>Track your token status and proceed to the clinic when your number is approaching.</Text>
+        <Text allowFontScaling={false} style={styles.successTitle}>Successfully Booked</Text>
+        <Text allowFontScaling={false} style={styles.successDesc}>Track your token status and proceed to the clinic when your number is approaching.</Text>
         <TouchableOpacity
           style={styles.doneBtn}
           activeOpacity={0.8}
           onPress={goHome}>
-          <Text style={styles.doneBtnText}>Done</Text>
+          <Text allowFontScaling={false} style={styles.doneBtnText}>Done</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

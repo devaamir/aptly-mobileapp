@@ -21,7 +21,7 @@ export default function AppDatePicker({ value, onChange, placeholder = 'Select' 
   return (
     <View style={styles.container}>
       <TouchableOpacity style={[styles.selector, show && styles.selectorFocused]} onPress={() => setShow(true)} activeOpacity={0.7}>
-        <Text style={[styles.selectorText, !formatted && styles.placeholder]}>
+        <Text allowFontScaling={false} style={[styles.selectorText, !formatted && styles.placeholder]}>
           {formatted || placeholder}
         </Text>
         <DownArrow width={SIZE(16)} height={SIZE(16)} />

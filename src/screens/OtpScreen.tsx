@@ -70,12 +70,12 @@ export default function OtpScreen() {
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
         <BackArrow width={SIZE(24)} height={SIZE(24)} />
       </TouchableOpacity>
-      <Text style={styles.title}>Verification Code</Text>
-      <Text style={styles.subtitle}>{"We've sent an sms with a verification code to "}<Text style={styles.phone}>+91 {phone}</Text>{" to proceed"}</Text>
+      <Text allowFontScaling={false} style={styles.title}>Verification Code</Text>
+      <Text allowFontScaling={false} style={styles.subtitle}>{"We've sent an sms with a verification code to "}<Text allowFontScaling={false} style={styles.phone}>+91 {phone}</Text>{" to proceed"}</Text>
 
       <View style={styles.otpRow}>
         {otp.map((digit, index) => (
-          <TextInput
+          <TextInput allowFontScaling={false}
             key={index}
             ref={ref => (inputs.current[index] = ref)}
             style={[styles.otpBox, digit ? styles.otpBoxFilled : null]}
@@ -97,7 +97,7 @@ export default function OtpScreen() {
         loading={loading}
         icon={!isFilled ? <ArrowRight width={SIZE(18)} height={SIZE(18)} /> : <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />}
       />
-      <Text style={styles.resend}>Didn't receive code? <Text style={styles.resendLink}>Resend</Text></Text>
+      <Text allowFontScaling={false} style={styles.resend}>Didn't receive code? <Text allowFontScaling={false} style={styles.resendLink}>Resend</Text></Text>
     </SafeAreaView>
   );
 }

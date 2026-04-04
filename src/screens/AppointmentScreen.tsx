@@ -39,73 +39,73 @@ export default function AppointmentScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <Text style={styles.title}>Appointments</Text>
+        <Text allowFontScaling={false} style={styles.title}>Appointments</Text>
       </View>
 
       <View style={styles.tabs}>
         {TABS.map(t => (
           <TouchableOpacity key={t} style={styles.tab} onPress={() => setTab(t)} activeOpacity={0.8}>
-            <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>{t}</Text>
+            <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>{t}</Text>
             {tab === t && <View style={styles.tabUnderline} />}
           </TouchableOpacity>
         ))}
       </View>
 
       {loading ? (
-        <ActivityIndicator style={{marginTop: SIZE(40)}} color={colors.primary} />
+        <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
       ) : (
-      <FlatList
-        data={filtered}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={<Text style={styles.empty}>No {tab.toLowerCase()} appointments</Text>}
-        renderItem={({ item }) => {
-          const isLive = () => {
-            const today = new Date().toISOString().split('T')[0];
-            if (item.appointmentDate !== today || item.tokenStatus !== 'pending') return false;
-            const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-            const [sh, sm] = (item.schedule?.startTime ?? '').split(':').map(Number);
-            const [eh, em] = (item.schedule?.stopTime ?? '').split(':').map(Number);
-            return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
-          };
-          const status = isLive() ? 'Live' : (statusMap[item.tokenStatus] ?? 'Upcoming');
-          const formatDate = (d: string) => {
-            const dt = new Date(d);
-            return `${String(dt.getDate()).padStart(2, '0')} ${dt.toLocaleDateString('en-US', {month: 'short'})} ${dt.getFullYear()}`;
-          };
-          const formatTime = (t: string) => {
-            const [h, m] = t.split(':').map(Number);
-            return m === 0 ? `${h % 12 || 12}${h >= 12 ? 'pm' : 'am'}` : `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`;
-          };
-          const start = item.schedule?.startTime ? formatTime(item.schedule.startTime) : '';
-          const stop = item.schedule?.stopTime ? formatTime(item.schedule.stopTime) : '';
-          const time = start && stop ? `${start} - ${stop}` : '';
-          const date = formatDate(item.appointmentDate);
-          return (
-            <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('AppointmentDetail', {
-              doctor: item.doctor.name,
-              type: item.doctor.specialities[0]?.name ?? '',
-              hospital: item.medicalCenter.name,
-              date,
-              time,
-              token: item.tokenNumber,
-              status,
-            })}>
-              <AppointmentCard
-                doctor={item.doctor.name}
-                type={item.doctor.specialities[0]?.name ?? ''}
-                hospital={item.medicalCenter.name}
-                date={date}
-                time={time}
-                token={item.tokenNumber}
-                status={status}
-                avatar={item.doctor.profilePicture}
-              />
-            </TouchableOpacity>
-          );
-        }}
-      />
+        <FlatList
+          data={filtered}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={<Text allowFontScaling={false} style={styles.empty}>No {tab.toLowerCase()} appointments</Text>}
+          renderItem={({ item }) => {
+            const isLive = () => {
+              const today = new Date().toISOString().split('T')[0];
+              if (item.appointmentDate !== today || item.tokenStatus !== 'pending') return false;
+              const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+              const [sh, sm] = (item.schedule?.startTime ?? '').split(':').map(Number);
+              const [eh, em] = (item.schedule?.stopTime ?? '').split(':').map(Number);
+              return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+            };
+            const status = isLive() ? 'Live' : (statusMap[item.tokenStatus] ?? 'Upcoming');
+            const formatDate = (d: string) => {
+              const dt = new Date(d);
+              return `${String(dt.getDate()).padStart(2, '0')} ${dt.toLocaleDateString('en-US', { month: 'short' })} ${dt.getFullYear()}`;
+            };
+            const formatTime = (t: string) => {
+              const [h, m] = t.split(':').map(Number);
+              return m === 0 ? `${h % 12 || 12}${h >= 12 ? 'pm' : 'am'}` : `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`;
+            };
+            const start = item.schedule?.startTime ? formatTime(item.schedule.startTime) : '';
+            const stop = item.schedule?.stopTime ? formatTime(item.schedule.stopTime) : '';
+            const time = start && stop ? `${start} - ${stop}` : '';
+            const date = formatDate(item.appointmentDate);
+            return (
+              <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('AppointmentDetail', {
+                doctor: item.doctor.name,
+                type: item.doctor.specialities[0]?.name ?? '',
+                hospital: item.medicalCenter.name,
+                date,
+                time,
+                token: item.tokenNumber,
+                status,
+              })}>
+                <AppointmentCard
+                  doctor={item.doctor.name}
+                  type={item.doctor.specialities[0]?.name ?? ''}
+                  hospital={item.medicalCenter.name}
+                  date={date}
+                  time={time}
+                  token={item.tokenNumber}
+                  status={status}
+                  avatar={item.doctor.profilePicture}
+                />
+              </TouchableOpacity>
+            );
+          }}
+        />
       )}
     </SafeAreaView>
   );

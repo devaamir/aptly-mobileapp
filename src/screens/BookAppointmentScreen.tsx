@@ -113,17 +113,17 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           <View style={styles.headerAvatar}>
             {doctor.profilePicture ? <Image source={{ uri: doctor.profilePicture }} style={styles.avatarImg} /> : null}
           </View>
-          <Text style={styles.title}>{doctor.name}</Text>
+          <Text allowFontScaling={false} style={styles.title}>{doctor.name}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.statusBar}>
-          <Text style={styles.bookingTime}>
+          <Text allowFontScaling={false} style={styles.bookingTime}>
             {todaySessions.length ? `Available: ${todaySessions.map(s => `${to12h(s.startTime)} - ${to12h(s.stopTime)}`).join(', ')}` : 'No sessions this day'}
           </Text>
           <View style={styles.statusRight}>
             <View style={[styles.statusBadge, !isOpen && { backgroundColor: colors.warningLight }]}>
               <View style={[styles.statusDot, !isOpen && { backgroundColor: colors.warningDot }]} />
-              <Text style={[styles.statusText, !isOpen && { color: colors.warningText }]}>{isOpen ? 'Booking Opened' : 'Not Started'}</Text>
+              <Text allowFontScaling={false} style={[styles.statusText, !isOpen && { color: colors.warningText }]}>{isOpen ? 'Booking Opened' : 'Not Started'}</Text>
             </View>
             <DownArrowGrey width={SIZE(20)} height={SIZE(20)} />
           </View>
@@ -132,7 +132,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {/* Date picker */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Select Date</Text>
+            <Text allowFontScaling={false} style={styles.sectionTitle}>Select Date</Text>
             <TouchableOpacity activeOpacity={0.7} onPress={() => setShowCalendar(true)}>
               <CalendarIcon width={SIZE(20)} height={SIZE(20)} />
             </TouchableOpacity>
@@ -154,8 +154,8 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
                 style={[styles.dayChip, selectedDay === i && styles.dayChipActive]}
                 onPress={() => setSelectedDay(i)}
                 activeOpacity={0.8}>
-                <Text style={[styles.dayLabel, selectedDay === i && styles.dayLabelActive]}>{d.weekday}</Text>
-                <Text style={[styles.dayDate, selectedDay === i && styles.dayLabelActive]}>{d.dateMonth}</Text>
+                <Text allowFontScaling={false} style={[styles.dayLabel, selectedDay === i && styles.dayLabelActive]}>{d.weekday}</Text>
+                <Text allowFontScaling={false} style={[styles.dayDate, selectedDay === i && styles.dayLabelActive]}>{d.dateMonth}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -163,8 +163,8 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           {todaySessions.length > 0 ? (
             todaySessions.length === 1 ? (
               <View style={styles.slotCard}>
-                <Text style={styles.slotTime}>{to12h(todaySessions[0].startTime)} - {to12h(todaySessions[0].stopTime)}</Text>
-                <Text style={styles.slotTickets}>{todaySessions[0].tokenLimit} tokens available</Text>
+                <Text allowFontScaling={false} style={styles.slotTime}>{to12h(todaySessions[0].startTime)} - {to12h(todaySessions[0].stopTime)}</Text>
+                <Text allowFontScaling={false} style={styles.slotTickets}>{todaySessions[0].tokenLimit} tokens available</Text>
               </View>
             ) : (
               <View style={styles.sessionList}>
@@ -174,8 +174,8 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
                       {selectedSession === s.id && <View style={styles.radioDot} />}
                     </View>
                     <View>
-                      <Text style={styles.slotTime}>{to12h(s.startTime)} - {to12h(s.stopTime)}</Text>
-                      <Text style={styles.slotTickets}>{s.tokenLimit} tokens available</Text>
+                      <Text allowFontScaling={false} style={styles.slotTime}>{to12h(s.startTime)} - {to12h(s.stopTime)}</Text>
+                      <Text allowFontScaling={false} style={styles.slotTickets}>{s.tokenLimit} tokens available</Text>
                     </View>
                   </TouchableOpacity>
                 ))}
@@ -183,19 +183,19 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             )
           ) : (
             <View style={styles.slotCard}>
-              <Text style={styles.slotTime}>No sessions</Text>
-              <Text style={styles.slotTickets}>Doctor is not available this day</Text>
+              <Text allowFontScaling={false} style={styles.slotTime}>No sessions</Text>
+              <Text allowFontScaling={false} style={styles.slotTickets}>Doctor is not available this day</Text>
             </View>
           )}
 
           {/* Select patient */}
-          <Text style={styles.sectionTitle}>Select Patient</Text>
+          <Text allowFontScaling={false} style={styles.sectionTitle}>Select Patient</Text>
           <PatientSelector
             patients={patients.map(p => ({ id: p.id, name: p.name, phone: p.phoneNumber, age: 0, gender: p.gender }))}
             selectedId={selectedPatient}
             onSelect={setSelectedPatient}
             showRadio
-            onAddMember={() => {}}
+            onAddMember={() => { }}
           />
         </ScrollView>
 
@@ -216,7 +216,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             disabled={!selectedPatient || loading}
             activeOpacity={0.8}
             onPress={handleGetToken}>
-            <Text style={styles.getTokenBtnText}>{loading ? 'Booking...' : 'Get Token'}</Text>
+            <Text allowFontScaling={false} style={styles.getTokenBtnText}>{loading ? 'Booking...' : 'Get Token'}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

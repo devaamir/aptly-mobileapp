@@ -34,21 +34,21 @@ const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress, specialit
       <TouchableOpacity activeOpacity={0.7} onPress={onTokenPress}>
         <View style={styles.livebadge}>
           <View style={styles.greenDot} />
-          <Text style={styles.liveText}>Live</Text>
+          <Text allowFontScaling={false} style={styles.liveText}>Live</Text>
         </View>
         <View style={styles.tokenCenter}>
-          <Text style={styles.tokenLabel}>Your Token Number</Text>
-          <Text style={styles.tokenNumber}>42</Text>
-          <Text style={styles.tokenEst}>Estimated 2:30pm</Text>
+          <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token Number</Text>
+          <Text allowFontScaling={false} style={styles.tokenNumber}>42</Text>
+          <Text allowFontScaling={false} style={styles.tokenEst}>Estimated 2:30pm</Text>
           <View style={styles.tokenRow}>
             <View style={styles.tokenSide}>
-              <Text style={styles.tokenSideNum}>38</Text>
+              <Text allowFontScaling={false} style={styles.tokenSideNum}>38</Text>
             </View>
             <View style={styles.tokenCurrent}>
-              <Text style={styles.tokenCurrentNum}>39</Text>
+              <Text allowFontScaling={false} style={styles.tokenCurrentNum}>39</Text>
             </View>
             <View style={styles.tokenSide}>
-              <Text style={styles.tokenSideNum}>40</Text>
+              <Text allowFontScaling={false} style={styles.tokenSideNum}>40</Text>
             </View>
           </View>
         </View>
@@ -58,8 +58,8 @@ const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress, specialit
           <View style={styles.hospitalLeft}>
             <View style={styles.hospitalAvatar} />
             <View>
-              <Text style={styles.hospitalName}>Sunrise Hospital</Text>
-              <Text style={styles.hospitalType}>Multi Speciality</Text>
+              <Text allowFontScaling={false} style={styles.hospitalName}>Sunrise Hospital</Text>
+              <Text allowFontScaling={false} style={styles.hospitalType}>Multi Speciality</Text>
             </View>
           </View>
           <View style={styles.hospitalActions}>
@@ -72,44 +72,44 @@ const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress, specialit
           </View>
         </View>
         <View style={styles.hospitalBottom}>
-          <Text style={styles.doctorName}>Dr. Rodger Struck</Text>
-          <Text style={styles.hospitalSep}> | </Text>
-          <Text style={styles.doctorSpeciality}>Cardiologist</Text>
+          <Text allowFontScaling={false} style={styles.doctorName}>Dr. Rodger Struck</Text>
+          <Text allowFontScaling={false} style={styles.hospitalSep}> | </Text>
+          <Text allowFontScaling={false} style={styles.doctorSpeciality}>Cardiologist</Text>
         </View>
       </View>
     </View>
     <View style={styles.cardsRow}>
       <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onSpecialistPress}>
-        <Text style={styles.cardTitle}>All specialist</Text>
+        <Text allowFontScaling={false} style={styles.cardTitle}>All specialist</Text>
         <View style={styles.iconsRow}>
           {specialities.slice(0, 3).map(s => (
             <View key={s.id} style={styles.iconBox}>
-              <Image source={{uri: s.icon}} style={styles.iconImg} />
+              <Image source={{ uri: s.icon }} style={styles.iconImg} />
             </View>
           ))}
         </View>
       </TouchableOpacity>
       <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onDoctorsPress}>
-        <Text style={styles.cardTitle}>All doctors</Text>
+        <Text allowFontScaling={false} style={styles.cardTitle}>All doctors</Text>
         <View style={styles.avatarRow}>
           {doctors.slice(0, 3).map((d, i) => (
-            <View key={d.id} style={[styles.avatarCircle, {marginLeft: i === 0 ? 0 : -SIZE(12)}]}>
+            <View key={d.id} style={[styles.avatarCircle, { marginLeft: i === 0 ? 0 : -SIZE(12) }]}>
               {d.profilePicture ? (
-                <Image source={{uri: d.profilePicture}} style={styles.avatarImg} />
+                <Image source={{ uri: d.profilePicture }} style={styles.avatarImg} />
               ) : null}
             </View>
           ))}
           {totalDoctorCount > 3 && (
-            <Text style={styles.avatarCount}>{totalDoctorCount - 3}+</Text>
+            <Text allowFontScaling={false} style={styles.avatarCount}>{totalDoctorCount - 3}+</Text>
           )}
         </View>
       </TouchableOpacity>
     </View>
     {/* <View style={styles.featuredSection}> */}
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>Featured</Text>
+      <Text allowFontScaling={false} style={styles.sectionTitle}>Featured</Text>
       <TouchableOpacity activeOpacity={0.7}>
-        <Text style={styles.viewAll}>See all</Text>
+        <Text allowFontScaling={false} style={styles.viewAll}>See all</Text>
       </TouchableOpacity>
     </View>
     {/* </View> */}
@@ -129,7 +129,7 @@ export default function HomeScreen() {
       setDoctors(res.data.doctors as Doctor[]);
       setClinics(res.data.topClinics);
       setTotalDoctorCount(res.data.totalDoctorCount);
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   return (
@@ -163,7 +163,7 @@ export default function HomeScreen() {
             subType={item.specialities[0]?.name ?? item.type}
             location={`${item.district}, ${item.state}`}
             image={item.profilePicture}
-            onPress={() => navigation.navigate('HospitalDetail', {name: item.name, speciality: item.specialities[0]?.name ?? '', location: item.address})}
+            onPress={() => navigation.navigate('HospitalDetail', { name: item.name, speciality: item.specialities[0]?.name ?? '', location: item.address })}
           />
         )}
       />

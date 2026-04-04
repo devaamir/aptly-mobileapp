@@ -13,7 +13,7 @@ export default function AppInput({ value, onChangeText, placeholder }: Props) {
   const [focused, setFocused] = useState(false);
 
   return (
-    <TextInput
+    <TextInput allowFontScaling={false}
       style={[styles.input, focused && styles.inputFocused]}
       value={value}
       onChangeText={onChangeText}

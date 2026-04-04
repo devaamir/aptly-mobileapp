@@ -36,7 +36,7 @@ export default function SpecialistScreen({ navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text style={styles.title}>All Specialists</Text>
+        <Text allowFontScaling={false} style={styles.title}>All Specialists</Text>
         <View style={styles.backBtn} />
       </View>
 
@@ -58,8 +58,8 @@ export default function SpecialistScreen({ navigation }: Props) {
             <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('SpecialistDetail', { name: item.name, desc: item.description, clinics: 0, doctors: 0 })}>
               <Image source={{ uri: item.icon }} style={styles.avatar} />
               <View style={styles.info}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.desc}>{item.description}</Text>
+                <Text allowFontScaling={false} style={styles.name}>{item.name}</Text>
+                <Text allowFontScaling={false} style={styles.desc}>{item.description}</Text>
               </View>
               <ArrowRight width={SIZE(18)} height={SIZE(18)} />
             </TouchableOpacity>

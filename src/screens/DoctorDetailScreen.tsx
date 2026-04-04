@@ -29,7 +29,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
   if (!doctor) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator style={{flex: 1}} color={colors.primary} />
+        <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />
       </SafeAreaView>
     );
   }
@@ -47,7 +47,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text style={styles.title}>Doctor Details</Text>
+        <Text allowFontScaling={false} style={styles.title}>Doctor Details</Text>
         <View style={styles.backBtn} />
       </View>
       <View style={styles.divider} />
@@ -55,25 +55,25 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            {doctor.profilePicture ? <Image source={{uri: doctor.profilePicture}} style={styles.avatarImg} /> : null}
+            {doctor.profilePicture ? <Image source={{ uri: doctor.profilePicture }} style={styles.avatarImg} /> : null}
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.doctorName}>{doctor.name}</Text>
-            {qualifications ? <Text style={styles.qualification}>{qualifications}</Text> : null}
-            <Text style={styles.doctorType}>{speciality}</Text>
+            <Text allowFontScaling={false} style={styles.doctorName}>{doctor.name}</Text>
+            {qualifications ? <Text allowFontScaling={false} style={styles.qualification}>{qualifications}</Text> : null}
+            <Text allowFontScaling={false} style={styles.doctorType}>{speciality}</Text>
           </View>
         </View>
 
         {hospital && (
           <>
-            <Text style={styles.sectionTitle}>Working Hospital</Text>
-            <TouchableOpacity style={styles.hospitalCard} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', {name: hospital.name, speciality: hospital.type, location: hospital.address})}>
+            <Text allowFontScaling={false} style={styles.sectionTitle}>Working Hospital</Text>
+            <TouchableOpacity style={styles.hospitalCard} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', { name: hospital.name, speciality: hospital.type, location: hospital.address })}>
               <View style={styles.hospitalImage}>
-                {hospital.profilePicture ? <Image source={{uri: hospital.profilePicture}} style={styles.hospitalImg} /> : null}
+                {hospital.profilePicture ? <Image source={{ uri: hospital.profilePicture }} style={styles.hospitalImg} /> : null}
               </View>
               <View style={styles.hospitalInfo}>
-                <Text style={styles.hospitalName}>{hospital.name}</Text>
-                <Text style={styles.hospitalType}>{hospital.type}</Text>
+                <Text allowFontScaling={false} style={styles.hospitalName}>{hospital.name}</Text>
+                <Text allowFontScaling={false} style={styles.hospitalType}>{hospital.type}</Text>
               </View>
               <ArrowRight width={SIZE(18)} height={SIZE(18)} />
             </TouchableOpacity>
@@ -82,11 +82,11 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
 
         {aboutFull ? (
           <>
-            <Text style={styles.sectionTitle}>About</Text>
-            <Text style={styles.aboutText}>
+            <Text allowFontScaling={false} style={styles.sectionTitle}>About</Text>
+            <Text allowFontScaling={false} style={styles.aboutText}>
               {expanded ? aboutFull : aboutShort}{' '}
               {aboutFull.length > 160 && (
-                <Text style={styles.readMore} onPress={() => setExpanded(!expanded)}>
+                <Text allowFontScaling={false} style={styles.readMore} onPress={() => setExpanded(!expanded)}>
                   {expanded ? 'read less' : 'read more'}
                 </Text>
               )}
@@ -94,15 +94,15 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
           </>
         ) : null}
 
-        <Text style={styles.sectionTitle}>Experience</Text>
-        <Text style={styles.experienceText}>{doctor.yearsOfExperience} years</Text>
+        <Text allowFontScaling={false} style={styles.sectionTitle}>Experience</Text>
+        <Text allowFontScaling={false} style={styles.experienceText}>{doctor.yearsOfExperience} years</Text>
 
-        <Text style={styles.sectionTitle}>Consultation Fee</Text>
-        <Text style={styles.experienceText}>₹{doctor.consultationFee}</Text>
+        <Text allowFontScaling={false} style={styles.sectionTitle}>Consultation Fee</Text>
+        <Text allowFontScaling={false} style={styles.experienceText}>₹{doctor.consultationFee}</Text>
 
         {hospital?.schedules && hospital.schedules.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Sessions</Text>
+            <Text allowFontScaling={false} style={styles.sectionTitle}>Sessions</Text>
             <View style={styles.scheduleCard}>
               {Object.entries(
                 hospital.schedules.reduce<Record<string, typeof hospital.schedules>>((acc, s) => {
@@ -110,11 +110,11 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
                   return acc;
                 }, {})
               ).map(([day, sessions], i, arr) => (
-                <View key={day} style={[styles.scheduleRow, i === arr.length - 1 && {borderBottomWidth: 0}]}>
-                  <Text style={styles.dayText}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
+                <View key={day} style={[styles.scheduleRow, i === arr.length - 1 && { borderBottomWidth: 0 }]}>
+                  <Text allowFontScaling={false} style={styles.dayText}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
                   <View style={styles.shiftsCol}>
                     {sessions.map(s => (
-                      <Text key={s.id} style={styles.shiftText}>{to12h(s.startTime)} – {to12h(s.stopTime)}</Text>
+                      <Text allowFontScaling={false} key={s.id} style={styles.shiftText}>{to12h(s.startTime)} – {to12h(s.stopTime)}</Text>
                     ))}
                   </View>
                 </View>
@@ -125,8 +125,8 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
       </ScrollView>
 
       <View style={styles.stickyFooter}>
-        <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', {doctor})}>
-          <Text style={styles.bookBtnText}>Book Appointment</Text>
+        <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', { doctor })}>
+          <Text allowFontScaling={false} style={styles.bookBtnText}>Book Appointment</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

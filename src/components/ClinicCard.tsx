@@ -21,11 +21,11 @@ export default function ClinicCard({ name, subType, location, image, onPress }: 
         style={styles.image}
       />
       <View style={styles.info}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.subType}>{subType}</Text>
+        <Text allowFontScaling={false} style={styles.name}>{name}</Text>
+        <Text allowFontScaling={false} style={styles.subType}>{subType}</Text>
         <View style={styles.locationRow}>
           <LocationIcon width={SIZE(12)} height={SIZE(12)} />
-          <Text style={styles.locationText}>{location}</Text>
+          <Text allowFontScaling={false} style={styles.locationText}>{location}</Text>
         </View>
       </View>
       <ArrowRight width={SIZE(18)} height={SIZE(18)} />

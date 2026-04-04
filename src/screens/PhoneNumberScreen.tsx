@@ -29,7 +29,7 @@ export default function PhoneNumberScreen() {
     try {
       setLoading(true);
       const res = await sendOtp(phone);
-      navigation.navigate('Otp', {phone, code: res.data.code});
+      navigation.navigate('Otp', { phone, code: res.data.code });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to send OTP');
     } finally {
@@ -41,14 +41,14 @@ export default function PhoneNumberScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
       <Image source={require('../assets/images/aptly-logo.png')} style={styles.logo} />
-      <Text style={styles.title}>Welcome Back!</Text>
-      <Text style={styles.subtitle}>Access your account your phone number</Text>
+      <Text allowFontScaling={false} style={styles.title}>Welcome Back!</Text>
+      <Text allowFontScaling={false} style={styles.subtitle}>Access your account your phone number</Text>
 
       <View style={styles.inputRow}>
         <View style={styles.countryCode}>
-          <Text style={styles.flag}>+91</Text>
+          <Text allowFontScaling={false} style={styles.flag}>+91</Text>
         </View>
-        <TextInput
+        <TextInput allowFontScaling={false}
           style={styles.input}
           placeholder="Enter phone number"
           placeholderTextColor="#7E8695"

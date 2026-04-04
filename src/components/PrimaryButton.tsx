@@ -1,5 +1,5 @@
 import React from 'react';
-import {TouchableOpacity, Text, StyleSheet, ActivityIndicator} from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import colors from '../themes/colors';
 
 type Props = {
@@ -10,14 +10,14 @@ type Props = {
   loading?: boolean;
 };
 
-export default function PrimaryButton({label, onPress, disabled, icon, loading}: Props) {
+export default function PrimaryButton({ label, onPress, disabled, icon, loading }: Props) {
   return (
     <TouchableOpacity
       style={[styles.button, disabled && styles.buttonDisabled]}
       onPress={onPress}
       activeOpacity={0.7}
       disabled={disabled}>
-      <Text style={[styles.buttonText, disabled && styles.buttonDisabledText]}>
+      <Text allowFontScaling={false} style={[styles.buttonText, disabled && styles.buttonDisabledText]}>
         {label}
       </Text>
       {loading ? <ActivityIndicator size="small" color={colors.white} /> : icon}

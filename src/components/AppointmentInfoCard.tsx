@@ -42,14 +42,14 @@ export default function AppointmentInfoCard({
           <View style={styles.hospitalLeft}>
             <View style={[styles.hospitalAvatar, isLight && styles.avatarLight]} />
             <View>
-              <Text style={[styles.hospitalName, isLight && styles.textDark]}>{hospital}</Text>
-              <Text style={[styles.hospitalType, isLight && styles.textMuted]}>{hospitalType}</Text>
+              <Text allowFontScaling={false} style={[styles.hospitalName, isLight && styles.textDark]}>{hospital}</Text>
+              <Text allowFontScaling={false} style={[styles.hospitalType, isLight && styles.textMuted]}>{hospitalType}</Text>
             </View>
           </View>
         </View>
         <View style={styles.locationContainer}>
           <LocationIcon width={SIZE(14)} height={SIZE(14)} />
-          <Text style={[styles.locationText, isLight && styles.textMuted]}>{location}</Text>
+          <Text allowFontScaling={false} style={[styles.locationText, isLight && styles.textMuted]}>{location}</Text>
         </View>
         <View style={styles.hospitalActions}>
           <TouchableOpacity style={[styles.actionBtn, isLight && styles.actionBtnLight]} activeOpacity={0.7}>
@@ -68,8 +68,8 @@ export default function AppointmentInfoCard({
         <TouchableOpacity style={styles.hospitalBottom} activeOpacity={0.7} onPress={onDoctorPress}>
           <View style={[styles.doctorAvatar, isLight && styles.avatarLight]} />
           <View style={styles.doctorInfo}>
-            <Text style={[styles.doctorName, isLight && styles.textDark]}>{doctor}</Text>
-            <Text style={[styles.doctorSpeciality, isLight && styles.textMuted]}>{doctorSpeciality}</Text>
+            <Text allowFontScaling={false} style={[styles.doctorName, isLight && styles.textDark]}>{doctor}</Text>
+            <Text allowFontScaling={false} style={[styles.doctorSpeciality, isLight && styles.textMuted]}>{doctorSpeciality}</Text>
           </View>
           <ArrowRight width={SIZE(18)} height={SIZE(18)} />
         </TouchableOpacity>
@@ -77,7 +77,7 @@ export default function AppointmentInfoCard({
 
       {onCancelPress && (
         <TouchableOpacity onPress={onCancelPress} activeOpacity={0.7} style={styles.cancelBtn}>
-          <Text style={styles.cancelText}>{cancelLabel}</Text>
+          <Text allowFontScaling={false} style={styles.cancelText}>{cancelLabel}</Text>
         </TouchableOpacity>
       )}
     </View>

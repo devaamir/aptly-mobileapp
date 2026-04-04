@@ -32,23 +32,23 @@ export default function TokenDetailScreen({ navigation }: Props) {
       {/* TOP */}
       <View style={styles.top}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
-          <Text style={styles.backText}>✕</Text>
+          <Text allowFontScaling={false} style={styles.backText}>✕</Text>
         </TouchableOpacity>
         <View style={styles.liveBadge}>
           <View style={styles.greenDot} />
-          <Text style={styles.liveText}>Live</Text>
+          <Text allowFontScaling={false} style={styles.liveText}>Live</Text>
         </View>
       </View>
 
       {/* CENTER */}
       <View style={styles.center}>
-        <Text style={styles.tokenLabel}>Your Token Number</Text>
-        <Text style={styles.tokenNumber}>42</Text>
-        <Text style={styles.tokenEst}>Estimated 2:30pm</Text>
+        <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token Number</Text>
+        <Text allowFontScaling={false} style={styles.tokenNumber}>42</Text>
+        <Text allowFontScaling={false} style={styles.tokenEst}>Estimated 2:30pm</Text>
         <View style={styles.tokenRow}>
-          <Text style={styles.tokenSideNum}>38</Text>
-          <Text style={styles.tokenCurrentNum}>39</Text>
-          <Text style={styles.tokenSideNum}>40</Text>
+          <Text allowFontScaling={false} style={styles.tokenSideNum}>38</Text>
+          <Text allowFontScaling={false} style={styles.tokenCurrentNum}>39</Text>
+          <Text allowFontScaling={false} style={styles.tokenSideNum}>40</Text>
         </View>
       </View>
 
@@ -69,14 +69,14 @@ export default function TokenDetailScreen({ navigation }: Props) {
         <View style={styles.dangerIconWrapper}>
           <DangerIcon width={50} height={50} />
         </View>
-        <Text style={styles.modalTitle}>Cancel Token?</Text>
-        <Text style={styles.modalDesc}>Your position in the queue will be lost and you may need to book again.</Text>
+        <Text allowFontScaling={false} style={styles.modalTitle}>Cancel Token?</Text>
+        <Text allowFontScaling={false} style={styles.modalDesc}>Your position in the queue will be lost and you may need to book again.</Text>
         <View style={styles.modalBtns}>
           <TouchableOpacity style={[styles.modalBtn, styles.keepBtn]} onPress={() => setCancelVisible(false)} activeOpacity={0.8}>
-            <Text style={styles.keepText}>Keep Token</Text>
+            <Text allowFontScaling={false} style={styles.keepText}>Keep Token</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.modalBtn, styles.yesBtn]} onPress={() => setCancelVisible(false)} activeOpacity={0.8}>
-            <Text style={styles.yesText}>Yes, Cancel</Text>
+            <Text allowFontScaling={false} style={styles.yesText}>Yes, Cancel</Text>
           </TouchableOpacity>
         </View>
       </BottomModal>

@@ -18,7 +18,7 @@ export default function SearchBar({ placeholder = 'Search...', value, onChangeTe
 
   return (
     <View style={[styles.container, focused && styles.focused, style]}>
-      <TextInput
+      <TextInput allowFontScaling={false}
         style={styles.input}
         placeholder={placeholder}
         placeholderTextColor={colors.textSecondary}
@@ -31,7 +31,7 @@ export default function SearchBar({ placeholder = 'Search...', value, onChangeTe
       />
       <TouchableOpacity style={styles.iconContainer} onPress={() => value && onChangeText?.('')}>
         {value ? (
-          <Text style={styles.clearText}>✕</Text>
+          <Text allowFontScaling={false} style={styles.clearText}>✕</Text>
         ) : (
           <SearchIcon width={SIZE(20)} height={SIZE(20)} />
         )}
