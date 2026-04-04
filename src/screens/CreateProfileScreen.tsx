@@ -30,7 +30,7 @@ export default function CreateProfileScreen() {
       setLoading(true);
       const phoneNumber = user?.phoneNumber ?? await AsyncStorage.getItem('phoneNumber') ?? '';
       const dateOfBirth = dob!.toISOString().split('T')[0];
-      const res = await createPatient(name, phoneNumber, gender.toLowerCase(), dateOfBirth);
+      const res = await createPatient(name, gender.toLowerCase(), dateOfBirth);
       await AsyncStorage.multiSet([['name', name], ['patientId', res.data.id]]);
       updateUser({ name, patientId: res.data.id });
       navigation.navigate('Main' as never);

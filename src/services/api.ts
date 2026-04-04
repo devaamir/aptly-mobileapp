@@ -74,9 +74,9 @@ export const verifyOtp = (phoneNumber: string, code: string): Promise<VerifyOtpR
 
 // Patients
 export const createPatient = (
-  name: string, phoneNumber: string, gender: string, dateOfBirth: string,
+  name: string, gender: string, dateOfBirth: string,
 ): Promise<CreatePatientResponse> =>
-  api.post('/patients', {name, phoneNumber, gender, dateOfBirth});
+  api.put('/patients/me', {name, gender, dateOfBirth});
 
 export const getPatients = (): Promise<{success: boolean; data: Patient[]}> =>
   api.get('/patients');
