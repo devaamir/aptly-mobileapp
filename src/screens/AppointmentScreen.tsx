@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,26 +7,33 @@ import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import AppointmentCard from '../components/AppointmentCard';
+import { getAppointments, Appointment } from '../services/api';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
-
 type Tab = 'Upcoming' | 'Completed' | 'Cancelled';
-
-const APPOINTMENTS = [
-  { id: '1', doctor: 'Dr. Rodger Struck', type: 'Cardiologist', hospital: 'Sunrise Hospital', date: '24 Mar', time: '8:00am - 11:30am', token: 42, status: 'Live' as const },
-  { id: '2', doctor: 'Dr. Sarah Collins', type: 'Neurologist', hospital: 'Apollo Clinic', date: '25 Mar', time: '3:00pm - 6:30pm', token: 18, status: 'Upcoming' as const },
-  { id: '3', doctor: 'Dr. James Patel', type: 'Dermatologist', hospital: 'Max Care', date: '20 Mar', time: '8:00am - 11:30am', token: 7, status: 'Completed' as const },
-  { id: '4', doctor: 'Dr. Meera Nair', type: 'Orthopaedic', hospital: 'Narayana Health', date: '18 Mar', time: '3:00pm - 6:30pm', token: 31, status: 'Cancelled' as const },
-];
-
 const TABS: Tab[] = ['Upcoming', 'Completed', 'Cancelled'];
+
+const statusMap: Record<string, 'Upcoming' | 'Completed' | 'Cancelled' | 'Live'> = {
+  pending: 'Upcoming',
+  active: 'Live',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
 
 export default function AppointmentScreen() {
   const navigation = useNavigation<Nav>();
   const [tab, setTab] = useState<Tab>('Upcoming');
-  const filtered = APPOINTMENTS.filter(a =>
-    tab === 'Upcoming' ? (a.status === 'Upcoming' || a.status === 'Live') : a.status === tab
-  );
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAppointments().then(res => setAppointments(res.data)).finally(() => setLoading(false));
+  }, []);
+
+  const filtered = appointments.filter(a => {
+    const mapped = statusMap[a.tokenStatus] ?? 'Upcoming';
+    return tab === 'Upcoming' ? (mapped === 'Upcoming' || mapped === 'Live') : mapped === tab;
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -44,34 +51,62 @@ export default function AppointmentScreen() {
         ))}
       </View>
 
+      {loading ? (
+        <ActivityIndicator style={{marginTop: SIZE(40)}} color={colors.primary} />
+      ) : (
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={<Text style={styles.empty}>No {tab.toLowerCase()} appointments</Text>}
-        renderItem={({ item }) => (
-          <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('AppointmentDetail', {
-            doctor: item.doctor,
-            type: item.type,
-            hospital: item.hospital,
-            date: item.date,
-            time: item.time,
-            token: item.token,
-            status: item.status,
-          })}>
-            <AppointmentCard
-              doctor={item.doctor}
-              type={item.type}
-              hospital={item.hospital}
-              date={item.date}
-              time={item.time}
-              token={item.token}
-              status={item.status}
-            />
-          </TouchableOpacity>
-        )}
+        renderItem={({ item }) => {
+          const isLive = () => {
+            const today = new Date().toISOString().split('T')[0];
+            if (item.appointmentDate !== today || item.tokenStatus !== 'pending') return false;
+            const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+            const [sh, sm] = (item.schedule?.startTime ?? '').split(':').map(Number);
+            const [eh, em] = (item.schedule?.stopTime ?? '').split(':').map(Number);
+            return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+          };
+          const status = isLive() ? 'Live' : (statusMap[item.tokenStatus] ?? 'Upcoming');
+          const formatDate = (d: string) => {
+            const dt = new Date(d);
+            return `${String(dt.getDate()).padStart(2, '0')} ${dt.toLocaleDateString('en-US', {month: 'short'})} ${dt.getFullYear()}`;
+          };
+          const formatTime = (t: string) => {
+            const [h, m] = t.split(':').map(Number);
+            return m === 0 ? `${h % 12 || 12}${h >= 12 ? 'pm' : 'am'}` : `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`;
+          };
+          const start = item.schedule?.startTime ? formatTime(item.schedule.startTime) : '';
+          const stop = item.schedule?.stopTime ? formatTime(item.schedule.stopTime) : '';
+          const time = start && stop ? `${start} - ${stop}` : '';
+          const date = formatDate(item.appointmentDate);
+          return (
+            <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('AppointmentDetail', {
+              doctor: item.doctor.name,
+              type: item.doctor.specialities[0]?.name ?? '',
+              hospital: item.medicalCenter.name,
+              date,
+              time,
+              token: item.tokenNumber,
+              status,
+            })}>
+              <AppointmentCard
+                doctor={item.doctor.name}
+                type={item.doctor.specialities[0]?.name ?? ''}
+                hospital={item.medicalCenter.name}
+                date={date}
+                time={time}
+                token={item.tokenNumber}
+                status={status}
+                avatar={item.doctor.profilePicture}
+              />
+            </TouchableOpacity>
+          );
+        }}
       />
+      )}
     </SafeAreaView>
   );
 }

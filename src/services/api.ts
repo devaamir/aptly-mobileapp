@@ -9,6 +9,9 @@ import type {
   Clinic,
   Pagination,
   HomeData,
+  Appointment,
+  Schedule,
+  Patient,
 } from '../types/api.types';
 
 export type {
@@ -20,6 +23,9 @@ export type {
   Clinic,
   Pagination,
   HomeData,
+  Appointment,
+  Schedule,
+  Patient,
 };
 
 const api = axios.create({
@@ -72,6 +78,9 @@ export const createPatient = (
 ): Promise<CreatePatientResponse> =>
   api.post('/patients', {name, phoneNumber, gender, dateOfBirth});
 
+export const getPatients = (): Promise<{success: boolean; data: Patient[]}> =>
+  api.get('/patients');
+
 // Specialities
 export const getSpecialities = (): Promise<{success: boolean; data: Speciality[]}> =>
   api.get('/specialities');
@@ -80,6 +89,9 @@ export const getSpecialities = (): Promise<{success: boolean; data: Speciality[]
 export const getDoctors = (page = 1, limit = 20): Promise<{success: boolean; data: Doctor[]; pagination: Pagination}> =>
   api.get(`/doctors?page=${page}&limit=${limit}`);
 
+export const getDoctor = (id: string): Promise<{success: boolean; data: Doctor}> =>
+  api.get(`/doctors/${id}`);
+
 // Clinics
 export const getClinics = (page = 1, limit = 20): Promise<{success: boolean; data: Clinic[]; pagination: Pagination}> =>
   api.get(`/clinics?page=${page}&limit=${limit}`);
@@ -87,3 +99,14 @@ export const getClinics = (page = 1, limit = 20): Promise<{success: boolean; dat
 // Home
 export const getHomeData = (): Promise<{success: boolean; data: HomeData}> =>
   api.get('/ui/home');
+
+// Appointments
+export const getAppointments = (): Promise<{success: boolean; data: Appointment[]}> =>
+  api.get('/appointments');
+
+export const createAppointment = (
+  appointmentDate: string,
+  doctorScheduleId: string,
+  patientId: string,
+): Promise<{success: boolean; data: Appointment}> =>
+  api.post('/appointments', {appointmentDate, doctorScheduleId, patientId});

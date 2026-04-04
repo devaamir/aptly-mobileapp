@@ -12,9 +12,11 @@ type Props = NativeStackScreenProps<RootStackParamList, 'BookingConfirmed'>;
 export default function BookingConfirmedScreen({ navigation, route }: Props) {
   const { token, doctorName, hospital, date } = route.params;
 
+  const goHome = () => navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      navigation.popToTop();
+      goHome();
       return true;
     });
     return () => sub.remove();
@@ -45,7 +47,7 @@ export default function BookingConfirmedScreen({ navigation, route }: Props) {
         <TouchableOpacity
           style={styles.doneBtn}
           activeOpacity={0.8}
-          onPress={() => navigation.popToTop()}>
+          onPress={goHome}>
           <Text style={styles.doneBtnText}>Done</Text>
         </TouchableOpacity>
       </View>

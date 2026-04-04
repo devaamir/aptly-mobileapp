@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -7,21 +7,42 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
+import { getDoctor, Doctor } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DoctorDetail'>;
 
+const to12h = (time: string) => {
+  const [h, m] = time.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`;
+};
+
 export default function DoctorDetailScreen({ navigation, route }: Props) {
-  const { name, type, hospital, clinicType, experience, location, rating, status } = route.params;
+  const { doctorId } = route.params;
+  const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  const fullText = `${name} is a dedicated ${type} with years of clinical experience at ${hospital}. Known for a patient-first approach, they specialize in accurate diagnosis and personalized treatment plans. Committed to staying updated with the latest medical advancements to deliver the best care possible.`;
-  const shortText = fullText.slice(0, 160) + '...';
+  useEffect(() => {
+    getDoctor(doctorId).then(res => setDoctor(res.data));
+  }, [doctorId]);
+
+  if (!doctor) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator style={{flex: 1}} color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  const hospital = doctor.medicalCenters[0];
+  const speciality = doctor.specialities[0]?.name ?? '';
+  const qualifications = doctor.qualifications.map(q => q.name).join(', ');
+  const aboutFull = doctor.about ?? '';
+  const aboutShort = aboutFull.slice(0, 160) + (aboutFull.length > 160 ? '...' : '');
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
-
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
@@ -32,79 +53,85 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
       <View style={styles.divider} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Profile */}
         <View style={styles.profileCard}>
-          <View style={styles.avatar} />
+          <View style={styles.avatar}>
+            {doctor.profilePicture ? <Image source={{uri: doctor.profilePicture}} style={styles.avatarImg} /> : null}
+          </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.doctorName}>{name}</Text>
-            <Text style={styles.qualification}>MBBS, MD</Text>
-            <Text style={styles.doctorType}>{type}</Text>
+            <Text style={styles.doctorName}>{doctor.name}</Text>
+            {qualifications ? <Text style={styles.qualification}>{qualifications}</Text> : null}
+            <Text style={styles.doctorType}>{speciality}</Text>
           </View>
         </View>
 
-        {/* Info rows */}
-        <Text style={styles.sectionTitle}>Working Hospital</Text>
-        <TouchableOpacity style={styles.hospitalCard} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', { name: hospital, speciality: clinicType, location })}>
-          <View style={styles.hospitalImage} />
-          <View style={styles.hospitalInfo}>
-            <Text style={styles.hospitalName}>{hospital}</Text>
-            <Text style={styles.hospitalType}>{clinicType}</Text>
-          </View>
-          <ArrowRight width={SIZE(18)} height={SIZE(18)} />
-        </TouchableOpacity>
+        {hospital && (
+          <>
+            <Text style={styles.sectionTitle}>Working Hospital</Text>
+            <TouchableOpacity style={styles.hospitalCard} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', {name: hospital.name, speciality: hospital.type, location: hospital.address})}>
+              <View style={styles.hospitalImage}>
+                {hospital.profilePicture ? <Image source={{uri: hospital.profilePicture}} style={styles.hospitalImg} /> : null}
+              </View>
+              <View style={styles.hospitalInfo}>
+                <Text style={styles.hospitalName}>{hospital.name}</Text>
+                <Text style={styles.hospitalType}>{hospital.type}</Text>
+              </View>
+              <ArrowRight width={SIZE(18)} height={SIZE(18)} />
+            </TouchableOpacity>
+          </>
+        )}
 
-        <Text style={styles.sectionTitle}>About</Text>
-        <Text style={styles.aboutText}>
-          {expanded ? fullText : shortText}{' '}
-          <Text style={styles.readMore} onPress={() => setExpanded(!expanded)}>
-            {expanded ? 'read less' : 'read more'}
-          </Text>
-        </Text>
+        {aboutFull ? (
+          <>
+            <Text style={styles.sectionTitle}>About</Text>
+            <Text style={styles.aboutText}>
+              {expanded ? aboutFull : aboutShort}{' '}
+              {aboutFull.length > 160 && (
+                <Text style={styles.readMore} onPress={() => setExpanded(!expanded)}>
+                  {expanded ? 'read less' : 'read more'}
+                </Text>
+              )}
+            </Text>
+          </>
+        ) : null}
 
         <Text style={styles.sectionTitle}>Experience</Text>
-        <Text style={styles.experienceText}>{experience}</Text>
+        <Text style={styles.experienceText}>{doctor.yearsOfExperience} years</Text>
 
-        <Text style={styles.sectionTitle}>Working Time</Text>
-        <View style={styles.scheduleCard}>
-          {SCHEDULE.map(({ day, shifts, isLeave }) => (
-            <View key={day} style={styles.scheduleRow}>
-              <Text style={[styles.dayText, isLeave && styles.leaveDay]}>{day}</Text>
-              <View style={styles.shiftsCol}>
-                {isLeave
-                  ? <Text style={styles.leaveText}>Leave</Text>
-                  : shifts.map((s, i) => <Text key={i} style={styles.shiftText}>{s}</Text>)
-                }
-              </View>
+        <Text style={styles.sectionTitle}>Consultation Fee</Text>
+        <Text style={styles.experienceText}>₹{doctor.consultationFee}</Text>
+
+        {hospital?.schedules && hospital.schedules.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Sessions</Text>
+            <View style={styles.scheduleCard}>
+              {Object.entries(
+                hospital.schedules.reduce<Record<string, typeof hospital.schedules>>((acc, s) => {
+                  (acc[s.dayOfWeek] = acc[s.dayOfWeek] || []).push(s);
+                  return acc;
+                }, {})
+              ).map(([day, sessions], i, arr) => (
+                <View key={day} style={[styles.scheduleRow, i === arr.length - 1 && {borderBottomWidth: 0}]}>
+                  <Text style={styles.dayText}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
+                  <View style={styles.shiftsCol}>
+                    {sessions.map(s => (
+                      <Text key={s.id} style={styles.shiftText}>{to12h(s.startTime)} – {to12h(s.stopTime)}</Text>
+                    ))}
+                  </View>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
+          </>
+        )}
       </ScrollView>
 
       <View style={styles.stickyFooter}>
-        <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', { name, type, hospital })}>
+        <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', {doctor})}>
           <Text style={styles.bookBtnText}>Book Appointment</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
-
-const SCHEDULE = [
-  { day: 'Monday', shifts: ['8:00am - 11:30am', '3:00pm - 6:30pm'], isLeave: false },
-  { day: 'Tuesday', shifts: ['8:00am - 11:30am', '3:00pm - 6:30pm'], isLeave: false },
-  { day: 'Wednesday', shifts: ['3:00pm - 6:30pm'], isLeave: false },
-  { day: 'Thursday', shifts: ['8:00am - 11:30am', '3:00pm - 6:30pm'], isLeave: false },
-  { day: 'Friday', shifts: ['8:00am - 11:30am'], isLeave: false },
-  { day: 'Saturday', shifts: [], isLeave: true },
-  { day: 'Sunday', shifts: [], isLeave: true },
-];
-
-const InfoRow = ({ label, value }: { label: string; value: string }) => (
-  <View style={styles.infoRow}>
-    <Text style={styles.infoLabel}>{label}</Text>
-    <Text style={styles.infoValue}>{value}</Text>
-  </View>
-);
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
@@ -139,6 +166,11 @@ const styles = StyleSheet.create({
     height: SIZE(106),
     borderRadius: SIZE(53),
     backgroundColor: colors.backgroundLight,
+    overflow: 'hidden',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
   },
   profileInfo: { flex: 1 },
   doctorName: {
@@ -177,6 +209,11 @@ const styles = StyleSheet.create({
     height: SIZE(46),
     borderRadius: SIZE(8),
     backgroundColor: colors.backgroundLight,
+    overflow: 'hidden',
+  },
+  hospitalImg: {
+    width: '100%',
+    height: '100%',
   },
   hospitalInfo: { flex: 1 },
   hospitalName: {

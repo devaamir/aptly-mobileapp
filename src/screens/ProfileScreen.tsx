@@ -1,31 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import PatientSelector from '../components/PatientSelector';
 
-const PATIENTS = [
-  { id: '1', name: 'Alen', phone: '+91 98765 43210', age: 28, gender: 'Male' },
-  { id: '2', name: 'Sara', phone: '+91 91234 56789', age: 24, gender: 'Female' },
-];
-
-const MENU_ITEMS = [
-  { section: 'Account', items: ['Edit Profile', 'Change Password', 'Notifications'] },
-];
+const MENU_ITEMS: { section: string; items: string[] }[] = [];
 
 export default function ProfileScreen() {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const { user, setUser } = useAuth();
+  const navigation = useNavigation();
 
-  useEffect(() => {
-    AsyncStorage.multiGet(['name', 'phoneNumber']).then(([nameEntry, phoneEntry]) => {
-      setName(nameEntry[1] ?? '');
-      setPhone(phoneEntry[1] ?? '');
-    });
-  }, []);
+  const handleLogout = async () => {
+    await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'patientId', 'name', 'phoneNumber', 'email']);
+    setUser(null);
+    navigation.reset({ index: 0, routes: [{ name: 'PhoneNumber' as never }] });
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
@@ -38,8 +32,8 @@ export default function ProfileScreen() {
         <View style={styles.profileCard}>
           <View style={styles.avatar} />
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>{name}</Text>
-            <Text style={styles.phone}>+91 {phone}</Text>
+            <Text style={styles.name}>{user?.name}</Text>
+            <Text style={styles.phone}>{user?.phoneNumber}</Text>
           </View>
           <TouchableOpacity style={styles.editBtn} activeOpacity={0.7}>
             <Text style={styles.editText}>Edit</Text>
@@ -48,7 +42,7 @@ export default function ProfileScreen() {
 
         {/* Patients */}
         <Text style={styles.sectionLabel}>My Patients</Text>
-        <PatientSelector patients={PATIENTS} showRadio={false} onAddMember={() => {}} />
+        {user && <PatientSelector patients={[{id: user.patientId, name: user.name, phone: user.phoneNumber, age: 0, gender: ''}]} showRadio={false} onAddMember={() => {}} />}
 
         {/* Menu sections */}
         {MENU_ITEMS.map(section => (
@@ -69,7 +63,7 @@ export default function ProfileScreen() {
         ))}
 
         {/* Logout */}
-        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={handleLogout}>
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </ScrollView>

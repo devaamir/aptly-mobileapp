@@ -11,6 +11,7 @@ type Props = {
   experience: string;
   image?: string;
   status?: 'Booking Opened' | 'Not Started';
+  bookingTime?: string;
   onPress?: () => void;
   onBookPress?: () => void;
 };
@@ -28,7 +29,7 @@ const statusConfig = {
   },
 };
 
-const DoctorCard = ({ name, type, hospital, clinicType, experience, image, status = 'Booking Opened', onPress, onBookPress }: Props) => {
+const DoctorCard = ({ name, type, hospital, clinicType, experience, image, status = 'Booking Opened', bookingTime, onPress, onBookPress }: Props) => {
   const s = statusConfig[status];
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onPress}>
@@ -58,7 +59,7 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, statu
         </View>
       </View>
       <View style={styles.cardFooter}>
-        <Text style={styles.bookingTime}>Booking available at 8:00am - 6:30pm</Text>
+        <Text style={styles.bookingTime}>{bookingTime ?? 'No sessions today'}</Text>
         <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
           <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
           <Text style={[styles.statusText, { color: s.text }]}>{status}</Text>

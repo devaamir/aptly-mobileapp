@@ -13,9 +13,11 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import AppInput from '../components/AppInput';
 import { createPatient } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function CreateProfileScreen() {
   const navigation = useNavigation();
+  const { user, updateUser } = useAuth();
   const [name, setName] = useState('');
   const [gender, setGender] = useState('');
   const [dob, setDob] = useState<Date | null>(null);
@@ -26,11 +28,11 @@ export default function CreateProfileScreen() {
   const handleContinue = async () => {
     try {
       setLoading(true);
-      const [tokenEntry, phoneEntry] = await AsyncStorage.multiGet(['accessToken', 'phoneNumber']);
-      const phoneNumber = phoneEntry[1] ?? '';
+      const phoneNumber = user?.phoneNumber ?? await AsyncStorage.getItem('phoneNumber') ?? '';
       const dateOfBirth = dob!.toISOString().split('T')[0];
-      await createPatient(name, phoneNumber, gender.toLowerCase(), dateOfBirth);
-      await AsyncStorage.setItem('name', name);
+      const res = await createPatient(name, phoneNumber, gender.toLowerCase(), dateOfBirth);
+      await AsyncStorage.multiSet([['name', name], ['patientId', res.data.id]]);
+      updateUser({ name, patientId: res.data.id });
       navigation.navigate('Main' as never);
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to create profile');

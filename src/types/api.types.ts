@@ -51,6 +51,16 @@ export interface Speciality {
   updatedAt: string;
 }
 
+export interface Schedule {
+  id: string;
+  dayOfWeek: string;
+  startTime: string;
+  stopTime: string;
+  tokenLimit: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MedicalCenter {
   id: string;
   name: string;
@@ -69,6 +79,7 @@ export interface MedicalCenter {
   profilePicture: string;
   createdAt: string;
   updatedAt: string;
+  schedules?: Schedule[];
 }
 
 export interface MedicalSystem {
@@ -139,4 +150,42 @@ export interface HomeData {
   doctors: Pick<Doctor, 'id' | 'name' | 'phoneNumber' | 'emailAddress' | 'about' | 'consultationFee' | 'yearsOfExperience' | 'advanceBookingLimit' | 'estimateConsultationTime' | 'latitude' | 'longitude' | 'address' | 'district' | 'state' | 'country' | 'profilePicture' | 'createdAt' | 'updatedAt'>[];
   totalDoctorCount: number;
   topClinics: Clinic[];
+}
+
+export interface Patient {
+  id: string;
+  name: string;
+  referenceId: string;
+  phoneNumber: string;
+  gender: string;
+  dateOfBirth: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: null | string;
+}
+
+export interface Appointment {
+  id: string;
+  referenceId: string;
+  tokenNumber: number;
+  appointmentDate: string;
+  tokenStatus: string;
+  creatorRole: string;
+  cancellerRole: string;
+  createdAt: string;
+  updatedAt: string;
+  doctor: Doctor;
+  patient: Patient;
+  creator: {id: string; name: string; phoneNumber: string; emailAddress: string; createdAt: string; updatedAt: string};
+  canceller: {id: string; name: string; phoneNumber: string; emailAddress: string; createdAt: string; updatedAt: string} | null;
+  schedule: {
+    id: string;
+    dayOfWeek: string;
+    startTime: string;
+    stopTime: string;
+    tokenLimit: number;
+    createdAt: string;
+    updatedAt: string;
+  };
+  medicalCenter: MedicalCenter;
 }

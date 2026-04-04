@@ -16,6 +16,7 @@ import BookAppointmentScreen from '../screens/BookAppointmentScreen';
 import BookingConfirmedScreen from '../screens/BookingConfirmedScreen';
 import AppointmentDetailScreen from '../screens/AppointmentDetailScreen';
 import HospitalDetailScreen from '../screens/HospitalDetailScreen';
+import { Doctor } from '../services/api';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
@@ -27,8 +28,8 @@ export type RootStackParamList = {
   Specialist: undefined;
   SpecialistDetail: { name: string; desc: string; clinics: number; doctors: number };
   Doctors: undefined;
-  DoctorDetail: { name: string; type: string; hospital: string; clinicType: string; experience: string; location: string; rating: string; status: string };
-  BookAppointment: { name: string; type: string; hospital: string };
+  DoctorDetail: { doctorId: string };
+  BookAppointment: { doctor: Doctor };
   BookingConfirmed: { token: number; doctorName: string; hospital: string; date: string };
   AppointmentDetail: { doctor: string; type: string; hospital: string; date: string; time: string; token: number; status: string };
   HospitalDetail: { name: string; speciality: string; location: string };

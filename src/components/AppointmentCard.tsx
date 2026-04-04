@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import Video from 'react-native-video';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
@@ -15,6 +15,7 @@ type Props = {
   time: string;
   token: number;
   status: Status;
+  avatar?: string;
 };
 
 const statusColors: Record<Status, { bg: string; dot: string }> = {
@@ -24,7 +25,7 @@ const statusColors: Record<Status, { bg: string; dot: string }> = {
   Cancelled: { bg: colors.cancelledBg, dot: colors.cancelledDot },
 };
 
-export default function AppointmentCard({ doctor, type, hospital, date, time, token, status }: Props) {
+export default function AppointmentCard({ doctor, type, hospital, date, time, token, status, avatar }: Props) {
   const s = statusColors[status];
   return (
     <View style={styles.card}>
@@ -37,7 +38,9 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
         <ArrowRight width={SIZE(18)} height={SIZE(18)} />
       </View>
       <View style={styles.cardTop}>
-        <View style={styles.avatar} />
+        <View style={styles.avatar}>
+          {avatar ? <Image source={{uri: avatar}} style={styles.avatarImg} /> : null}
+        </View>
         <View style={styles.cardInfo}>
           <Text style={styles.doctorName}>{hospital}</Text>
           <Text style={styles.doctorType}>{type}</Text>
@@ -45,7 +48,9 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
       </View>
       <View style={styles.dashedDivider} />
       <View style={styles.doctorRow}>
-        <View style={styles.doctorAvatar} />
+        <View style={styles.doctorAvatar}>
+          {avatar ? <Image source={{uri: avatar}} style={styles.avatarImg} /> : null}
+        </View>
         <Text style={styles.doctorName}>{doctor}</Text>
         <Text style={styles.doctorSep}>|</Text>
         <Text style={styles.doctorType}>{type}</Text>
@@ -136,7 +141,9 @@ const styles = StyleSheet.create({
     height: SIZE(36),
     borderRadius: SIZE(18),
     backgroundColor: colors.backgroundLight,
+    overflow: 'hidden',
   },
+  avatarImg: { width: '100%', height: '100%' },
   cardInfo: { flex: 1 },
   doctorName: {
     fontFamily: 'Manrope-SemiBold',

@@ -8,9 +8,46 @@ import DoctorCard from '../components/DoctorCard';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
-import { getDoctors, Doctor } from '../services/api';
+import { getDoctors, getDoctor, Doctor } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Doctors'>;
+
+const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+
+function getBookingStatus(doctor: Doctor): 'Booking Opened' | 'Not Started' {
+  const today = DAYS[new Date().getDay()];
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const schedules = doctor.medicalCenters.flatMap(mc => mc.schedules ?? []);
+  const todaySchedules = schedules.filter(s => s.dayOfWeek === today);
+  const isOpen = todaySchedules.some(s => {
+    const [sh, sm] = s.startTime.split(':').map(Number);
+    const [eh, em] = s.stopTime.split(':').map(Number);
+    return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+  });
+  return isOpen ? 'Booking Opened' : 'Not Started';
+}
+
+const to12h = (time: string) => {
+  const [h, m] = time.split(':').map(Number);
+  const ampm = h >= 12 ? 'pm' : 'am';
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')}${ampm}`;
+};
+
+function getBookingTime(doctor: Doctor): string {
+  const today = DAYS[new Date().getDay()];
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const schedules = doctor.medicalCenters.flatMap(mc => mc.schedules ?? []);
+  const current = schedules.find(s => {
+    if (s.dayOfWeek !== today) return false;
+    const [sh, sm] = s.startTime.split(':').map(Number);
+    const [eh, em] = s.stopTime.split(':').map(Number);
+    return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+  });
+  if (!current) return 'No active session';
+  return `Booking available at ${to12h(current.startTime)} - ${to12h(current.stopTime)}`;
+}
 
 export default function DoctorsScreen({ navigation }: Props) {
   const [query, setQuery] = useState('');
@@ -18,7 +55,10 @@ export default function DoctorsScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getDoctors().then(res => setDoctors(res.data)).finally(() => setLoading(false));
+    getDoctors()
+      .then(res => Promise.all(res.data.map(d => getDoctor(d.id).then(r => r.data))))
+      .then(setDoctors)
+      .finally(() => setLoading(false));
   }, []);
 
   const filtered = doctors.filter(d =>
@@ -59,22 +99,10 @@ export default function DoctorsScreen({ navigation }: Props) {
                 clinicType={clinicType}
                 experience={`${item.yearsOfExperience} yrs exp`}
                 image={item.profilePicture}
-                status="Booking Opened"
-                onPress={() => navigation.navigate('DoctorDetail', {
-                  name: item.name,
-                  type: speciality,
-                  hospital,
-                  clinicType,
-                  experience: `${item.yearsOfExperience} yrs exp`,
-                  location: item.address,
-                  rating: '',
-                  status: 'Booking Opened',
-                })}
-                onBookPress={() => navigation.navigate('BookAppointment', {
-                  name: item.name,
-                  type: speciality,
-                  hospital,
-                })}
+                status={getBookingStatus(item)}
+                bookingTime={getBookingTime(item)}
+                onPress={() => navigation.navigate('DoctorDetail', {doctorId: item.id})}
+                onBookPress={() => navigation.navigate('BookAppointment', {doctor: item})}
               />
             );
           }}

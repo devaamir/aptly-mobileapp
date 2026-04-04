@@ -12,11 +12,14 @@ import { SIZE } from '../themes/sizes';
 import { RootStackParamList } from '../navigations/Navigation';
 import { verifyOtp } from '../services/api';
 
+import { useAuth } from '../context/AuthContext';
+
 const OTP_LENGTH = 4;
 
 export default function OtpScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'Otp'>>();
   const { phone, code } = route.params;
+  const { setUser } = useAuth();
 
   const prefilled = String(code).padStart(OTP_LENGTH, '0').split('').slice(0, OTP_LENGTH);
   const [otp, setOtp] = useState<string[]>(prefilled);
@@ -50,6 +53,7 @@ export default function OtpScreen() {
         ['email', user.emailAddress ?? ''],
         ['name', user.name ?? ''],
       ]);
+      setUser({ userId: user.id, patientId: '', name: user.name ?? '', phoneNumber: user.phoneNumber, email: user.emailAddress ?? '', accessToken, refreshToken });
       navigation.navigate(user.name ? ('Main' as never) : ('CreateProfile' as never));
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Verification failed');

@@ -1,26 +1,21 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import CalendarIcon from '../assets/icons/calendar-icon.svg';
-import AddIconBlue from '../assets/icons/add-icon-blue.svg';
 import SwipeToBook from '../components/SwipeToBook';
 import PatientSelector from '../components/PatientSelector';
+import { createAppointment, getPatients, Patient } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookAppointment'>;
-
-const PATIENTS = [
-  { id: '1', name: 'Alen', phone: '+91 98765 43210', age: 28, gender: 'Male' },
-  { id: '2', name: 'Sara', phone: '+91 91234 56789', age: 24, gender: 'Female' },
-];
-
-['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM'];
 
 const DAYS = Array.from({ length: 30 }, (_, i) => {
   const d = new Date();
@@ -32,11 +27,70 @@ const DAYS = Array.from({ length: 30 }, (_, i) => {
   };
 });
 
+const WEEK_DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const to12h = (time: string) => {
+  const [h, m] = time.split(':').map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+};
+
 export default function BookAppointmentScreen({ navigation, route }: Props) {
-  const { name, type, hospital } = route.params;
+  const { doctor } = route.params;
+  const { user } = useAuth();
   const [selectedDay, setSelectedDay] = useState(0);
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
+  const [selectedSession, setSelectedSession] = useState<string | null>(() => {
+    const todayName = WEEK_DAYS[new Date().getDay()];
+    const first = doctor.medicalCenters.flatMap(mc => mc.schedules ?? []).find(s => s.dayOfWeek === todayName);
+    return first?.id ?? null;
+  });
   const [showCalendar, setShowCalendar] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+
+  useEffect(() => {
+    getPatients().then(res => {
+      const valid = res.data.filter(p => !!p.name);
+      setPatients(valid);
+      if (valid.length > 0) setSelectedPatient(valid[0].id);
+    });
+  }, []);
+
+  const handleGetToken = async () => {
+    if (!selectedPatient || !selectedSession) return;
+    try {
+      setLoading(true);
+      const appointmentDate = DAYS[selectedDay].full.toISOString().split('T')[0];
+      console.log(appointmentDate, selectedSession, selectedPatient);
+      const res = await createAppointment(appointmentDate, selectedSession, selectedPatient);
+      navigation.navigate('BookingConfirmed', {
+        token: res.data.tokenNumber,
+        doctorName: doctor.name,
+        hospital: doctor.medicalCenters[0]?.name ?? '',
+        date: DAYS[selectedDay].dateMonth,
+      });
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Failed to book appointment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const selectedDayName = WEEK_DAYS[DAYS[selectedDay].full.getDay()];
+  const todaySessions = doctor.medicalCenters
+    .flatMap(mc => mc.schedules ?? [])
+    .filter(s => s.dayOfWeek === selectedDayName)
+    .filter((s, i, arr) => arr.findIndex(x => x.startTime === s.startTime && x.stopTime === s.stopTime) === i);
+  const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+  const isOpen = todaySessions.some(s => {
+    const [sh, sm] = s.startTime.split(':').map(Number);
+    const [eh, em] = s.stopTime.split(':').map(Number);
+    return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+  });
+
+  useEffect(() => {
+    setSelectedSession(todaySessions[0]?.id ?? null);
+  }, [selectedDay]);
 
   const onDateChange = (_: any, date?: Date) => {
     setShowCalendar(Platform.OS === 'ios');
@@ -56,16 +110,20 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
             <BackArrow width={SIZE(26)} height={SIZE(26)} />
           </TouchableOpacity>
-          <View style={styles.headerAvatar} />
-          <Text style={styles.title}>{name}</Text>
+          <View style={styles.headerAvatar}>
+            {doctor.profilePicture ? <Image source={{ uri: doctor.profilePicture }} style={styles.avatarImg} /> : null}
+          </View>
+          <Text style={styles.title}>{doctor.name}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.statusBar}>
-          <Text style={styles.bookingTime}>Booking available at 7:00am - 6:30 pm</Text>
+          <Text style={styles.bookingTime}>
+            {todaySessions.length ? `Available: ${todaySessions.map(s => `${to12h(s.startTime)} - ${to12h(s.stopTime)}`).join(', ')}` : 'No sessions this day'}
+          </Text>
           <View style={styles.statusRight}>
-            <View style={styles.statusBadge}>
-              <View style={styles.statusDot} />
-              <Text style={styles.statusText}>Booking Opened</Text>
+            <View style={[styles.statusBadge, !isOpen && { backgroundColor: colors.warningLight }]}>
+              <View style={[styles.statusDot, !isOpen && { backgroundColor: colors.warningDot }]} />
+              <Text style={[styles.statusText, !isOpen && { color: colors.warningText }]}>{isOpen ? 'Booking Opened' : 'Not Started'}</Text>
             </View>
             <DownArrowGrey width={SIZE(20)} height={SIZE(20)} />
           </View>
@@ -102,15 +160,38 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             ))}
           </ScrollView>
 
-          <View style={styles.slotCard}>
-            <Text style={styles.slotTime}>8:00am - 11:30am</Text>
-            <Text style={styles.slotTickets}>110 tickets available</Text>
-          </View>
+          {todaySessions.length > 0 ? (
+            todaySessions.length === 1 ? (
+              <View style={styles.slotCard}>
+                <Text style={styles.slotTime}>{to12h(todaySessions[0].startTime)} - {to12h(todaySessions[0].stopTime)}</Text>
+                <Text style={styles.slotTickets}>{todaySessions[0].tokenLimit} tokens available</Text>
+              </View>
+            ) : (
+              <View style={styles.sessionList}>
+                {todaySessions.map(s => (
+                  <TouchableOpacity key={s.id} style={styles.sessionRow} activeOpacity={0.8} onPress={() => setSelectedSession(s.id)}>
+                    <View style={[styles.radio, selectedSession === s.id && styles.radioActive]}>
+                      {selectedSession === s.id && <View style={styles.radioDot} />}
+                    </View>
+                    <View>
+                      <Text style={styles.slotTime}>{to12h(s.startTime)} - {to12h(s.stopTime)}</Text>
+                      <Text style={styles.slotTickets}>{s.tokenLimit} tokens available</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )
+          ) : (
+            <View style={styles.slotCard}>
+              <Text style={styles.slotTime}>No sessions</Text>
+              <Text style={styles.slotTickets}>Doctor is not available this day</Text>
+            </View>
+          )}
 
           {/* Select patient */}
           <Text style={styles.sectionTitle}>Select Patient</Text>
           <PatientSelector
-            patients={PATIENTS}
+            patients={patients.map(p => ({ id: p.id, name: p.name, phone: p.phoneNumber, age: 0, gender: p.gender }))}
             selectedId={selectedPatient}
             onSelect={setSelectedPatient}
             showRadio
@@ -119,7 +200,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
         </ScrollView>
 
         <View style={styles.stickyFooter}>
-          <SwipeToBook
+          {/* <SwipeToBook
             disabled={!selectedPatient}
             onSwipeComplete={() => {
               navigation.navigate('BookingConfirmed', {
@@ -129,7 +210,14 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
                 date: DAYS[selectedDay].dateMonth,
               });
             }}
-          />
+          /> */}
+          <TouchableOpacity
+            style={[styles.getTokenBtn, (!selectedPatient || loading) && styles.getTokenBtnDisabled]}
+            disabled={!selectedPatient || loading}
+            activeOpacity={0.8}
+            onPress={handleGetToken}>
+            <Text style={styles.getTokenBtnText}>{loading ? 'Booking...' : 'Get Token'}</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     </GestureHandlerRootView>
@@ -147,10 +235,11 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: SIZE(32) },
   headerAvatar: {
-    width: SIZE(22),
-    height: SIZE(22),
-    borderRadius: SIZE(11),
+    width: SIZE(28),
+    height: SIZE(28),
+    borderRadius: SIZE(14),
     backgroundColor: colors.backgroundLight,
+    overflow: 'hidden',
   },
   title: {
     fontFamily: 'Manrope-SemiBold',
@@ -217,6 +306,25 @@ const styles = StyleSheet.create({
     height: SIZE(56),
     borderRadius: SIZE(28),
     backgroundColor: colors.backgroundLight,
+    overflow: 'hidden',
+  },
+  avatarImg: { width: '100%', height: '100%' },
+  doctorName: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(15),
+    color: colors.textPrimary,
+  },
+  doctorMeta: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.textSecondary,
+    marginTop: SIZE(2),
+  },
+  avatar: {
+    width: SIZE(56),
+    height: SIZE(56),
+    borderRadius: SIZE(28),
+    backgroundColor: colors.backgroundLight,
   },
   doctorName: {
     fontFamily: 'Manrope-SemiBold',
@@ -250,6 +358,36 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.cardBorder,
     padding: SIZE(14),
+  },
+  sessionList: {
+    borderRadius: SIZE(12),
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    overflow: 'hidden',
+  },
+  sessionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(12),
+    padding: SIZE(14),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.cardBorder,
+  },
+  radio: {
+    width: SIZE(20),
+    height: SIZE(20),
+    borderRadius: SIZE(10),
+    borderWidth: 2,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioActive: { borderColor: colors.primary },
+  radioDot: {
+    width: SIZE(10),
+    height: SIZE(10),
+    borderRadius: SIZE(5),
+    backgroundColor: colors.primary,
   },
   slotTime: {
     fontFamily: 'Manrope-SemiBold',
@@ -391,6 +529,18 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.white,
+  },
+  getTokenBtn: {
+    backgroundColor: colors.primary,
+    paddingVertical: SIZE(14),
+    borderRadius: SIZE(12),
+    alignItems: 'center',
+  },
+  getTokenBtnDisabled: { opacity: 0.5 },
+  getTokenBtnText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(15),
+    color: colors.white,
   },
   confirmBtn: {
     backgroundColor: colors.primary,
