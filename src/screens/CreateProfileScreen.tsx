@@ -33,7 +33,7 @@ export default function CreateProfileScreen() {
       const res = await createPatient(name, gender.toLowerCase(), dateOfBirth);
       await AsyncStorage.multiSet([['name', name], ['patientId', res.data.id]]);
       updateUser({ name, patientId: res.data.id });
-      navigation.navigate('Main' as never);
+      navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to create profile');
     } finally {
