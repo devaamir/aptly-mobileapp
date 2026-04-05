@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
@@ -8,12 +8,14 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import PatientSelector from '../components/PatientSelector';
+import BottomModal from '../components/BottomModal';
 
 const MENU_ITEMS: { section: string; items: string[] }[] = [];
 
 export default function ProfileScreen() {
   const { user, setUser } = useAuth();
   const navigation = useNavigation();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = async () => {
     await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'patientId', 'name', 'phoneNumber', 'email']);
@@ -63,10 +65,23 @@ export default function ProfileScreen() {
         ))}
 
         {/* Logout */}
-        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={handleLogout}>
+        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={() => setShowLogoutModal(true)}>
           <Text allowFontScaling={false} style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <BottomModal visible={showLogoutModal} onClose={() => setShowLogoutModal(false)}>
+        <Text allowFontScaling={false} style={styles.modalTitle}>Log Out</Text>
+        <Text allowFontScaling={false} style={styles.modalDesc}>Are you sure you want to log out?</Text>
+        <View style={styles.modalActions}>
+          <TouchableOpacity style={styles.cancelBtn} activeOpacity={0.7} onPress={() => setShowLogoutModal(false)}>
+            <Text allowFontScaling={false} style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.confirmBtn} activeOpacity={0.7} onPress={handleLogout}>
+            <Text allowFontScaling={false} style={styles.confirmText}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
+      </BottomModal>
     </SafeAreaView>
   );
 }
@@ -167,5 +182,46 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(14),
     color: colors.danger,
+  },
+  modalTitle: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(16),
+    color: colors.textPrimary,
+  },
+  modalDesc: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: colors.textSecondary,
+    marginBottom: SIZE(8),
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: SIZE(12),
+    marginTop: SIZE(4),
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: SIZE(12),
+    borderRadius: SIZE(10),
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  cancelText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.textPrimary,
+  },
+  confirmBtn: {
+    flex: 1,
+    paddingVertical: SIZE(12),
+    borderRadius: SIZE(10),
+    backgroundColor: colors.danger,
+    alignItems: 'center',
+  },
+  confirmText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.white,
   },
 });
