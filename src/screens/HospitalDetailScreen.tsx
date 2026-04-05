@@ -19,7 +19,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 export default function HospitalDetailScreen() {
   const navigation = useNavigation<Nav>();
   const { params } = useRoute<Route>();
-  const { name, speciality, location } = params;
+  const { name, specialty, location } = params;
   const [tab, setTab] = useState<'Doctors' | 'Details'>('Doctors');
 
   return (
@@ -41,7 +41,7 @@ export default function HospitalDetailScreen() {
         {/* Info card */}
         <View style={styles.sheet}>
           <Text allowFontScaling={false} style={styles.clinicTitle}>{name}</Text>
-          <Text allowFontScaling={false} style={styles.clinicSpeciality}>{speciality}</Text>
+          <Text allowFontScaling={false} style={styles.clinicSpecialty}>{specialty}</Text>
           <View style={styles.locationRow}>
             <LocationIcon width={SIZE(12)} height={SIZE(12)} />
             <Text allowFontScaling={false} style={styles.clinicLocation}>{location}</Text>
@@ -79,12 +79,12 @@ export default function HospitalDetailScreen() {
                 name={doc.name}
                 type={doc.type}
                 hospital={name}
-                clinicType={speciality}
+                clinicType={specialty}
                 experience="5 years"
                 status="Booking Opened"
                 onPress={() => navigation.navigate('DoctorDetail', {
                   name: doc.name, type: doc.type, hospital: name,
-                  clinicType: speciality, experience: '5 years',
+                  clinicType: specialty, experience: '5 years',
                   location, rating: '4.8', status: 'Booking Opened',
                 })}
                 onBookPress={() => navigation.navigate('BookAppointment', {
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     fontSize: SIZE(20),
     color: '#000000',
   },
-  clinicSpeciality: {
+  clinicSpecialty: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
     color: colors.subText,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     fontSize: SIZE(15),
     color: colors.textPrimary,
   },
-  speciality: {
+  specialty: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
     color: colors.textSecondary,

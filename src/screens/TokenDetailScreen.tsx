@@ -56,10 +56,10 @@ export default function TokenDetailScreen({ navigation }: Props) {
       <View style={styles.bottom}>
         <AppointmentInfoCard
           hospital="Sunrise Hospital"
-          hospitalType="Multi Speciality"
+          hospitalType="Multi Specialty"
           location="Kakkanad, Kochi - 682030, Kerala, India."
           doctor="Dr. Rodger Struck"
-          doctorSpeciality="Cardiologist"
+          doctorSpecialty="Cardiologist"
           onCancelPress={() => setCancelVisible(true)}
         />
       </View>
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     fontSize: SIZE(13),
     color: 'rgba(255,255,255,0.5)'
   },
-  doctorSpeciality: {
+  doctorSpecialty: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
     color: 'rgba(255,255,255,0.7)'

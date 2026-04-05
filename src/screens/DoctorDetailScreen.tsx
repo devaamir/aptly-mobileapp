@@ -35,7 +35,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
   }
 
   const hospital = doctor.medicalCenters[0];
-  const speciality = doctor.specialities[0]?.name ?? '';
+  const specialty = doctor.specialties[0]?.name ?? '';
   const qualifications = doctor.qualifications.map(q => q.name).join(', ');
   const aboutFull = doctor.about ?? '';
   const aboutShort = aboutFull.slice(0, 160) + (aboutFull.length > 160 ? '...' : '');
@@ -60,14 +60,14 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
           <View style={styles.profileInfo}>
             <Text allowFontScaling={false} style={styles.doctorName}>{doctor.name}</Text>
             {qualifications ? <Text allowFontScaling={false} style={styles.qualification}>{qualifications}</Text> : null}
-            <Text allowFontScaling={false} style={styles.doctorType}>{speciality}</Text>
+            <Text allowFontScaling={false} style={styles.doctorType}>{specialty}</Text>
           </View>
         </View>
 
         {hospital && (
           <>
             <Text allowFontScaling={false} style={styles.sectionTitle}>Working Hospital</Text>
-            <TouchableOpacity style={styles.hospitalCard} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', { name: hospital.name, speciality: hospital.type, location: hospital.address })}>
+            <TouchableOpacity style={styles.hospitalCard} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', { name: hospital.name, specialty: hospital.type, location: hospital.address })}>
               <View style={styles.hospitalImage}>
                 {hospital.profilePicture ? <Image source={{ uri: hospital.profilePicture }} style={styles.hospitalImg} /> : null}
               </View>

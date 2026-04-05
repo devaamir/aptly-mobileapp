@@ -85,7 +85,7 @@ export default function AppointmentScreen() {
             return (
               <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('AppointmentDetail', {
                 doctor: item.doctor.name,
-                type: item.doctor.specialities[0]?.name ?? '',
+                type: item.doctor.specialties[0]?.name ?? '',
                 hospital: item.medicalCenter.name,
                 date,
                 time,
@@ -94,7 +94,7 @@ export default function AppointmentScreen() {
               })}>
                 <AppointmentCard
                   doctor={item.doctor.name}
-                  type={item.doctor.specialities[0]?.name ?? ''}
+                  type={item.doctor.specialties[0]?.name ?? ''}
                   hospital={item.medicalCenter.name}
                   date={date}
                   time={time}

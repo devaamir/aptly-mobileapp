@@ -12,23 +12,23 @@ import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
 
 const DOCTORS = [
-  { id: '1', name: 'Dr. Rodger Struck', type: 'Cardiologist', hospital: 'Sunrise Hospital', clinicType: 'Multi Speciality', experience: '8 yrs exp', location: 'Bandra, Mumbai', rating: '4.8', status: 'Booking Opened' },
+  { id: '1', name: 'Dr. Rodger Struck', type: 'Cardiologist', hospital: 'Sunrise Hospital', clinicType: 'Multi Specialty', experience: '8 yrs exp', location: 'Bandra, Mumbai', rating: '4.8', status: 'Booking Opened' },
   { id: '2', name: 'Dr. Sarah Collins', type: 'Neurologist', hospital: 'Apollo Clinic', clinicType: 'Clinic', experience: '12 yrs exp', location: 'Andheri, Mumbai', rating: '4.9', status: 'Not Started' },
   { id: '3', name: 'Dr. James Patel', type: 'Dermatologist', hospital: 'Max Care', clinicType: 'Clinic', experience: '5 yrs exp', location: 'Powai, Mumbai', rating: '4.6', status: 'Booking Opened' },
-  { id: '4', name: 'Dr. Meera Nair', type: 'Orthopaedic', hospital: 'Narayana Health', clinicType: 'Multi Speciality', experience: '10 yrs exp', location: 'Thane, Mumbai', rating: '4.7', status: 'Not Started' },
+  { id: '4', name: 'Dr. Meera Nair', type: 'Orthopaedic', hospital: 'Narayana Health', clinicType: 'Multi Specialty', experience: '10 yrs exp', location: 'Thane, Mumbai', rating: '4.7', status: 'Not Started' },
 ];
 
 const CLINICS = [
-  { id: '1', name: 'Apollo Clinic', type: 'Multi-speciality', location: 'Bandra, Mumbai', rating: '4.7' },
+  { id: '1', name: 'Apollo Clinic', type: 'Multi-specialty', location: 'Bandra, Mumbai', rating: '4.7' },
   { id: '2', name: 'Fortis Health', type: 'Cardiology', location: 'Andheri, Mumbai', rating: '4.8' },
   { id: '3', name: 'Max Care', type: 'Dermatology', location: 'Powai, Mumbai', rating: '4.5' },
   { id: '4', name: 'Narayana Health', type: 'Orthopaedics', location: 'Thane, Mumbai', rating: '4.6' },
 ];
 
 type Tab = 'clinics' | 'doctors';
-type Props = NativeStackScreenProps<RootStackParamList, 'SpecialistDetail'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'specialstDetail'>;
 
-export default function SpecialistDetailScreen({ navigation, route }: Props) {
+export default function SpecialstDetailScreen({ navigation, route }: Props) {
   const { name } = route.params;
   const [tab, setTab] = useState<Tab>('clinics');
   const [query, setQuery] = useState('');
@@ -117,7 +117,7 @@ export default function SpecialistDetailScreen({ navigation, route }: Props) {
               name={item.name}
               subType={item.type}
               location={item.location}
-              onPress={() => navigation.navigate('HospitalDetail', { name: item.name, speciality: item.type, location: item.location })}
+              onPress={() => navigation.navigate('HospitalDetail', { name: item.name, specialty: item.type, location: item.location })}
             />
           )}
         />

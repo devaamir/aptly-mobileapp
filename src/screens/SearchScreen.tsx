@@ -8,7 +8,7 @@ import SearchBar from '../components/SearchBar';
 import BackArrow from '../assets/icons/back-arrows.svg';
 
 const TYPE_IMAGES: Record<string, string> = {
-  Speciality: 'https://placehold.co/56x56/EAF3FF/2879E4/png',
+  Specialty: 'https://placehold.co/56x56/EAF3FF/2879E4/png',
   Doctor: 'https://placehold.co/56x56/F0FFF4/22C55E/png',
   Hospital: 'https://placehold.co/56x56/FFF7ED/F97316/png',
 };
@@ -22,14 +22,14 @@ type Item = {
 };
 
 const DATA: Item[] = [
-  { id: 's1', name: 'Cardiologist', type: 'Speciality' },
-  { id: 's2', name: 'Dermatologist', type: 'Speciality' },
-  { id: 's3', name: 'Pediatrician', type: 'Speciality' },
-  { id: 's4', name: 'Orthopaedics', type: 'Speciality' },
-  { id: 's5', name: 'Neurologist', type: 'Speciality' },
-  { id: 's6', name: 'Gynaecologist', type: 'Speciality' },
-  { id: 's7', name: 'Ophthalmologist', type: 'Speciality' },
-  { id: 's8', name: 'ENT Specialist', type: 'Speciality' },
+  { id: 's1', name: 'Cardiologist', type: 'Specialty' },
+  { id: 's2', name: 'Dermatologist', type: 'Specialty' },
+  { id: 's3', name: 'Pediatrician', type: 'Specialty' },
+  { id: 's4', name: 'Orthopaedics', type: 'Specialty' },
+  { id: 's5', name: 'Neurologist', type: 'Specialty' },
+  { id: 's6', name: 'Gynaecologist', type: 'Specialty' },
+  { id: 's7', name: 'Ophthalmologist', type: 'Specialty' },
+  { id: 's8', name: 'ENT specialst', type: 'Specialty' },
   { id: 'd1', name: 'Dr. Rodger Struck', type: 'Doctor', subType: 'Cardiologist', address: 'Sunrise Hospital, Kakkanad' },
   { id: 'd2', name: 'Dr. Priya Sharma', type: 'Doctor', subType: 'Dermatologist', address: 'Sunrise Hospital, Kakkanad' },
   { id: 'd3', name: 'Dr. Anil Mehta', type: 'Doctor', subType: 'Neurologist', address: 'Sunrise Hospital, Kakkanad' },

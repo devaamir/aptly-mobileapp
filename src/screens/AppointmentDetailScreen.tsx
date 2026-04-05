@@ -85,7 +85,7 @@ export default function AppointmentDetailScreen() {
           hospitalType={type}
           location="Kakkanad, Kochi - 682030, Kerala, India."
           doctor={doctor}
-          doctorSpeciality={type}
+          doctorSpecialty={type}
           variant="light"
           onDoctorPress={() => navigation.navigate('DoctorDetail', {
             name: doctor,

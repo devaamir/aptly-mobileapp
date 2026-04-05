@@ -8,22 +8,22 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
-import { getSpecialities, Speciality } from '../services/api';
+import { getspecialties, Specialty } from '../services/api';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Specialist'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'specialst'>;
 
-export default function SpecialistScreen({ navigation }: Props) {
+export default function SpecialstScreen({ navigation }: Props) {
   const [query, setQuery] = useState('');
-  const [specialities, setSpecialities] = useState<Speciality[]>([]);
+  const [specialties, setspecialties] = useState<Specialty[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getSpecialities()
-      .then(res => setSpecialities(res.data))
+    getspecialties()
+      .then(res => setspecialties(res.data))
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = specialities.filter(s =>
+  const filtered = specialties.filter(s =>
     s.name.toLowerCase().includes(query.toLowerCase())
   );
 
@@ -36,13 +36,13 @@ export default function SpecialistScreen({ navigation }: Props) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.title}>All Specialists</Text>
+        <Text allowFontScaling={false} style={styles.title}>All specialsts</Text>
         <View style={styles.backBtn} />
       </View>
 
       {/* Search */}
       <View style={styles.searchWrapper}>
-        <SearchBar placeholder="Search specialists..." value={query} onChangeText={setQuery} style={{ borderWidth: 0 }} />
+        <SearchBar placeholder="Search specialsts..." value={query} onChangeText={setQuery} style={{ borderWidth: 0 }} />
       </View>
 
       {/* List */}
@@ -55,7 +55,7 @@ export default function SpecialistScreen({ navigation }: Props) {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('SpecialistDetail', { name: item.name, desc: item.description, clinics: 0, doctors: 0 })}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('specialstDetail', { name: item.name, desc: item.description, clinics: 0, doctors: 0 })}>
               <Image source={{ uri: item.icon }} style={styles.avatar} />
               <View style={styles.info}>
                 <Text allowFontScaling={false} style={styles.name}>{item.name}</Text>

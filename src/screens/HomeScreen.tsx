@@ -14,11 +14,11 @@ import LocationIcon from '../assets/icons/location-icon.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import PhoneIcon from '../assets/icons/phone-icon.svg';
 import MapIcon from '../assets/icons/map-icon.svg';
-import { getHomeData, Speciality, Doctor, Clinic } from '../services/api';
+import { getHomeData, Specialty, Doctor, Clinic } from '../services/api';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress, specialities, doctors, totalDoctorCount }: { onTokenPress: () => void; onSpecialistPress: () => void; onDoctorsPress: () => void; specialities: Speciality[]; doctors: Doctor[]; totalDoctorCount: number }) => (
+const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, specialties, doctors, totalDoctorCount }: { onTokenPress: () => void; onspecialstPress: () => void; onDoctorsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number }) => (
   <>
     <View style={styles.bannerCard}>
       {Platform.OS === 'android' && (
@@ -59,7 +59,7 @@ const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress, specialit
             <View style={styles.hospitalAvatar} />
             <View>
               <Text allowFontScaling={false} style={styles.hospitalName}>Sunrise Hospital</Text>
-              <Text allowFontScaling={false} style={styles.hospitalType}>Multi Speciality</Text>
+              <Text allowFontScaling={false} style={styles.hospitalType}>Multi Specialty</Text>
             </View>
           </View>
           <View style={styles.hospitalActions}>
@@ -74,15 +74,15 @@ const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress, specialit
         <View style={styles.hospitalBottom}>
           <Text allowFontScaling={false} style={styles.doctorName}>Dr. Rodger Struck</Text>
           <Text allowFontScaling={false} style={styles.hospitalSep}> | </Text>
-          <Text allowFontScaling={false} style={styles.doctorSpeciality}>Cardiologist</Text>
+          <Text allowFontScaling={false} style={styles.doctorSpecialty}>Cardiologist</Text>
         </View>
       </View>
     </View>
     <View style={styles.cardsRow}>
-      <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onSpecialistPress}>
-        <Text allowFontScaling={false} style={styles.cardTitle}>All specialist</Text>
+      <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onspecialstPress}>
+        <Text allowFontScaling={false} style={styles.cardTitle}>All specialst</Text>
         <View style={styles.iconsRow}>
-          {specialities.slice(0, 3).map(s => (
+          {specialties.slice(0, 3).map(s => (
             <View key={s.id} style={styles.iconBox}>
               <Image source={{ uri: s.icon }} style={styles.iconImg} />
             </View>
@@ -118,14 +118,14 @@ const ListHeader = ({ onTokenPress, onSpecialistPress, onDoctorsPress, specialit
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
-  const [specialities, setSpecialities] = useState<Speciality[]>([]);
+  const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [totalDoctorCount, setTotalDoctorCount] = useState(0);
 
   useEffect(() => {
     getHomeData().then(res => {
-      setSpecialities(res.data.specialities);
+      setSpecialties(res.data.specialties);
       setDoctors(res.data.doctors as Doctor[]);
       setClinics(res.data.topClinics);
       setTotalDoctorCount(res.data.totalDoctorCount);
@@ -156,14 +156,14 @@ export default function HomeScreen() {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onSpecialistPress={() => navigation.navigate('Specialist')} onDoctorsPress={() => navigation.navigate('Doctors')} specialities={specialities} doctors={doctors} totalDoctorCount={totalDoctorCount} />}
+        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} />}
         renderItem={({ item }) => (
           <ClinicCard
             name={item.name}
-            subType={item.specialities[0]?.name ?? item.type}
+            subType={item.specialties[0]?.name ?? item.type}
             location={`${item.district}, ${item.state}`}
             image={item.profilePicture}
-            onPress={() => navigation.navigate('HospitalDetail', { name: item.name, speciality: item.specialities[0]?.name ?? '', location: item.address })}
+            onPress={() => navigation.navigate('HospitalDetail', { name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
           />
         )}
       />
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     fontSize: SIZE(12),
     color: 'rgba(255,255,255,0.5)',
   },
-  doctorSpeciality: {
+  doctorSpecialty: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
     color: 'rgba(255,255,255,0.8)',
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     fontSize: SIZE(16),
     color: colors.textPrimary,
   },
-  clinicSpeciality: {
+  clinicSpecialty: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
     color: colors.textSecondary,

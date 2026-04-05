@@ -63,7 +63,7 @@ export default function DoctorsScreen({ navigation }: Props) {
 
   const filtered = doctors.filter(d =>
     d.name.toLowerCase().includes(query.toLowerCase()) ||
-    d.specialities.some(s => s.name.toLowerCase().includes(query.toLowerCase())),
+    d.specialties.some(s => s.name.toLowerCase().includes(query.toLowerCase())),
   );
 
   return (
@@ -88,13 +88,13 @@ export default function DoctorsScreen({ navigation }: Props) {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {
-            const speciality = item.specialities[0]?.name ?? '';
+            const specialty = item.specialties[0]?.name ?? '';
             const hospital = item.medicalCenters[0]?.name ?? '';
             const clinicType = item.medicalCenters[0]?.type ?? '';
             return (
               <DoctorCard
                 name={item.name}
-                type={speciality}
+                type={specialty}
                 hospital={hospital}
                 clinicType={clinicType}
                 experience={`${item.yearsOfExperience} yrs exp`}

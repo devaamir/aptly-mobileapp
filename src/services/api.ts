@@ -4,7 +4,7 @@ import type {
   SendOtpResponse,
   VerifyOtpResponse,
   CreatePatientResponse,
-  Speciality,
+  Specialty,
   Doctor,
   Clinic,
   Pagination,
@@ -18,7 +18,7 @@ export type {
   SendOtpResponse,
   VerifyOtpResponse,
   CreatePatientResponse,
-  Speciality,
+  Specialty,
   Doctor,
   Clinic,
   Pagination,
@@ -30,7 +30,7 @@ export type {
 
 const api = axios.create({
   baseURL: 'https://aptly-server.onrender.com/api',
-  headers: {'Content-Type': 'application/json'},
+  headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use(async config => {
@@ -49,9 +49,9 @@ api.interceptors.response.use(
         const refreshToken = await AsyncStorage.getItem('refreshToken');
         const res = await axios.post(
           'https://aptly-server.onrender.com/api/auth/refresh-token',
-          {refreshToken},
+          { refreshToken },
         );
-        const {accessToken, refreshToken: newRefresh} = res.data.data;
+        const { accessToken, refreshToken: newRefresh } = res.data.data;
         await AsyncStorage.multiSet([['accessToken', accessToken], ['refreshToken', newRefresh]]);
         original.headers.Authorization = `Bearer ${accessToken}`;
         return api(original);
@@ -67,46 +67,46 @@ export default api;
 
 // Auth
 export const sendOtp = (phoneNumber: string): Promise<SendOtpResponse> =>
-  api.post('/auth/send-otp', {phoneNumber});
+  api.post('/auth/send-otp', { phoneNumber });
 
 export const verifyOtp = (phoneNumber: string, code: string): Promise<VerifyOtpResponse> =>
-  api.post('/auth/verify-otp', {phoneNumber, code});
+  api.post('/auth/verify-otp', { phoneNumber, code });
 
 // Patients
 export const createPatient = (
   name: string, gender: string, dateOfBirth: string,
 ): Promise<CreatePatientResponse> =>
-  api.put('/patients/me', {name, gender, dateOfBirth});
+  api.put('/patients/me', { name, gender, dateOfBirth });
 
-export const getPatients = (): Promise<{success: boolean; data: Patient[]}> =>
+export const getPatients = (): Promise<{ success: boolean; data: Patient[] }> =>
   api.get('/patients');
 
-// Specialities
-export const getSpecialities = (): Promise<{success: boolean; data: Speciality[]}> =>
-  api.get('/specialities');
+// specialties
+export const getspecialties = (): Promise<{ success: boolean; data: Specialty[] }> =>
+  api.get('/specialties');
 
 // Doctors
-export const getDoctors = (page = 1, limit = 20): Promise<{success: boolean; data: Doctor[]; pagination: Pagination}> =>
+export const getDoctors = (page = 1, limit = 20): Promise<{ success: boolean; data: Doctor[]; pagination: Pagination }> =>
   api.get(`/doctors?page=${page}&limit=${limit}`);
 
-export const getDoctor = (id: string): Promise<{success: boolean; data: Doctor}> =>
+export const getDoctor = (id: string): Promise<{ success: boolean; data: Doctor }> =>
   api.get(`/doctors/${id}`);
 
 // Clinics
-export const getClinics = (page = 1, limit = 20): Promise<{success: boolean; data: Clinic[]; pagination: Pagination}> =>
+export const getClinics = (page = 1, limit = 20): Promise<{ success: boolean; data: Clinic[]; pagination: Pagination }> =>
   api.get(`/clinics?page=${page}&limit=${limit}`);
 
 // Home
-export const getHomeData = (): Promise<{success: boolean; data: HomeData}> =>
+export const getHomeData = (): Promise<{ success: boolean; data: HomeData }> =>
   api.get('/ui/home');
 
 // Appointments
-export const getAppointments = (): Promise<{success: boolean; data: Appointment[]}> =>
+export const getAppointments = (): Promise<{ success: boolean; data: Appointment[] }> =>
   api.get('/appointments');
 
 export const createAppointment = (
   appointmentDate: string,
   doctorScheduleId: string,
   patientId: string,
-): Promise<{success: boolean; data: Appointment}> =>
-  api.post('/appointments', {appointmentDate, doctorScheduleId, patientId});
+): Promise<{ success: boolean; data: Appointment }> =>
+  api.post('/appointments', { appointmentDate, doctorScheduleId, patientId });

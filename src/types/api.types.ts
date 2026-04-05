@@ -42,7 +42,7 @@ export interface CreatePatientResponse {
   };
 }
 
-export interface Speciality {
+export interface Specialty {
   id: string;
   name: string;
   description: string;
@@ -109,7 +109,7 @@ export interface Doctor {
   profilePicture: string;
   createdAt: string;
   updatedAt: string;
-  specialities: Speciality[];
+  specialties: Specialty[];
   medicalCenters: MedicalCenter[];
   medicalSystem: MedicalSystem;
   qualifications: {id: string; name: string; createdAt: string; updatedAt: string}[];
@@ -133,7 +133,7 @@ export interface Clinic {
   profilePicture: string;
   createdAt: string;
   updatedAt: string;
-  specialities: Speciality[];
+  specialties: Specialty[];
   medicalSystem: MedicalSystem;
 }
 
@@ -146,7 +146,7 @@ export interface Pagination {
 }
 
 export interface HomeData {
-  specialities: Speciality[];
+  specialties: Specialty[];
   doctors: Pick<Doctor, 'id' | 'name' | 'phoneNumber' | 'emailAddress' | 'about' | 'consultationFee' | 'yearsOfExperience' | 'advanceBookingLimit' | 'estimateConsultationTime' | 'latitude' | 'longitude' | 'address' | 'district' | 'state' | 'country' | 'profilePicture' | 'createdAt' | 'updatedAt'>[];
   totalDoctorCount: number;
   topClinics: Clinic[];

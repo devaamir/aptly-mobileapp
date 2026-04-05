@@ -16,7 +16,7 @@ type Props = {
   hospitalType: string;
   location: string;
   doctor: string;
-  doctorSpeciality: string;
+  doctorSpecialty: string;
   onDoctorPress?: () => void;
   onCancelPress?: () => void;
   cancelLabel?: string;
@@ -28,7 +28,7 @@ export default function AppointmentInfoCard({
   hospitalType,
   location,
   doctor,
-  doctorSpeciality,
+  doctorSpecialty,
   onDoctorPress,
   onCancelPress,
   cancelLabel = 'Cancel Token',
@@ -69,7 +69,7 @@ export default function AppointmentInfoCard({
           <View style={[styles.doctorAvatar, isLight && styles.avatarLight]} />
           <View style={styles.doctorInfo}>
             <Text allowFontScaling={false} style={[styles.doctorName, isLight && styles.textDark]}>{doctor}</Text>
-            <Text allowFontScaling={false} style={[styles.doctorSpeciality, isLight && styles.textMuted]}>{doctorSpeciality}</Text>
+            <Text allowFontScaling={false} style={[styles.doctorSpecialty, isLight && styles.textMuted]}>{doctorSpecialty}</Text>
           </View>
           <ArrowRight width={SIZE(18)} height={SIZE(18)} />
         </TouchableOpacity>
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     fontSize: SIZE(13),
     color: colors.white,
   },
-  doctorSpeciality: {
+  doctorSpecialty: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
     color: 'rgba(255,255,255,0.7)',

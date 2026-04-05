@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import React, { useEffect, useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PhoneNumberScreen from '../screens/PhoneNumberScreen';
 import OtpScreen from '../screens/OtpScreen';
@@ -8,8 +8,8 @@ import CreateProfileScreen from '../screens/CreateProfileScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 import TokenDetailScreen from '../screens/TokenDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
-import SpecialistScreen from '../screens/SpecialistScreen';
-import SpecialistDetailScreen from '../screens/SpecialistDetailScreen';
+import SpecialstScreen from '../screens/SpecialstScreen';
+import SpecialstDetailScreen from '../screens/SpecialstDetailScreen';
 import DoctorsScreen from '../screens/DoctorsScreen';
 import DoctorDetailScreen from '../screens/DoctorDetailScreen';
 import BookAppointmentScreen from '../screens/BookAppointmentScreen';
@@ -25,14 +25,14 @@ export type RootStackParamList = {
   Main: undefined;
   TokenDetail: undefined;
   Search: undefined;
-  Specialist: undefined;
-  SpecialistDetail: { name: string; desc: string; clinics: number; doctors: number };
+  specialst: undefined;
+  specialstDetail: { name: string; desc: string; clinics: number; doctors: number };
   Doctors: undefined;
   DoctorDetail: { doctorId: string };
   BookAppointment: { doctor: Doctor };
   BookingConfirmed: { token: number; doctorName: string; hospital: string; date: string };
   AppointmentDetail: { doctor: string; type: string; hospital: string; date: string; time: string; token: number; status: string };
-  HospitalDetail: { name: string; speciality: string; location: string };
+  HospitalDetail: { name: string; specialty: string; location: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -56,7 +56,7 @@ export default function Navigation() {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName={initialRoute}
-        screenOptions={{headerShown: false}}>
+        screenOptions={{ headerShown: false }}>
         <Stack.Screen name="PhoneNumber" component={PhoneNumberScreen} />
         <Stack.Screen name="Otp" component={OtpScreen} />
         <Stack.Screen name="CreateProfile" component={CreateProfileScreen} />
@@ -64,15 +64,15 @@ export default function Navigation() {
         <Stack.Screen
           name="TokenDetail"
           component={TokenDetailScreen}
-          options={{animation: 'slide_from_bottom'}}
+          options={{ animation: 'slide_from_bottom' }}
         />
         <Stack.Screen
           name="Search"
           component={SearchScreen}
-          options={{animation: 'fade'}}
+          options={{ animation: 'fade' }}
         />
-        <Stack.Screen name="Specialist" component={SpecialistScreen} />
-        <Stack.Screen name="SpecialistDetail" component={SpecialistDetailScreen} />
+        <Stack.Screen name="specialst" component={SpecialstScreen} />
+        <Stack.Screen name="specialstDetail" component={SpecialstDetailScreen} />
         <Stack.Screen name="Doctors" component={DoctorsScreen} />
         <Stack.Screen name="DoctorDetail" component={DoctorDetailScreen} />
         <Stack.Screen name="BookAppointment" component={BookAppointmentScreen} />
