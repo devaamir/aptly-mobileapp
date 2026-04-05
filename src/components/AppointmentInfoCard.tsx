@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(10),
+    fontSize: SIZE(11),
     color: colors.cardBorder,
   },
   hospitalActions: {

@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   clinicLocation: {
     fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(10),
+    fontSize: SIZE(11),
     color: colors.subText,
   },
   card: {

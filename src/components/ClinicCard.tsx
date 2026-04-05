@@ -9,11 +9,12 @@ type Props = {
   name: string;
   subType: string;
   location: string;
+  distance?: string;
   image?: string;
   onPress?: () => void;
 };
 
-export default function ClinicCard({ name, subType, location, image, onPress }: Props) {
+export default function ClinicCard({ name, subType, location, distance = '2.5 km', image, onPress }: Props) {
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onPress}>
       <Image
@@ -25,7 +26,8 @@ export default function ClinicCard({ name, subType, location, image, onPress }: 
         <Text allowFontScaling={false} style={styles.subType}>{subType}</Text>
         <View style={styles.locationRow}>
           <LocationIcon width={SIZE(12)} height={SIZE(12)} />
-          <Text allowFontScaling={false} style={styles.locationText}>{location}</Text>
+          <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location}</Text>
+          <Text allowFontScaling={false} style={styles.distanceText}>{distance}</Text>
         </View>
       </View>
       <ArrowRight width={SIZE(18)} height={SIZE(18)} />
@@ -66,7 +68,13 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: SIZE(4), marginTop: SIZE(2) },
   locationText: {
     fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(10),
+    fontSize: SIZE(11),
     color: colors.textSecondary,
+    flex: 1,
+  },
+  distanceText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(11),
+    color: colors.primary,
   },
 });

@@ -14,6 +14,7 @@ import LocationIcon from '../assets/icons/location-icon.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import PhoneIcon from '../assets/icons/phone-icon.svg';
 import MapIcon from '../assets/icons/map-icon.svg';
+import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import { getHomeData, Specialty, Doctor, Clinic } from '../services/api';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
@@ -105,14 +106,12 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, specialtie
         </View>
       </TouchableOpacity>
     </View>
-    {/* <View style={styles.featuredSection}> */}
     <View style={styles.sectionHeader}>
-      <Text allowFontScaling={false} style={styles.sectionTitle}>Featured</Text>
+      <Text allowFontScaling={false} style={styles.sectionTitle}>Near by Clinics</Text>
       <TouchableOpacity activeOpacity={0.7}>
         <Text allowFontScaling={false} style={styles.viewAll}>See all</Text>
       </TouchableOpacity>
     </View>
-    {/* </View> */}
   </>
 );
 
@@ -137,7 +136,16 @@ export default function HomeScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       {/* Header */}
       <View style={styles.header}>
-        <Image source={require('../assets/images/aptly-logo.png')} style={styles.logo} />
+        <TouchableOpacity style={styles.locationBtn} activeOpacity={0.7}>
+          <LocationIcon width={SIZE(19)} height={SIZE(19)} />
+          <View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SIZE(4) }}>
+              <Text allowFontScaling={false} style={styles.locationText}>Bangalore</Text>
+              <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
+            </View>
+            <Text allowFontScaling={false} style={styles.locationSub}>Malappuram, Kerala</Text>
+          </View>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.notifBtn} activeOpacity={0.7}>
           <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
@@ -182,6 +190,22 @@ const styles = StyleSheet.create({
     marginBottom: SIZE(10),
   },
   logo: { width: 94, height: SIZE(32), resizeMode: 'contain' },
+  locationBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(4),
+  },
+  locationText: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(18),
+    color: colors.dark,
+  },
+  locationSub: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.textSecondary,
+    marginTop: SIZE(1),
+  },
   notifBtn: {
     width: SIZE(22) + 12,
     height: SIZE(22) + 12,
@@ -243,7 +267,7 @@ const styles = StyleSheet.create({
   },
   tokenEst: {
     fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(10),
+    fontSize: SIZE(11),
     color: colors.white,
   },
   tokenRow: {
@@ -444,11 +468,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: SIZE(4), marginTop: SIZE(2) },
-  locationText: {
-    fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(10),
-    color: colors.textSecondary,
-  },
   arrowContainer: {
     alignItems: 'center',
     justifyContent: 'center',

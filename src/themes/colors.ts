@@ -1,5 +1,6 @@
 const colors = {
   primary: '#2879E4',
+  dark: '#00001D',
 
   // Backgrounds
   white: '#fff',

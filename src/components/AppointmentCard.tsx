@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   },
   tokenNextPrev: {
     fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(10),
+    fontSize: SIZE(11),
     color: colors.tokenNextPrevColor,
   },
   tokenCurrent: {
