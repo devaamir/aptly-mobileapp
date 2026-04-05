@@ -137,7 +137,7 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.locationBtn} activeOpacity={0.7}>
-          <LocationIcon width={SIZE(19)} height={SIZE(19)} />
+          <LocationIcon width={SIZE(19)} height={SIZE(19)} style={styles.locationIcon} />
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: SIZE(4) }}>
               <Text allowFontScaling={false} style={styles.locationText}>Bangalore</Text>
@@ -192,8 +192,11 @@ const styles = StyleSheet.create({
   logo: { width: 94, height: SIZE(32), resizeMode: 'contain' },
   locationBtn: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: SIZE(4),
+  },
+  locationIcon: {
+    marginTop: SIZE(8),
   },
   locationText: {
     fontFamily: 'Manrope-Bold',

@@ -48,8 +48,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: SIZE(14),
-    paddingVertical: SIZE(8),
-    backgroundColor: colors.inputBg,
+    backgroundColor: colors.white,
   },
   focused: {
     borderColor: colors.primary,
@@ -61,8 +60,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   iconContainer: {
-    backgroundColor: colors.inputBg,
-    paddingVertical: SIZE(9),
+    paddingVertical: SIZE(8),
     paddingLeft: SIZE(12),
     borderLeftWidth: 1,
     borderLeftColor: colors.border,
