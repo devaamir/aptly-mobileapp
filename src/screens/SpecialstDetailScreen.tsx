@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
-import SearchBar from '../components/SearchBar';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
+import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
+import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
+import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
 
@@ -31,10 +32,9 @@ type Props = NativeStackScreenProps<RootStackParamList, 'specialstDetail'>;
 export default function SpecialstDetailScreen({ navigation, route }: Props) {
   const { name } = route.params;
   const [tab, setTab] = useState<Tab>('clinics');
-  const [query, setQuery] = useState('');
 
-  const filteredDoctors = DOCTORS.filter(d => d.name.toLowerCase().includes(query.toLowerCase()));
-  const filteredClinics = CLINICS.filter(c => c.name.toLowerCase().includes(query.toLowerCase()));
+  const filteredDoctors = DOCTORS;
+  const filteredClinics = CLINICS;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,29 +46,34 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
         <Text allowFontScaling={false} style={styles.title}>{name}</Text>
-        <View style={styles.backBtn} />
-      </View>
-
-      {/* Search */}
-      <View style={styles.searchWrapper}>
-        <SearchBar
-          placeholder={`Search ${tab}...`}
-          value={query}
-          onChangeText={setQuery}
-          style={{ borderWidth: 0 }}
-        />
+        <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Search')}>
+          <SearchIcon width={SIZE(22)} height={SIZE(22)} />
+        </TouchableOpacity>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabs}>
         {(['clinics', 'doctors'] as Tab[]).map(t => (
-          <TouchableOpacity key={t} style={styles.tab} onPress={() => { setTab(t); setQuery(''); }} activeOpacity={0.8}>
+          <TouchableOpacity key={t} style={styles.tab} onPress={() => setTab(t)} activeOpacity={0.8}>
             <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </Text>
             {tab === t && <View style={styles.tabUnderline} />}
           </TouchableOpacity>
         ))}
+      </View>
+
+      {/* Location & Filter bar */}
+      <View style={styles.locationFilterRow}>
+        <TouchableOpacity style={styles.locationLeft} activeOpacity={0.7} onPress={() => navigation.navigate('LocationSearch')}>
+          <LocationIcon width={SIZE(14)} height={SIZE(14)} />
+          <Text allowFontScaling={false} style={styles.locationText}>Malappuram, Kerala</Text>
+          <DownArrowGrey width={SIZE(14)} height={SIZE(14)} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filterBtn} activeOpacity={0.7}>
+          <FilterIcon width={SIZE(12)} height={SIZE(12)} />
+          <Text allowFontScaling={false} style={styles.filterText}>Filter</Text>
+        </TouchableOpacity>
       </View>
 
       {/* List */}
@@ -152,7 +157,6 @@ const styles = StyleSheet.create({
   },
   tabs: {
     flexDirection: 'row',
-    marginBottom: SIZE(16),
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     paddingHorizontal: SIZE(18),
@@ -182,5 +186,37 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: SIZE(24),
     gap: SIZE(12),
+  },
+  locationFilterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SIZE(18),
+    paddingVertical: SIZE(10),
+    marginBottom: SIZE(8),
+  },
+  locationLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(4),
+  },
+  locationText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: '#494F5A',
+  },
+  filterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(6),
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: SIZE(8),
+    paddingVertical: SIZE(8),
+    borderRadius: 46,
+  },
+  filterText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(12),
+    color: '#00001D',
   },
 });

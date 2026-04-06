@@ -6,6 +6,9 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import SearchBar from '../components/SearchBar';
 import BackArrow from '../assets/icons/back-arrows.svg';
+import SearchIcon from '../assets/icons/search-icon.svg';
+
+const SUGGESTIONS = ['Clinics', 'Doctors', 'Ayurveda Clinics', 'Cardio'];
 
 const TYPE_IMAGES: Record<string, string> = {
   Specialty: 'https://placehold.co/56x56/EAF3FF/2879E4/png',
@@ -42,7 +45,7 @@ const DATA: Item[] = [
 ];
 
 export default function SearchScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [query, setQuery] = useState('');
 
   const filtered = query.trim()
@@ -66,6 +69,7 @@ export default function SearchScreen() {
         </View>
       </View>
 
+      {query.trim() ? (
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
@@ -96,6 +100,23 @@ export default function SearchScreen() {
         )}
         ItemSeparatorComponent={() => null}
       />
+      ) : (
+        <View style={styles.suggestionsBox}>
+          <Text allowFontScaling={false} style={styles.suggestionsTitle}>Search suggestions</Text>
+          {SUGGESTIONS.map(s => (
+            <TouchableOpacity key={s} style={styles.suggestionRow} activeOpacity={0.7} onPress={() => {
+              if (s.toLowerCase() === 'cardio') {
+                (navigation as any).navigate('specialstDetail', { name: 'Cardiologist', desc: '', clinics: 0, doctors: 0 });
+              } else {
+                navigation.navigate('SearchResult', { title: s });
+              }
+            }}>
+              <SearchIcon width={SIZE(18)} height={SIZE(18)} />
+              <Text allowFontScaling={false} style={styles.suggestionText}>{s}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -140,4 +161,29 @@ const styles = StyleSheet.create({
   sep: { color: colors.border },
   viewAll: { fontFamily: 'Manrope-Medium', fontSize: SIZE(12), color: colors.accent },
   separator: { height: 0 },
+  suggestionsBox: {
+    backgroundColor: colors.white,
+    paddingHorizontal: SIZE(16),
+    paddingTop: SIZE(16),
+    paddingBottom: SIZE(8),
+    marginBottom: SIZE(8),
+    borderRadius: SIZE(12),
+  },
+  suggestionsTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(12),
+    color: '#1C1E22',
+    marginBottom: SIZE(8),
+  },
+  suggestionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(12),
+    paddingVertical: SIZE(12),
+  },
+  suggestionText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(14),
+    color: '#494F5A',
+  },
 });

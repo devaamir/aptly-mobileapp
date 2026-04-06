@@ -136,7 +136,7 @@ export default function HomeScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.locationBtn} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.locationBtn} activeOpacity={0.7} onPress={() => navigation.navigate('LocationSearch')}>
           <LocationIcon width={SIZE(19)} height={SIZE(19)} style={styles.locationIcon} />
           <View>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: SIZE(4) }}>

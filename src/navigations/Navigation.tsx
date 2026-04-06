@@ -8,6 +8,8 @@ import CreateProfileScreen from '../screens/CreateProfileScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 import TokenDetailScreen from '../screens/TokenDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
+import SearchResultScreen from '../screens/SearchResultScreen';
+import LocationSearchScreen from '../screens/LocationSearchScreen';
 import SpecialstScreen from '../screens/SpecialstScreen';
 import SpecialstDetailScreen from '../screens/SpecialstDetailScreen';
 import DoctorsScreen from '../screens/DoctorsScreen';
@@ -25,6 +27,8 @@ export type RootStackParamList = {
   Main: undefined;
   TokenDetail: undefined;
   Search: undefined;
+  SearchResult: { title: string };
+  LocationSearch: undefined;
   specialst: undefined;
   specialstDetail: { name: string; desc: string; clinics: number; doctors: number };
   Doctors: undefined;
@@ -66,11 +70,9 @@ export default function Navigation() {
           component={TokenDetailScreen}
           options={{ animation: 'slide_from_bottom' }}
         />
-        <Stack.Screen
-          name="Search"
-          component={SearchScreen}
-          options={{ animation: 'fade' }}
-        />
+        <Stack.Screen name="Search" component={SearchScreen} options={{ animation: 'fade' }} />
+        <Stack.Screen name="SearchResult" component={SearchResultScreen} />
+        <Stack.Screen name="LocationSearch" component={LocationSearchScreen} />
         <Stack.Screen name="specialst" component={SpecialstScreen} />
         <Stack.Screen name="specialstDetail" component={SpecialstDetailScreen} />
         <Stack.Screen name="Doctors" component={DoctorsScreen} />

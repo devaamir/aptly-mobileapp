@@ -42,7 +42,7 @@ export default function SpecialstScreen({ navigation }: Props) {
 
       {/* Search */}
       <View style={styles.searchWrapper}>
-        <SearchBar placeholder="Search specialsts..." value={query} onChangeText={setQuery} style={{ borderWidth: 0 }} />
+        <SearchBar placeholder="Search specialsts..." value={query} onChangeText={setQuery} />
       </View>
 
       {/* List */}
@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
   searchWrapper: {
     paddingHorizontal: SIZE(18),
     marginBottom: SIZE(12),
+    backgroundColor: colors.white,
   },
   listContent: {
     paddingHorizontal: SIZE(18),

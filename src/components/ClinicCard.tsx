@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon.svg';
@@ -12,11 +12,12 @@ type Props = {
   distance?: string;
   image?: string;
   onPress?: () => void;
+  style?: ViewStyle;
 };
 
-export default function ClinicCard({ name, subType, location, distance = '2.5 km', image, onPress }: Props) {
+export default function ClinicCard({ name, subType, location, distance = '2.5 km', image, onPress, style }: Props) {
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onPress}>
+    <TouchableOpacity style={[styles.card, style]} activeOpacity={0.8} onPress={onPress}>
       <Image
         source={image ? { uri: image } : require('../assets/images/aptly-logo.png')}
         style={styles.image}

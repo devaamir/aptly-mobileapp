@@ -3,11 +3,13 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Activity
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
-import SearchBar from '../components/SearchBar';
 import DoctorCard from '../components/DoctorCard';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
+import SearchIcon from '../assets/icons/search-icon.svg';
+import LocationIcon from '../assets/icons/location-icon.svg';
+import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import { getDoctors, getDoctor, Doctor } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Doctors'>;
@@ -50,7 +52,6 @@ function getBookingTime(doctor: Doctor): string {
 }
 
 export default function DoctorsScreen({ navigation }: Props) {
-  const [query, setQuery] = useState('');
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -61,10 +62,6 @@ export default function DoctorsScreen({ navigation }: Props) {
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = doctors.filter(d =>
-    d.name.toLowerCase().includes(query.toLowerCase()) ||
-    d.specialties.some(s => s.name.toLowerCase().includes(query.toLowerCase())),
-  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -74,16 +71,31 @@ export default function DoctorsScreen({ navigation }: Props) {
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
         <Text allowFontScaling={false} style={styles.title}>Doctors</Text>
-        <View style={styles.backBtn} />
+        <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Search')}>
+          <SearchIcon width={SIZE(22)} height={SIZE(22)} />
+        </TouchableOpacity>
       </View>
-      <View style={styles.searchWrapper}>
-        <SearchBar placeholder="Search doctors..." value={query} onChangeText={setQuery} style={{ borderWidth: 0 }} />
+
+      {/* Location & Filter */}
+      <TouchableOpacity style={styles.locationBox} activeOpacity={0.8} onPress={() => navigation.navigate('LocationSearch')}>
+        <View style={styles.locationIconContainer}>
+          <LocationIcon width={SIZE(20)} height={SIZE(20)} />
+        </View>
+        <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>Malappuram, Kerala</Text>
+        <Text allowFontScaling={false} style={styles.distanceText}>2.5 km</Text>
+      </TouchableOpacity>
+      <View style={styles.filterRow}>
+        <TouchableOpacity style={styles.filterBtn} activeOpacity={0.7}>
+          <FilterIcon width={SIZE(12)} height={SIZE(12)} />
+          <Text allowFontScaling={false} style={styles.filterText}>Filter</Text>
+        </TouchableOpacity>
       </View>
+
       {loading ? (
         <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
       ) : (
         <FlatList
-          data={filtered}
+          data={doctors}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -129,4 +141,56 @@ const styles = StyleSheet.create({
   },
   searchWrapper: { paddingHorizontal: SIZE(18), marginBottom: SIZE(20), },
   listContent: { paddingBottom: SIZE(24), gap: SIZE(12), paddingHorizontal: SIZE(20) },
+  locationBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: SIZE(14),
+    paddingVertical: SIZE(8),
+    marginHorizontal: SIZE(18),
+    marginVertical: SIZE(8),
+    backgroundColor: colors.white,
+  },
+  locationIconContainer: {
+    paddingVertical: SIZE(8),
+    paddingRight: SIZE(12),
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  locationText: {
+    flex: 1,
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(14),
+    color: colors.textPrimary,
+    marginLeft: SIZE(10),
+  },
+  filterRow: {
+    paddingHorizontal: SIZE(18),
+    marginBottom: SIZE(8),
+  },
+  distanceText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(13),
+    color: colors.primary,
+    paddingLeft: SIZE(8),
+  },
+  filterBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(6),
+    alignSelf: 'flex-start',
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: SIZE(8),
+    paddingVertical: SIZE(8),
+    borderRadius: 46,
+  },
+  filterText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(12),
+    color: '#00001D',
+  },
 });
