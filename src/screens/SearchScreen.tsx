@@ -70,43 +70,43 @@ export default function SearchScreen() {
       </View>
 
       {query.trim() ? (
-      <FlatList
-        data={filtered}
-        keyExtractor={item => item.id}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.list}
-        style={{ backgroundColor: colors.backgroundGrey }}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card} activeOpacity={0.7}>
-            <Image
-              source={{ uri: TYPE_IMAGES[item.type] }}
-              style={[styles.itemImage, item.type === 'Doctor' && styles.itemImageCircle]}
-            />
-            <View style={styles.cardContent}>
-              <Text allowFontScaling={false} style={styles.resultName}>{item.name}</Text>
-              {item.type === 'Hospital' || item.type === 'Doctor' ? (
-                <Text allowFontScaling={false} style={styles.meta}>
-                  {item.subType}
-                  <Text allowFontScaling={false} style={styles.sep}>  |  </Text>
-                  {item.address}
-                </Text>
-              ) : (
-                <TouchableOpacity activeOpacity={0.7}>
-                  <Text allowFontScaling={false} style={styles.viewAll}>View All</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </TouchableOpacity>
-        )}
-        ItemSeparatorComponent={() => null}
-      />
+        <FlatList
+          data={filtered}
+          keyExtractor={item => item.id}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.list}
+          style={{ backgroundColor: colors.backgroundGrey }}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.card} activeOpacity={0.7}>
+              <Image
+                source={{ uri: TYPE_IMAGES[item.type] }}
+                style={[styles.itemImage, item.type === 'Doctor' && styles.itemImageCircle]}
+              />
+              <View style={styles.cardContent}>
+                <Text allowFontScaling={false} style={styles.resultName}>{item.name}</Text>
+                {item.type === 'Hospital' || item.type === 'Doctor' ? (
+                  <Text allowFontScaling={false} style={styles.meta}>
+                    {item.subType}
+                    <Text allowFontScaling={false} style={styles.sep}>  |  </Text>
+                    {item.address}
+                  </Text>
+                ) : (
+                  <TouchableOpacity activeOpacity={0.7}>
+                    <Text allowFontScaling={false} style={styles.viewAll}>View All</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </TouchableOpacity>
+          )}
+          ItemSeparatorComponent={() => null}
+        />
       ) : (
         <View style={styles.suggestionsBox}>
           <Text allowFontScaling={false} style={styles.suggestionsTitle}>Search suggestions</Text>
           {SUGGESTIONS.map(s => (
             <TouchableOpacity key={s} style={styles.suggestionRow} activeOpacity={0.7} onPress={() => {
               if (s.toLowerCase() === 'cardio') {
-                (navigation as any).navigate('specialstDetail', { name: 'Cardiologist', desc: '', clinics: 0, doctors: 0 });
+                (navigation as any).navigate('SpecialstDetail', { name: 'Cardiologist', desc: '', clinics: 0, doctors: 0 });
               } else {
                 navigation.navigate('SearchResult', { title: s });
               }

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar } from 'react-native'; import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
@@ -11,30 +12,27 @@ import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
-
-const DOCTORS = [
-  { id: '1', name: 'Dr. Rodger Struck', type: 'Cardiologist', hospital: 'Sunrise Hospital', clinicType: 'Multi Specialty', experience: '8 yrs exp', location: 'Bandra, Mumbai', rating: '4.8', status: 'Booking Opened' },
-  { id: '2', name: 'Dr. Sarah Collins', type: 'Neurologist', hospital: 'Apollo Clinic', clinicType: 'Clinic', experience: '12 yrs exp', location: 'Andheri, Mumbai', rating: '4.9', status: 'Not Started' },
-  { id: '3', name: 'Dr. James Patel', type: 'Dermatologist', hospital: 'Max Care', clinicType: 'Clinic', experience: '5 yrs exp', location: 'Powai, Mumbai', rating: '4.6', status: 'Booking Opened' },
-  { id: '4', name: 'Dr. Meera Nair', type: 'Orthopaedic', hospital: 'Narayana Health', clinicType: 'Multi Specialty', experience: '10 yrs exp', location: 'Thane, Mumbai', rating: '4.7', status: 'Not Started' },
-];
-
-const CLINICS = [
-  { id: '1', name: 'Apollo Clinic', type: 'Multi-specialty', location: 'Bandra, Mumbai', rating: '4.7' },
-  { id: '2', name: 'Fortis Health', type: 'Cardiology', location: 'Andheri, Mumbai', rating: '4.8' },
-  { id: '3', name: 'Max Care', type: 'Dermatology', location: 'Powai, Mumbai', rating: '4.5' },
-  { id: '4', name: 'Narayana Health', type: 'Orthopaedics', location: 'Thane, Mumbai', rating: '4.6' },
-];
+import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
 
 type Tab = 'clinics' | 'doctors';
-type Props = NativeStackScreenProps<RootStackParamList, 'specialstDetail'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'SpecialstDetail'>;
 
 export default function SpecialstDetailScreen({ navigation, route }: Props) {
-  const { name } = route.params;
+  const { name, id } = route.params;
   const [tab, setTab] = useState<Tab>('clinics');
+  const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredDoctors = DOCTORS;
-  const filteredClinics = CLINICS;
+  useEffect(() => {
+    Promise.all([
+      getClinics(1, 20, { specialtyId: id }),
+      getDoctors(1, 20, { specialtyId: id }),
+    ]).then(([clinicRes, doctorRes]) => {
+      setClinics(clinicRes.data);
+      setDoctors(doctorRes.data);
+    }).finally(() => setLoading(false));
+  }, [id]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -78,53 +76,46 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
 
       {/* List */}
       {tab === 'doctors' ? (
+        loading ? <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} /> :
         <FlatList
           key="doctors"
-          data={filteredDoctors}
+          data={doctors}
           keyExtractor={item => item.id}
-          contentContainerStyle={[styles.listContent, tab === 'doctors' && { paddingHorizontal: SIZE(18) }]}
+          contentContainerStyle={[styles.listContent, { paddingHorizontal: SIZE(18) }]}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <DoctorCard
               name={item.name}
-              type={item.type}
-              hospital={item.hospital}
-              clinicType={item.clinicType}
-              experience={item.experience}
-              status={item.status as 'Booking Opened' | 'Not Started'}
-              onPress={() => navigation.navigate('DoctorDetail', {
-                name: item.name,
-                type: item.type,
-                hospital: item.hospital,
-                clinicType: item.clinicType,
-                experience: item.experience,
-                location: item.location,
-                rating: item.rating,
-                status: item.status,
-              })}
-              onBookPress={() => navigation.navigate('BookAppointment', {
-                name: item.name,
-                type: item.type,
-                hospital: item.hospital,
-              })}
+              type={item.specialties[0]?.name ?? ''}
+              hospital={item.medicalCenters[0]?.name ?? ''}
+              clinicType={item.medicalCenters[0]?.type ?? ''}
+              experience={`${item.yearsOfExperience} yrs exp`}
+              image={item.profilePicture}
+              onPress={() => navigation.navigate('DoctorDetail', { doctorId: item.id })}
+              onBookPress={() => navigation.navigate('BookAppointment', { doctor: item })}
             />
           )}
+          ListEmptyComponent={<Text allowFontScaling={false} style={styles.emptyText}>No available doctors</Text>}
         />
+      ) : loading ? (
+        <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
       ) : (
         <FlatList
           key="clinics"
-          data={filteredClinics}
+          data={clinics}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}
-              subType={item.type}
-              location={item.location}
-              onPress={() => navigation.navigate('HospitalDetail', { name: item.name, specialty: item.type, location: item.location })}
+              subType={item.specialties[0]?.name ?? item.type}
+              location={`${item.district}, ${item.state}`}
+              image={item.profilePicture}
+              onPress={() => navigation.navigate('HospitalDetail', { name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
             />
           )}
+          ListEmptyComponent={<Text allowFontScaling={false} style={styles.emptyText}>No available clinics</Text>}
         />
       )}
     </SafeAreaView>
@@ -186,6 +177,13 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: SIZE(24),
     gap: SIZE(12),
+  },
+  emptyText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(14),
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: SIZE(40),
   },
   locationFilterRow: {
     flexDirection: 'row',

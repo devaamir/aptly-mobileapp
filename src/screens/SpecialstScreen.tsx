@@ -55,7 +55,7 @@ export default function SpecialstScreen({ navigation }: Props) {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('specialstDetail', { name: item.name, desc: item.description, clinics: 0, doctors: 0 })}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('SpecialstDetail', { name: item.name, id: item.id, desc: item.description, clinics: 0, doctors: 0 })}>
               <Image source={{ uri: item.icon }} style={styles.avatar} />
               <View style={styles.info}>
                 <Text allowFontScaling={false} style={styles.name}>{item.name}</Text>

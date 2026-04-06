@@ -86,15 +86,47 @@ export const getspecialties = (): Promise<{ success: boolean; data: Specialty[] 
   api.get('/specialties');
 
 // Doctors
-export const getDoctors = (page = 1, limit = 20): Promise<{ success: boolean; data: Doctor[]; pagination: Pagination }> =>
-  api.get(`/doctors?page=${page}&limit=${limit}`);
+export const getDoctors = (
+  page = 1,
+  limit = 20,
+  filters?: {
+    specialtyId?: string;
+    search?: string;
+    latitude?: number;
+    longitude?: number;
+    radius?: number;
+    medicalSystemId?: string;
+  },
+): Promise<{ success: boolean; data: Doctor[]; pagination: Pagination }> => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (filters) {
+    Object.entries(filters).forEach(([k, v]) => v !== undefined && params.append(k, String(v)));
+  }
+  return api.get(`/doctors?${params.toString()}`);
+};
 
 export const getDoctor = (id: string): Promise<{ success: boolean; data: Doctor }> =>
   api.get(`/doctors/${id}`);
 
 // Clinics
-export const getClinics = (page = 1, limit = 20): Promise<{ success: boolean; data: Clinic[]; pagination: Pagination }> =>
-  api.get(`/clinics?page=${page}&limit=${limit}`);
+export const getClinics = (
+  page = 1,
+  limit = 20,
+  filters?: {
+    specialtyId?: string;
+    search?: string;
+    latitude?: number;
+    longitude?: number;
+    radius?: number;
+    medicalSystemId?: string;
+  },
+): Promise<{ success: boolean; data: Clinic[]; pagination: Pagination }> => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (filters) {
+    Object.entries(filters).forEach(([k, v]) => v !== undefined && params.append(k, String(v)));
+  }
+  return api.get(`/clinics?${params.toString()}`);
+};
 
 // Home
 export const getHomeData = (): Promise<{ success: boolean; data: HomeData }> =>

@@ -30,7 +30,7 @@ export type RootStackParamList = {
   SearchResult: { title: string };
   LocationSearch: undefined;
   specialst: undefined;
-  specialstDetail: { name: string; desc: string; clinics: number; doctors: number };
+  SpecialstDetail: { name: string; id: string; desc: string; clinics: number; doctors: number };
   Doctors: undefined;
   DoctorDetail: { doctorId: string };
   BookAppointment: { doctor: Doctor };
@@ -74,7 +74,7 @@ export default function Navigation() {
         <Stack.Screen name="SearchResult" component={SearchResultScreen} />
         <Stack.Screen name="LocationSearch" component={LocationSearchScreen} />
         <Stack.Screen name="specialst" component={SpecialstScreen} />
-        <Stack.Screen name="specialstDetail" component={SpecialstDetailScreen} />
+        <Stack.Screen name="SpecialstDetail" component={SpecialstDetailScreen} />
         <Stack.Screen name="Doctors" component={DoctorsScreen} />
         <Stack.Screen name="DoctorDetail" component={DoctorDetailScreen} />
         <Stack.Screen name="BookAppointment" component={BookAppointmentScreen} />
