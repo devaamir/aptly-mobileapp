@@ -132,6 +132,9 @@ export const getClinics = (
 export const getHomeData = (): Promise<{ success: boolean; data: HomeData }> =>
   api.get('/ui/home');
 
+export const searchAll = (q: string): Promise<{ success: boolean; data: (Doctor | Clinic)[] }> =>
+  api.get(`/ui/search?q=${encodeURIComponent(q)}`);
+
 // Appointments
 export const getAppointments = (): Promise<{ success: boolean; data: Appointment[] }> =>
   api.get('/appointments');

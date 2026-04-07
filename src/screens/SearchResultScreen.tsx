@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -11,33 +11,29 @@ import LocationIcon from '../assets/icons/location-black-icon.svg';
 import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
+import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SearchResult'>;
 
 const DOCTOR_TITLES = ['doctors'];
 
-const DUMMY_DOCTORS = [
-  { id: 'd1', name: 'Dr. Rodger Struck', specialty: 'Cardiologist', hospital: 'Sunrise Hospital', clinicType: 'Clinic', experience: '8 yrs exp' },
-  { id: 'd2', name: 'Dr. Priya Sharma', specialty: 'Dermatologist', hospital: 'Apollo Clinic', clinicType: 'Clinic', experience: '5 yrs exp' },
-  { id: 'd3', name: 'Dr. Anil Mehta', specialty: 'Neurologist', hospital: 'Fortis Health', clinicType: 'Hospital', experience: '12 yrs exp' },
-  { id: 'd4', name: 'Dr. Sarah Khan', specialty: 'Pediatrician', hospital: 'Max Care Centre', clinicType: 'Clinic', experience: '6 yrs exp' },
-];
-
-const DUMMY_CLINICS = [
-  { id: 'c1', name: 'Sunrise Hospital', subType: 'Multi Specialty', location: 'Kakkanad, Kochi' },
-  { id: 'c2', name: 'Apollo Clinic', subType: 'General', location: 'Edapally, Kochi' },
-  { id: 'c3', name: 'Fortis Health', subType: 'Cardiology', location: 'MG Road, Kochi' },
-  { id: 'c4', name: 'Max Care Centre', subType: 'Pediatrics', location: 'Thrissur, Kerala' },
-];
-
 export default function SearchResultScreen({ navigation, route }: Props) {
-  const { title } = route.params;
+  const { title, latitude, longitude, radius } = route.params;
   const isDoctor = DOCTOR_TITLES.includes(title.toLowerCase());
   const [activeFilter, setActiveFilter] = useState<string | null>(
     title.toLowerCase() !== 'clinics' && title.toLowerCase() !== 'doctors' ? title : null
   );
   const [location, setLocation] = useState('Malappuram, Kerala');
-  const data = isDoctor ? DUMMY_DOCTORS : DUMMY_CLINICS;
+  const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = isDoctor
+      ? getDoctors(1, 20, { latitude, longitude, radius }).then(res => setDoctors(res.data))
+      : getClinics(1, 20, { latitude, longitude, radius }).then(res => setClinics(res.data));
+    fetch.finally(() => setLoading(false));
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -73,30 +69,38 @@ export default function SearchResultScreen({ navigation, route }: Props) {
         )}
       </View>
 
-      <FlatList
-        data={data}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => isDoctor ? (
-          <DoctorCard
-            name={(item as typeof DUMMY_DOCTORS[0]).name}
-            type={(item as typeof DUMMY_DOCTORS[0]).specialty}
-            hospital={(item as typeof DUMMY_DOCTORS[0]).hospital}
-            clinicType={(item as typeof DUMMY_DOCTORS[0]).clinicType}
-            experience={(item as typeof DUMMY_DOCTORS[0]).experience}
-            onPress={() => { }}
-            onBookPress={() => { }}
-          />
-        ) : (
-          <ClinicCard
-            name={(item as typeof DUMMY_CLINICS[0]).name}
-            subType={(item as typeof DUMMY_CLINICS[0]).subType}
-            location={(item as typeof DUMMY_CLINICS[0]).location}
-            style={{ marginHorizontal: 0 }}
-          />
-        )}
-      />
+      {loading ? (
+        <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
+      ) : (
+        <FlatList
+          data={isDoctor ? doctors : clinics}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => isDoctor ? (
+            <DoctorCard
+              name={(item as Doctor).name}
+              type={(item as Doctor).specialties[0]?.name ?? ''}
+              hospital={(item as Doctor).medicalCenters[0]?.name ?? ''}
+              clinicType={(item as Doctor).medicalCenters[0]?.type ?? ''}
+              experience={`${(item as Doctor).yearsOfExperience} yrs exp`}
+              image={(item as Doctor).profilePicture}
+              onPress={() => navigation.navigate('DoctorDetail' as never, { doctorId: item.id } as never)}
+              onBookPress={() => navigation.navigate('BookAppointment' as never, { doctor: item } as never)}
+            />
+          ) : (
+            <ClinicCard
+              name={(item as Clinic).name}
+              subType={(item as Clinic).specialties[0]?.name ?? (item as Clinic).type}
+              location={`${(item as Clinic).district}, ${(item as Clinic).state}`}
+              image={(item as Clinic).profilePicture}
+              onPress={() => navigation.navigate('HospitalDetail', { name: (item as Clinic).name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })}
+              style={{ marginHorizontal: 0 }}
+            />
+          )}
+          ListEmptyComponent={<Text allowFontScaling={false} style={styles.emptyText}>No results found</Text>}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -144,6 +148,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   list: { paddingHorizontal: SIZE(18), gap: SIZE(12), paddingBottom: SIZE(24) },
+  emptyText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(14),
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: SIZE(40),
+  },
   filterRow: {
     flexDirection: 'row',
     alignItems: 'center',

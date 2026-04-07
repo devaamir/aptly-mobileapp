@@ -27,7 +27,7 @@ export type RootStackParamList = {
   Main: undefined;
   TokenDetail: undefined;
   Search: undefined;
-  SearchResult: { title: string };
+  SearchResult: { title: string; latitude?: number; longitude?: number; radius?: number };
   LocationSearch: undefined;
   specialst: undefined;
   SpecialstDetail: { name: string; id: string; desc: string; clinics: number; doctors: number };

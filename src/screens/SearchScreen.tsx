@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import colors from '../themes/colors';
@@ -7,50 +7,25 @@ import { SIZE } from '../themes/sizes';
 import SearchBar from '../components/SearchBar';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
+import { searchAll, Doctor, Clinic } from '../services/api';
 
 const SUGGESTIONS = ['Clinics', 'Doctors', 'Ayurveda Clinics', 'Cardio'];
-
-const TYPE_IMAGES: Record<string, string> = {
-  Specialty: 'https://placehold.co/56x56/EAF3FF/2879E4/png',
-  Doctor: 'https://placehold.co/56x56/F0FFF4/22C55E/png',
-  Hospital: 'https://placehold.co/56x56/FFF7ED/F97316/png',
-};
-
-type Item = {
-  id: string;
-  name: string;
-  type: string;
-  subType?: string;
-  address?: string;
-};
-
-const DATA: Item[] = [
-  { id: 's1', name: 'Cardiologist', type: 'Specialty' },
-  { id: 's2', name: 'Dermatologist', type: 'Specialty' },
-  { id: 's3', name: 'Pediatrician', type: 'Specialty' },
-  { id: 's4', name: 'Orthopaedics', type: 'Specialty' },
-  { id: 's5', name: 'Neurologist', type: 'Specialty' },
-  { id: 's6', name: 'Gynaecologist', type: 'Specialty' },
-  { id: 's7', name: 'Ophthalmologist', type: 'Specialty' },
-  { id: 's8', name: 'ENT specialst', type: 'Specialty' },
-  { id: 'd1', name: 'Dr. Rodger Struck', type: 'Doctor', subType: 'Cardiologist', address: 'Sunrise Hospital, Kakkanad' },
-  { id: 'd2', name: 'Dr. Priya Sharma', type: 'Doctor', subType: 'Dermatologist', address: 'Sunrise Hospital, Kakkanad' },
-  { id: 'd3', name: 'Dr. Anil Mehta', type: 'Doctor', subType: 'Neurologist', address: 'Sunrise Hospital, Kakkanad' },
-  { id: 'd4', name: 'Dr. Sarah Khan', type: 'Doctor', subType: 'Pediatrician', address: 'Sunrise Hospital, Kakkanad' },
-  { id: 'h1', name: 'Sunrise Hospital', type: 'Hospital', subType: 'Clinic', address: 'Kakkanad, Kochi - 682030' },
-  { id: 'h2', name: 'Apollo Clinic', type: 'Hospital', subType: 'Clinic', address: 'Kakkanad, Kochi - 682030' },
-  { id: 'h3', name: 'Fortis Health', type: 'Hospital', subType: 'Clinic', address: 'Kakkanad, Kochi - 682030' },
-  { id: 'h4', name: 'Max Care Centre', type: 'Hospital', subType: 'Clinic', address: 'Kakkanad, Kochi - 682030' },
-  { id: 'h5', name: 'Narayana Health', type: 'Hospital', subType: 'Clinic', address: 'Kakkanad, Kochi - 682030' },
-];
 
 export default function SearchScreen() {
   const navigation = useNavigation<any>();
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState<(Doctor | Clinic)[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [coords] = useState<{ latitude: number; longitude: number } | null>(null);
 
-  const filtered = query.trim()
-    ? DATA.filter(s => s.name.toLowerCase().includes(query.toLowerCase()))
-    : DATA;
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); return; }
+    const timer = setTimeout(() => {
+      setLoading(true);
+      searchAll(query).then(res => setResults(res.data)).finally(() => setLoading(false));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [query]);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -70,45 +45,53 @@ export default function SearchScreen() {
       </View>
 
       {query.trim() ? (
-        <FlatList
-          data={filtered}
-          keyExtractor={item => item.id}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.list}
-          style={{ backgroundColor: colors.backgroundGrey }}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} activeOpacity={0.7}>
-              <Image
-                source={{ uri: TYPE_IMAGES[item.type] }}
-                style={[styles.itemImage, item.type === 'Doctor' && styles.itemImageCircle]}
-              />
-              <View style={styles.cardContent}>
-                <Text allowFontScaling={false} style={styles.resultName}>{item.name}</Text>
-                {item.type === 'Hospital' || item.type === 'Doctor' ? (
-                  <Text allowFontScaling={false} style={styles.meta}>
-                    {item.subType}
-                    <Text allowFontScaling={false} style={styles.sep}>  |  </Text>
-                    {item.address}
-                  </Text>
-                ) : (
-                  <TouchableOpacity activeOpacity={0.7}>
-                    <Text allowFontScaling={false} style={styles.viewAll}>View All</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </TouchableOpacity>
-          )}
-          ItemSeparatorComponent={() => null}
-        />
+        loading ? (
+          <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
+        ) : (
+          <FlatList
+            data={results}
+            keyExtractor={item => item.id}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.list}
+            style={{ backgroundColor: colors.backgroundGrey }}
+            ListEmptyComponent={<Text allowFontScaling={false} style={styles.empty}>No results found</Text>}
+            renderItem={({ item }) => {
+              const isDoctor = (item as any).type === 'doctor';
+              return (
+                <TouchableOpacity
+                  style={styles.card}
+                  activeOpacity={0.7}
+                  onPress={() => isDoctor
+                    ? navigation.navigate('DoctorDetail', { doctorId: item.id })
+                    : navigation.navigate('HospitalDetail', { name: item.name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })
+                  }>
+                  <View style={[styles.itemImage, isDoctor && styles.itemImageCircle]}>
+                    {(item as any).profilePicture
+                      ? <Image source={{ uri: (item as any).profilePicture }} style={{ width: '100%', height: '100%' }} />
+                      : null}
+                  </View>
+                  <View style={styles.cardContent}>
+                    <Text allowFontScaling={false} style={styles.resultName}>{item.name}</Text>
+                    <Text allowFontScaling={false} style={styles.meta}>
+                      {isDoctor
+                        ? (item as Doctor).specialties[0]?.name ?? ''
+                        : `${(item as Clinic).district}, ${(item as Clinic).state}`}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        )
       ) : (
         <View style={styles.suggestionsBox}>
           <Text allowFontScaling={false} style={styles.suggestionsTitle}>Search suggestions</Text>
           {SUGGESTIONS.map(s => (
             <TouchableOpacity key={s} style={styles.suggestionRow} activeOpacity={0.7} onPress={() => {
               if (s.toLowerCase() === 'cardio') {
-                (navigation as any).navigate('SpecialstDetail', { name: 'Cardiologist', desc: '', clinics: 0, doctors: 0 });
+                navigation.navigate('SpecialstDetail', { name: 'Cardiologist', id: '', desc: '', clinics: 0, doctors: 0 });
               } else {
-                navigation.navigate('SearchResult', { title: s });
+                navigation.navigate('SearchResult', { title: s, ...coords, radius: 30 });
               }
             }}>
               <SearchIcon width={SIZE(18)} height={SIZE(18)} />
@@ -151,23 +134,18 @@ const styles = StyleSheet.create({
     height: SIZE(56),
     borderRadius: SIZE(12),
     backgroundColor: colors.backgroundLight,
+    overflow: 'hidden',
   },
-  itemImageCircle: {
-    borderRadius: SIZE(28),
-  },
+  itemImageCircle: { borderRadius: SIZE(28) },
   cardContent: { flex: 1, gap: SIZE(4) },
   resultName: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(14), color: colors.textPrimary },
   meta: { fontFamily: 'Manrope-Regular', fontSize: SIZE(12), color: colors.textSecondary },
-  sep: { color: colors.border },
-  viewAll: { fontFamily: 'Manrope-Medium', fontSize: SIZE(12), color: colors.accent },
-  separator: { height: 0 },
+  empty: { fontFamily: 'Manrope-Regular', fontSize: SIZE(14), color: colors.textMuted, textAlign: 'center', marginTop: SIZE(40) },
   suggestionsBox: {
     backgroundColor: colors.white,
     paddingHorizontal: SIZE(16),
     paddingTop: SIZE(16),
     paddingBottom: SIZE(8),
-    marginBottom: SIZE(8),
-    borderRadius: SIZE(12),
   },
   suggestionsTitle: {
     fontFamily: 'Manrope-SemiBold',
