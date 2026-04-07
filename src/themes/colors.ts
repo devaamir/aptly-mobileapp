@@ -11,6 +11,7 @@ const colors = {
 
   // Borders
   border: '#E0E2E6',
+  borderLight: '#E8EAED',
   borderLowOpacity: '#E0E2E64D',
 
   // Text

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setTokenRefreshCallback } from '../services/api';
 
 interface AuthUser {
   userId: string;
@@ -9,6 +10,8 @@ interface AuthUser {
   email: string;
   accessToken: string;
   refreshToken: string;
+  gender: string;
+  dateOfBirth: string;
 }
 
 interface AuthContextType {
@@ -23,11 +26,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUserState] = useState<AuthUser | null>(null);
 
   useEffect(() => {
-    AsyncStorage.multiGet(['userId', 'patientId', 'name', 'phoneNumber', 'email', 'accessToken', 'refreshToken'])
+    AsyncStorage.multiGet(['userId', 'patientId', 'name', 'phoneNumber', 'email', 'accessToken', 'refreshToken', 'gender', 'dateOfBirth'])
       .then(entries => {
-        const [userId, patientId, name, phoneNumber, email, accessToken, refreshToken] = entries.map(e => e[1] ?? '');
-        if (accessToken) setUserState({ userId, patientId, name, phoneNumber, email, accessToken, refreshToken });
+        const [userId, patientId, name, phoneNumber, email, accessToken, refreshToken, gender, dateOfBirth] = entries.map(e => e[1] ?? '');
+        if (accessToken) setUserState({ userId, patientId, name, phoneNumber, email, accessToken, refreshToken, gender, dateOfBirth });
       });
+
+    setTokenRefreshCallback((accessToken, refreshToken) => {
+      setUserState(prev => prev ? { ...prev, accessToken, refreshToken } : prev);
+    });
   }, []);
 
   const setUser = (u: AuthUser | null) => setUserState(u);

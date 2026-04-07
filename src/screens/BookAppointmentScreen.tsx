@@ -113,7 +113,10 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           <View style={styles.headerAvatar}>
             {doctor.profilePicture ? <Image source={{ uri: doctor.profilePicture }} style={styles.avatarImg} /> : null}
           </View>
-          <Text allowFontScaling={false} style={styles.title}>{doctor.name}</Text>
+          <View>
+            <Text allowFontScaling={false} style={styles.title}>{doctor.name}</Text>
+            {doctor.medicalCenters[0]?.name ? <Text allowFontScaling={false} style={styles.headerSubtitle}>{doctor.medicalCenters[0].name}</Text> : null}
+          </View>
         </View>
         <View style={styles.divider} />
         <View style={styles.statusBar}>
@@ -233,18 +236,24 @@ const styles = StyleSheet.create({
     paddingVertical: SIZE(12),
     gap: SIZE(10),
   },
-  backBtn: { width: SIZE(32) },
+  backBtn: { width: SIZE(26) },
   headerAvatar: {
-    width: SIZE(28),
-    height: SIZE(28),
-    borderRadius: SIZE(14),
+    width: SIZE(42),
+    height: SIZE(42),
+    borderRadius: SIZE(21),
     backgroundColor: colors.backgroundLight,
     overflow: 'hidden',
   },
   title: {
-    fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(15),
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(20),
     color: colors.textPrimary,
+  },
+  headerSubtitle: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.textSecondary,
+    marginTop: SIZE(1),
   },
   headerType: {
     fontFamily: 'Manrope-Regular',

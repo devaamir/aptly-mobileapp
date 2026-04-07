@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import LocationIcon from '../assets/icons/location-icon.svg';
 
 type Props = {
   name: string;
@@ -10,6 +11,7 @@ type Props = {
   clinicType: string;
   experience: string;
   image?: string;
+  location?: string;
   status?: 'Booking Opened' | 'Not Started';
   bookingTime?: string;
   onPress?: () => void;
@@ -29,7 +31,7 @@ const statusConfig = {
   },
 };
 
-const DoctorCard = ({ name, type, hospital, clinicType, experience, image, status = 'Booking Opened', bookingTime, onPress, onBookPress }: Props) => {
+const DoctorCard = ({ name, type, hospital, clinicType, experience, image, location, status = 'Booking Opened', bookingTime, onPress, onBookPress }: Props) => {
   const s = statusConfig[status];
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onPress}>
@@ -46,6 +48,12 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, statu
         <View style={styles.cardBottom}>
           <Text allowFontScaling={false} style={styles.hospitalText}>{hospital}</Text>
           <Text allowFontScaling={false} style={styles.clinicTypeText}>{clinicType}</Text>
+          {location ? (
+            <View style={styles.locationRow}>
+              <LocationIcon width={SIZE(11)} height={SIZE(11)} />
+              <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location} | 2.5 km</Text>
+            </View>
+          ) : null}
         </View>
         <View style={styles.divider} />
         <View style={styles.cardCenter}>
@@ -120,6 +128,18 @@ const styles = StyleSheet.create({
     fontSize: SIZE(11),
     color: colors.textSecondary,
     marginTop: SIZE(2),
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(3),
+    marginTop: SIZE(4),
+  },
+  locationText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: '#494F5A',
+    flex: 1,
   },
   cardBottom: {
     marginTop: SIZE(12),

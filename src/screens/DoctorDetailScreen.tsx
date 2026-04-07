@@ -8,6 +8,8 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import { getDoctor, Doctor } from '../services/api';
+import BottomModal from '../components/BottomModal';
+import LocationIcon from '../assets/icons/location-icon.svg';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DoctorDetail'>;
 
@@ -16,6 +18,70 @@ const to12h = (time: string) => {
   const ampm = h >= 12 ? 'PM' : 'AM';
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`;
 };
+
+const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1);
+};
+
+function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0]; navigation: any; doctor: Doctor }) {
+  const [showHours, setShowHours] = useState(false);
+  const grouped = (mc.schedules ?? []).reduce<Record<string, typeof mc.schedules>>((acc, s) => {
+    (acc[s!.dayOfWeek] = acc[s!.dayOfWeek] || []).push(s);
+    return acc;
+  }, {});
+
+  return (
+    <View style={styles.clinicCard}>
+      <TouchableOpacity style={styles.clinicCardTop} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', { name: mc.name, specialty: mc.type, location: mc.address })}>
+        <View style={styles.hospitalImage}>
+          {mc.profilePicture ? <Image source={{ uri: mc.profilePicture }} style={styles.hospitalImg} /> : null}
+        </View>
+        <View style={styles.hospitalInfo}>
+          <Text allowFontScaling={false} style={styles.hospitalName}>{mc.name}</Text>
+          <Text allowFontScaling={false} style={styles.hospitalType}>{mc.type}</Text>
+          <View style={styles.locationContainer}>
+            <LocationIcon width={SIZE(12)} height={SIZE(12)} />
+            {mc.district ? <Text allowFontScaling={false} style={styles.hospitalLocation}>{mc.district}, {mc.state} | 2.5 km</Text> : null}
+          </View>
+        </View>
+        <ArrowRight width={SIZE(18)} height={SIZE(18)} />
+      </TouchableOpacity>
+
+      <View style={styles.clinicActions}>
+        <TouchableOpacity style={styles.hoursBtn} activeOpacity={0.7} onPress={() => setShowHours(true)}>
+          <Text allowFontScaling={false} style={styles.hoursBtnText}>Working Hours</Text>
+          <Text allowFontScaling={false} style={[styles.hoursBtnText, { color: colors.gold }]}>View Hours</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bookClinicBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', { doctor })}>
+          <Text allowFontScaling={false} style={styles.bookClinicBtnText}>Book Appointment</Text>
+        </TouchableOpacity>
+      </View>
+
+      <BottomModal visible={showHours} onClose={() => setShowHours(false)}>
+        <Text allowFontScaling={false} style={styles.modalTitle}>{mc.name}</Text>
+        <View style={styles.scheduleCard}>
+          {Object.entries(grouped).map(([day, sessions], i, arr) => (
+            <View key={day} style={[styles.scheduleRow, i === arr.length - 1 && { borderBottomWidth: 0 }]}>
+              <Text allowFontScaling={false} style={styles.dayText}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
+              <View style={styles.shiftsCol}>
+                {sessions!.map(s => (
+                  <Text allowFontScaling={false} key={s!.id} style={styles.shiftText}>{to12h(s!.startTime)} – {to12h(s!.stopTime)}</Text>
+                ))}
+              </View>
+            </View>
+          ))}
+          {Object.keys(grouped).length === 0 && (
+            <Text allowFontScaling={false} style={styles.shiftText}>No schedule available</Text>
+          )}
+        </View>
+      </BottomModal>
+    </View>
+  );
+}
 
 export default function DoctorDetailScreen({ navigation, route }: Props) {
   const { doctorId } = route.params;
@@ -39,6 +105,11 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
   const qualifications = doctor.qualifications.map(q => q.name).join(', ');
   const aboutFull = doctor.about ?? '';
   const aboutShort = aboutFull.slice(0, 160) + (aboutFull.length > 160 ? '...' : '');
+  // TODO: replace with real user coords
+  const USER_LAT = 11.1085, USER_LON = 76.0883;
+  const distance = doctor.latitude && doctor.longitude
+    ? `${getDistance(USER_LAT, USER_LON, doctor.latitude, doctor.longitude)} km`
+    : null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -64,22 +135,6 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
           </View>
         </View>
 
-        {hospital && (
-          <>
-            <Text allowFontScaling={false} style={styles.sectionTitle}>Working Hospital</Text>
-            <TouchableOpacity style={styles.hospitalCard} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', { name: hospital.name, specialty: hospital.type, location: hospital.address })}>
-              <View style={styles.hospitalImage}>
-                {hospital.profilePicture ? <Image source={{ uri: hospital.profilePicture }} style={styles.hospitalImg} /> : null}
-              </View>
-              <View style={styles.hospitalInfo}>
-                <Text allowFontScaling={false} style={styles.hospitalName}>{hospital.name}</Text>
-                <Text allowFontScaling={false} style={styles.hospitalType}>{hospital.type}</Text>
-              </View>
-              <ArrowRight width={SIZE(18)} height={SIZE(18)} />
-            </TouchableOpacity>
-          </>
-        )}
-
         {aboutFull ? (
           <>
             <Text allowFontScaling={false} style={styles.sectionTitle}>About</Text>
@@ -97,38 +152,18 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
         <Text allowFontScaling={false} style={styles.sectionTitle}>Experience</Text>
         <Text allowFontScaling={false} style={styles.experienceText}>{doctor.yearsOfExperience} years</Text>
 
-        <Text allowFontScaling={false} style={styles.sectionTitle}>Consultation Fee</Text>
-        <Text allowFontScaling={false} style={styles.experienceText}>₹{doctor.consultationFee}</Text>
+        {/* <Text allowFontScaling={false} style={styles.sectionTitle}>Consultation Fee</Text>
+        <Text allowFontScaling={false} style={styles.experienceText}>₹{doctor.consultationFee}</Text> */}
 
-        {hospital?.schedules && hospital.schedules.length > 0 && (
+        {doctor.medicalCenters.length > 0 && (
           <>
-            <Text allowFontScaling={false} style={styles.sectionTitle}>Sessions</Text>
-            <View style={styles.scheduleCard}>
-              {Object.entries(
-                hospital.schedules.reduce<Record<string, typeof hospital.schedules>>((acc, s) => {
-                  (acc[s.dayOfWeek] = acc[s.dayOfWeek] || []).push(s);
-                  return acc;
-                }, {})
-              ).map(([day, sessions], i, arr) => (
-                <View key={day} style={[styles.scheduleRow, i === arr.length - 1 && { borderBottomWidth: 0 }]}>
-                  <Text allowFontScaling={false} style={styles.dayText}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
-                  <View style={styles.shiftsCol}>
-                    {sessions.map(s => (
-                      <Text allowFontScaling={false} key={s.id} style={styles.shiftText}>{to12h(s.startTime)} – {to12h(s.stopTime)}</Text>
-                    ))}
-                  </View>
-                </View>
-              ))}
-            </View>
+            <Text allowFontScaling={false} style={styles.sectionTitle}>Working Clinics</Text>
+            {doctor.medicalCenters.map(mc => (
+              <ClinicCard key={mc.id} mc={mc} navigation={navigation} doctor={doctor} />
+            ))}
           </>
         )}
       </ScrollView>
-
-      <View style={styles.stickyFooter}>
-        <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', { doctor })}>
-          <Text allowFontScaling={false} style={styles.bookBtnText}>Book Appointment</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
@@ -184,6 +219,12 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: SIZE(2),
   },
+  distanceText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(12),
+    color: colors.primary,
+    marginTop: SIZE(4),
+  },
   qualification: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
@@ -204,10 +245,58 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.cardBorder,
   },
+  clinicCard: {
+    borderRadius: SIZE(12),
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    overflow: 'hidden',
+    backgroundColor: colors.backgroundLight,
+  },
+  clinicCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(12),
+    padding: SIZE(8),
+  },
+  clinicActions: {
+    flexDirection: 'column',
+    gap: SIZE(8),
+    paddingHorizontal: SIZE(10),
+    paddingBottom: SIZE(10),
+  },
+  hoursBtn: {
+    flex: 1,
+    paddingVertical: SIZE(9.5),
+    paddingHorizontal: SIZE(13),
+    borderRadius: SIZE(40),
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: SIZE(8),
+  },
+  hoursBtnText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(12),
+    color: colors.textSubdued,
+  },
+  bookClinicBtn: {
+    flex: 1,
+    paddingVertical: SIZE(13),
+    borderRadius: SIZE(12),
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+  },
+  bookClinicBtnText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(13),
+    color: colors.white,
+  },
   hospitalImage: {
-    width: SIZE(46),
-    height: SIZE(46),
-    borderRadius: SIZE(8),
+    width: SIZE(65),
+    height: SIZE(65),
+    borderRadius: SIZE(12),
     backgroundColor: colors.backgroundLight,
     overflow: 'hidden',
   },
@@ -225,7 +314,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
     color: colors.textSecondary,
+    marginTop: SIZE(5),
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: SIZE(2),
+  },
+  hospitalLocation: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.textMuted,
+    marginTop: SIZE(2),
+    marginLeft: SIZE(4),
   },
   aboutText: {
     fontFamily: 'Manrope-Regular',
@@ -247,6 +348,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.cardBorder,
     overflow: 'hidden',
+    width: '100%',
+  },
+  modalTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(16),
+    color: colors.textPrimary,
+    marginBottom: SIZE(12),
+    alignSelf: 'flex-start',
   },
   scheduleRow: {
     flexDirection: 'row',

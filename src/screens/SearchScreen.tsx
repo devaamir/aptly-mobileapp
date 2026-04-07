@@ -7,6 +7,7 @@ import { SIZE } from '../themes/sizes';
 import SearchBar from '../components/SearchBar';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
+import LocationIcon from '../assets/icons/location-icon.svg';
 import { searchAll, Doctor, Clinic } from '../services/api';
 
 const SUGGESTIONS = ['Clinics', 'Doctors', 'Ayurveda Clinics', 'Cardio'];
@@ -75,8 +76,16 @@ export default function SearchScreen() {
                     <Text allowFontScaling={false} style={styles.meta}>
                       {isDoctor
                         ? (item as Doctor).specialties[0]?.name ?? ''
-                        : `${(item as Clinic).district}, ${(item as Clinic).state}`}
+                        : (item as Clinic).specialties[0]?.name ?? (item as Clinic).type}
                     </Text>
+                    <View style={styles.locationRow}>
+                      <LocationIcon width={SIZE(11)} height={SIZE(11)} />
+                      <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>
+                        {isDoctor
+                          ? (item as Doctor).medicalCenters[0]?.name ?? (item as Doctor).address
+                          : `${(item as Clinic).district}, ${(item as Clinic).state}`}
+                      </Text>
+                    </View>
                   </View>
                 </TouchableOpacity>
               );
@@ -140,6 +149,8 @@ const styles = StyleSheet.create({
   cardContent: { flex: 1, gap: SIZE(4) },
   resultName: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(14), color: colors.textPrimary },
   meta: { fontFamily: 'Manrope-Regular', fontSize: SIZE(12), color: colors.textSecondary },
+  locationRow: { flexDirection: 'row', alignItems: 'center', gap: SIZE(4), marginTop: SIZE(2) },
+  locationText: { fontFamily: 'Manrope-Regular', fontSize: SIZE(11), color: colors.textMuted, flex: 1 },
   empty: { fontFamily: 'Manrope-Regular', fontSize: SIZE(14), color: colors.textMuted, textAlign: 'center', marginTop: SIZE(40) },
   suggestionsBox: {
     backgroundColor: colors.white,

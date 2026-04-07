@@ -103,12 +103,14 @@ export default function DoctorsScreen({ navigation }: Props) {
             const specialty = item.specialties[0]?.name ?? '';
             const hospital = item.medicalCenters[0]?.name ?? '';
             const clinicType = item.medicalCenters[0]?.type ?? '';
+            const location = item.medicalCenters[0] ? `${item.medicalCenters[0].district}, ${item.medicalCenters[0].state}` : '';
             return (
               <DoctorCard
                 name={item.name}
                 type={specialty}
                 hospital={hospital}
                 clinicType={clinicType}
+                location={location}
                 experience={`${item.yearsOfExperience} yrs exp`}
                 image={item.profilePicture}
                 status={getBookingStatus(item)}

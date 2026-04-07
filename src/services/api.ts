@@ -39,6 +39,10 @@ api.interceptors.request.use(async config => {
   return config;
 });
 
+// Called by AuthContext to keep tokens in sync after refresh
+let onTokenRefreshed: ((accessToken: string, refreshToken: string) => void) | null = null;
+export const setTokenRefreshCallback = (cb: typeof onTokenRefreshed) => { onTokenRefreshed = cb; };
+
 api.interceptors.response.use(
   response => response.data,
   async error => {
@@ -47,15 +51,22 @@ api.interceptors.response.use(
       original._retry = true;
       try {
         const refreshToken = await AsyncStorage.getItem('refreshToken');
+        console.log("refresh token", refreshToken);
+
         const res = await axios.post(
           'https://aptly-server.onrender.com/api/auth/refresh-token',
           { refreshToken },
         );
         const { accessToken, refreshToken: newRefresh } = res.data.data;
         await AsyncStorage.multiSet([['accessToken', accessToken], ['refreshToken', newRefresh]]);
+        onTokenRefreshed?.(accessToken, newRefresh);
         original.headers.Authorization = `Bearer ${accessToken}`;
         return api(original);
       } catch {
+        console.log("error in refresh token", error.response.data);
+        console.log("error in refresh token", error.response.status);
+        console.log("error in refresh token", error);
+        console.log("error in refresh token", error.response);
         return Promise.reject(error?.response?.data || error);
       }
     }
