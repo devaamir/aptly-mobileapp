@@ -317,7 +317,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundLight,
     overflow: 'hidden',
   },
-  avatarImg: { width: '100%', height: '100%' },
+  avatarImg: {
+    width: '100%',
+    height: '100%'
+  },
   doctorName: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(15),
@@ -328,17 +331,6 @@ const styles = StyleSheet.create({
     fontSize: SIZE(12),
     color: colors.textSecondary,
     marginTop: SIZE(2),
-  },
-  avatar: {
-    width: SIZE(56),
-    height: SIZE(56),
-    borderRadius: SIZE(28),
-    backgroundColor: colors.backgroundLight,
-  },
-  doctorName: {
-    fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(15),
-    color: colors.textPrimary,
   },
   doctorType: {
     fontFamily: 'Manrope-Regular',
@@ -451,22 +443,6 @@ const styles = StyleSheet.create({
     fontSize: SIZE(15),
     color: colors.textPrimary,
     marginTop: SIZE(-2),
-  },
-  radio: {
-    width: SIZE(20),
-    height: SIZE(20),
-    borderRadius: SIZE(10),
-    borderWidth: 2,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioActive: { borderColor: colors.primary },
-  radioDot: {
-    width: SIZE(10),
-    height: SIZE(10),
-    borderRadius: SIZE(5),
-    backgroundColor: colors.primary,
   },
   patientMeta: {
     flexDirection: 'row',

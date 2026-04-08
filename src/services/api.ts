@@ -139,6 +139,9 @@ export const getClinics = (
   return api.get(`/clinics?${params.toString()}`);
 };
 
+export const getClinic = (id: string): Promise<{ success: boolean; data: Clinic }> =>
+  api.get(`/clinics/${id}`);
+
 // Home
 export const getHomeData = (): Promise<{ success: boolean; data: HomeData }> =>
   api.get('/ui/home');

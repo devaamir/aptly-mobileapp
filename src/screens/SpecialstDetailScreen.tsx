@@ -112,7 +112,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
               subType={item.specialties[0]?.name ?? item.type}
               location={`${item.district}, ${item.state}`}
               image={item.profilePicture}
-              onPress={() => navigation.navigate('HospitalDetail', { name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
+              onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
             />
           )}
           ListEmptyComponent={<Text allowFontScaling={false} style={styles.emptyText}>No available clinics</Text>}

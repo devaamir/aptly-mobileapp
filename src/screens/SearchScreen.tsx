@@ -64,7 +64,7 @@ export default function SearchScreen() {
                   activeOpacity={0.7}
                   onPress={() => isDoctor
                     ? navigation.navigate('DoctorDetail', { doctorId: item.id })
-                    : navigation.navigate('HospitalDetail', { name: item.name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })
+                    : navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })
                   }>
                   <View style={[styles.itemImage, isDoctor && styles.itemImageCircle]}>
                     {(item as any).profilePicture
@@ -99,6 +99,8 @@ export default function SearchScreen() {
             <TouchableOpacity key={s} style={styles.suggestionRow} activeOpacity={0.7} onPress={() => {
               if (s.toLowerCase() === 'cardio') {
                 navigation.navigate('SpecialstDetail', { name: 'Cardiologist', id: '', desc: '', clinics: 0, doctors: 0 });
+              } else if (s.toLowerCase() === 'clinics') {
+                navigation.navigate('Clinics');
               } else {
                 navigation.navigate('SearchResult', { title: s, ...coords, radius: 30 });
               }

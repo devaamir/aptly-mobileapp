@@ -135,6 +135,7 @@ export interface Clinic {
   updatedAt: string;
   specialties: Specialty[];
   medicalSystem: MedicalSystem;
+  doctors: Doctor[];
 }
 
 export interface Pagination {

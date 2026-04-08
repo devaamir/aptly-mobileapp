@@ -36,7 +36,7 @@ function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0
 
   return (
     <View style={styles.clinicCard}>
-      <TouchableOpacity style={styles.clinicCardTop} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', { name: mc.name, specialty: mc.type, location: mc.address })}>
+      <TouchableOpacity style={styles.clinicCardTop} activeOpacity={0.8} onPress={() => navigation.navigate('HospitalDetail', { id: mc.id, name: mc.name, specialty: mc.type, location: mc.address })}>
         <View style={styles.hospitalImage}>
           {mc.profilePicture ? <Image source={{ uri: mc.profilePicture }} style={styles.hospitalImg} /> : null}
         </View>

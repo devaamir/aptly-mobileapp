@@ -94,7 +94,7 @@ export default function SearchResultScreen({ navigation, route }: Props) {
               subType={(item as Clinic).specialties[0]?.name ?? (item as Clinic).type}
               location={`${(item as Clinic).district}, ${(item as Clinic).state}`}
               image={(item as Clinic).profilePicture}
-              onPress={() => navigation.navigate('HospitalDetail', { name: (item as Clinic).name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })}
+              onPress={() => navigation.navigate('HospitalDetail', { id: (item as Clinic).id, name: (item as Clinic).name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })}
               style={{ marginHorizontal: 0 }}
             />
           )}

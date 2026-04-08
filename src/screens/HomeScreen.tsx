@@ -19,7 +19,7 @@ import { getHomeData, Specialty, Doctor, Clinic } from '../services/api';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, specialties, doctors, totalDoctorCount }: { onTokenPress: () => void; onspecialstPress: () => void; onDoctorsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number }) => (
+const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount }: { onTokenPress: () => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number }) => (
   <>
     <View style={styles.bannerCard}>
       {Platform.OS === 'android' && (
@@ -108,7 +108,7 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, specialtie
     </View>
     <View style={styles.sectionHeader}>
       <Text allowFontScaling={false} style={styles.sectionTitle}>Near by Clinics</Text>
-      <TouchableOpacity activeOpacity={0.7}>
+      <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
         <Text allowFontScaling={false} style={styles.viewAll}>See all</Text>
       </TouchableOpacity>
     </View>
@@ -164,14 +164,14 @@ export default function HomeScreen() {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} />}
+        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} />}
         renderItem={({ item }) => (
           <ClinicCard
             name={item.name}
             subType={item.specialties[0]?.name ?? item.type}
             location={`${item.district}, ${item.state}`}
             image={item.profilePicture}
-            onPress={() => navigation.navigate('HospitalDetail', { name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
+            onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
           />
         )}
       />

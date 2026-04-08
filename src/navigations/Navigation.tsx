@@ -18,6 +18,7 @@ import BookAppointmentScreen from '../screens/BookAppointmentScreen';
 import BookingConfirmedScreen from '../screens/BookingConfirmedScreen';
 import AppointmentDetailScreen from '../screens/AppointmentDetailScreen';
 import HospitalDetailScreen from '../screens/HospitalDetailScreen';
+import ClinicsScreen from '../screens/ClinicsScreen';
 import { Doctor } from '../services/api';
 
 export type RootStackParamList = {
@@ -36,7 +37,8 @@ export type RootStackParamList = {
   BookAppointment: { doctor: Doctor };
   BookingConfirmed: { token: number; doctorName: string; hospital: string; date: string };
   AppointmentDetail: { doctor: string; type: string; hospital: string; date: string; time: string; token: number; status: string };
-  HospitalDetail: { name: string; specialty: string; location: string };
+  HospitalDetail: { id: string; name: string; specialty: string; location: string };
+  Clinics: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -81,6 +83,7 @@ export default function Navigation() {
         <Stack.Screen name="BookingConfirmed" component={BookingConfirmedScreen} />
         <Stack.Screen name="AppointmentDetail" component={AppointmentDetailScreen} />
         <Stack.Screen name="HospitalDetail" component={HospitalDetailScreen} />
+        <Stack.Screen name="Clinics" component={ClinicsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
