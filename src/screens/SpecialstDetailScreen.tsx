@@ -13,6 +13,7 @@ import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
 import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
+import FilterModal from '../components/FilterModal';
 
 type Tab = 'clinics' | 'doctors';
 type Props = NativeStackScreenProps<RootStackParamList, 'SpecialstDetail'>;
@@ -23,6 +24,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
 
   useEffect(() => {
     Promise.all([
@@ -68,10 +70,10 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
           <Text allowFontScaling={false} style={styles.locationText}>Malappuram, Kerala</Text>
           <DownArrowGrey width={SIZE(14)} height={SIZE(14)} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.filterBtn} activeOpacity={0.7}>
-          <FilterIcon width={SIZE(12)} height={SIZE(12)} />
-          <Text allowFontScaling={false} style={styles.filterText}>Filter</Text>
-        </TouchableOpacity>
+        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} triggerOnly />
+      </View>
+      <View style={styles.chipsRow}>
+        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} chipsOnly />
       </View>
 
       {/* List */}
@@ -191,6 +193,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SIZE(18),
     paddingVertical: SIZE(10),
+    marginBottom: SIZE(4),
+  },
+  chipsRow: {
+    paddingHorizontal: SIZE(18),
     marginBottom: SIZE(8),
   },
   locationLeft: {

@@ -8,25 +8,24 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-black-icon.svg';
-import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
+import FilterModal from '../components/FilterModal';
 import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SearchResult'>;
 
 const DOCTOR_TITLES = ['doctors'];
+const EMPTY_FILTERS = { specialties: [], availability: [], type: [] } as Record<string, string[]>;
 
 export default function SearchResultScreen({ navigation, route }: Props) {
   const { title, latitude, longitude, radius } = route.params;
   const isDoctor = DOCTOR_TITLES.includes(title.toLowerCase());
-  const [activeFilter, setActiveFilter] = useState<string | null>(
-    title.toLowerCase() !== 'clinics' && title.toLowerCase() !== 'doctors' ? title : null
-  );
-  const [location, setLocation] = useState('Malappuram, Kerala');
+  const [location] = useState('Malappuram, Kerala');
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>(EMPTY_FILTERS);
 
   useEffect(() => {
     const fetch = isDoctor
@@ -57,16 +56,7 @@ export default function SearchResultScreen({ navigation, route }: Props) {
       </TouchableOpacity>
 
       <View style={styles.filterRow}>
-        <TouchableOpacity style={styles.filterBtn} activeOpacity={0.7}>
-          <FilterIcon width={SIZE(12)} height={SIZE(12)} />
-          <Text allowFontScaling={false} style={styles.filterText}>Filter</Text>
-        </TouchableOpacity>
-        {activeFilter && (
-          <TouchableOpacity style={styles.filterBtn} activeOpacity={0.7} onPress={() => setActiveFilter(null)}>
-            <Text allowFontScaling={false} style={styles.filterText}>{activeFilter}</Text>
-            <Text allowFontScaling={false} style={styles.filterText}>✕</Text>
-          </TouchableOpacity>
-        )}
+        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} />
       </View>
 
       {loading ? (
@@ -115,12 +105,7 @@ const styles = StyleSheet.create({
     paddingVertical: SIZE(12),
   },
   backBtn: { width: SIZE(32) },
-  title: {
-    fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(18),
-    color: colors.textPrimary,
-  },
-  divider: { height: 1, backgroundColor: colors.border },
+  title: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(18), color: colors.textPrimary },
   locationBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -133,54 +118,14 @@ const styles = StyleSheet.create({
     marginVertical: SIZE(8),
     backgroundColor: colors.white,
   },
-  locationInput: {
-    flex: 1,
-    fontFamily: 'Manrope-Medium',
-    fontSize: SIZE(16),
-    color: colors.textPrimary,
-    marginLeft: SIZE(10),
-  }, locationIconContainer: {
-    paddingVertical: SIZE(8),
-    paddingRight: SIZE(12),
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
+  locationInput: { flex: 1, fontFamily: 'Manrope-Medium', fontSize: SIZE(16), color: colors.textPrimary, marginLeft: SIZE(10) },
+  locationIconContainer: {
+    paddingVertical: SIZE(8), paddingRight: SIZE(12),
+    borderRightWidth: 1, borderRightColor: colors.border,
+    alignItems: 'center', justifyContent: 'center',
   },
+  distanceText: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(13), color: colors.primary, paddingLeft: SIZE(8) },
+  filterRow: { paddingHorizontal: SIZE(18), marginBottom: SIZE(12) },
   list: { paddingHorizontal: SIZE(18), gap: SIZE(12), paddingBottom: SIZE(24) },
-  emptyText: {
-    fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(14),
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: SIZE(40),
-  },
-  filterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SIZE(8),
-    paddingHorizontal: SIZE(18),
-    marginBottom: SIZE(12),
-  },
-  filterBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SIZE(6),
-    alignSelf: 'flex-start',
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: SIZE(8),
-    paddingVertical: SIZE(8),
-    borderRadius: 46,
-  },
-  filterText: {
-    fontFamily: 'Manrope-Medium',
-    fontSize: SIZE(12),
-    color: '#00001D',
-  },
-  distanceText: {
-    fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(13),
-    color: colors.primary,
-    paddingLeft: SIZE(8),
-  },
+  emptyText: { fontFamily: 'Manrope-Regular', fontSize: SIZE(14), color: colors.textMuted, textAlign: 'center', marginTop: SIZE(40) },
 });

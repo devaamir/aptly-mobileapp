@@ -4,12 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import ClinicCard from '../components/ClinicCard';
+import FilterModal from '../components/FilterModal';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
-import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import { getClinics, Clinic } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Clinics'>;
@@ -17,6 +17,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Clinics'>;
 export default function ClinicsScreen({ navigation }: Props) {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
 
   useEffect(() => {
     getClinics()
@@ -44,13 +45,10 @@ export default function ClinicsScreen({ navigation }: Props) {
           <LocationIcon width={SIZE(20)} height={SIZE(20)} />
         </View>
         <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>Malappuram, Kerala</Text>
-        <Text allowFontScaling={false} style={styles.distanceText}>2.5 km</Text>
+        <Text allowFontScaling={false} style={styles.distanceText}>25 km</Text>
       </TouchableOpacity>
       <View style={styles.filterRow}>
-        <TouchableOpacity style={styles.filterBtn} activeOpacity={0.7}>
-          <FilterIcon width={SIZE(12)} height={SIZE(12)} />
-          <Text allowFontScaling={false} style={styles.filterText}>Filter</Text>
-        </TouchableOpacity>
+        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} />
       </View>
 
       {loading ? (
@@ -130,29 +128,14 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginLeft: SIZE(10),
   },
-  filterRow: {
-    paddingHorizontal: SIZE(18),
-    marginBottom: SIZE(8),
-  },
   distanceText: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(13),
     color: colors.primary,
     paddingLeft: SIZE(8),
   },
-  filterBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SIZE(6),
-    alignSelf: 'flex-start',
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: SIZE(8),
-    paddingVertical: SIZE(8),
-    borderRadius: 46,
-  },
-  filterText: {
-    fontFamily: 'Manrope-Medium',
-    fontSize: SIZE(12),
-    color: '#00001D',
+  filterRow: {
+    paddingHorizontal: SIZE(18),
+    marginBottom: SIZE(8),
   },
 });

@@ -99,8 +99,6 @@ export default function SearchScreen() {
             <TouchableOpacity key={s} style={styles.suggestionRow} activeOpacity={0.7} onPress={() => {
               if (s.toLowerCase() === 'cardio') {
                 navigation.navigate('SpecialstDetail', { name: 'Cardiologist', id: '', desc: '', clinics: 0, doctors: 0 });
-              } else if (s.toLowerCase() === 'clinics') {
-                navigation.navigate('Clinics');
               } else {
                 navigation.navigate('SearchResult', { title: s, ...coords, radius: 30 });
               }

@@ -4,12 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import DoctorCard from '../components/DoctorCard';
+import FilterModal from '../components/FilterModal';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
-import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import { getDoctors, getDoctor, Doctor } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Doctors'>;
@@ -54,6 +54,7 @@ function getBookingTime(doctor: Doctor): string {
 export default function DoctorsScreen({ navigation }: Props) {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
 
   useEffect(() => {
     getDoctors()
@@ -85,10 +86,7 @@ export default function DoctorsScreen({ navigation }: Props) {
         <Text allowFontScaling={false} style={styles.distanceText}>2.5 km</Text>
       </TouchableOpacity>
       <View style={styles.filterRow}>
-        <TouchableOpacity style={styles.filterBtn} activeOpacity={0.7}>
-          <FilterIcon width={SIZE(12)} height={SIZE(12)} />
-          <Text allowFontScaling={false} style={styles.filterText}>Filter</Text>
-        </TouchableOpacity>
+        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} />
       </View>
 
       {loading ? (
