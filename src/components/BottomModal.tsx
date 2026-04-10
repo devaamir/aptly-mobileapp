@@ -22,7 +22,7 @@ export default function BottomModal({ visible, onClose, children }: Props) {
 }
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', paddingHorizontal: SIZE(16) },
+  overlay: { flex: 1, backgroundColor: colors.overlayDark, justifyContent: 'center', paddingHorizontal: SIZE(16) },
   sheet: {
     backgroundColor: colors.white,
     borderRadius: SIZE(24),

@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   tokenLabel: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(14),
-    color: 'rgba(255,255,255,0.8)',
+    color: colors.white80,
   },
   tokenNumber: {
     fontFamily: 'Manrope-Bold',
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   successDesc: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: colors.white75,
     lineHeight: SIZE(20),
     marginBottom: SIZE(8),
     textAlign: 'center',

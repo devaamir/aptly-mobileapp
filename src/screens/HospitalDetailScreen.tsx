@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     width: SIZE(36),
     height: SIZE(36),
     borderRadius: SIZE(18),
-    backgroundColor: 'rgba(255,255,255,0.8)',
+    backgroundColor: colors.white80,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   clinicTitle: {
     fontFamily: 'Manrope-Bold',
     fontSize: SIZE(20),
-    color: '#000000',
+    color: colors.black,
   },
   clinicSpecialty: {
     fontFamily: 'Manrope-Regular',

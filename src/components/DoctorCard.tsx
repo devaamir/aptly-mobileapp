@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   locationText: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
-    color: '#494F5A',
+    color: colors.textSubdued,
     flex: 1,
   },
   cardBottom: {

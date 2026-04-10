@@ -164,44 +164,199 @@ export default function FilterModal({ applied, onApply, chipsOnly, triggerOnly }
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: SIZE(8) },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(8)
+  },
   filterBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: SIZE(6),
-    backgroundColor: '#F5F5F5', paddingHorizontal: SIZE(8), paddingVertical: SIZE(8), borderRadius: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(6),
+    backgroundColor: colors.filterBg,
+    paddingHorizontal: SIZE(8),
+    paddingVertical: SIZE(8),
+    borderRadius: 46,
   },
-  filterText: { fontFamily: 'Manrope-Medium', fontSize: SIZE(12), color: '#00001D' },
-  chipsRow: { flexDirection: 'row', gap: SIZE(8), alignItems: 'center' },
+  filterText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(12),
+    color: colors.dark
+  },
+  chipsRow: {
+    flexDirection: 'row',
+    gap: SIZE(8),
+    alignItems: 'center'
+  },
   chip: {
-    flexDirection: 'row', alignItems: 'center', gap: SIZE(6),
-    backgroundColor: colors.primaryLight, paddingHorizontal: SIZE(10), paddingVertical: SIZE(6), borderRadius: SIZE(46),
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(6),
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+    borderRadius: SIZE(46),
   },
-  chipText: { fontFamily: 'Manrope-Medium', fontSize: SIZE(12), color: colors.primary },
-  chipClose: { fontSize: SIZE(10), color: colors.primary },
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
-  sheet: { width: '95%', height: '90%', backgroundColor: colors.white, borderRadius: SIZE(20), padding: SIZE(20) },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SIZE(16) },
-  title: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(18), color: colors.textPrimary },
-  closeBtn: { padding: SIZE(6), borderRadius: SIZE(16), backgroundColor: '#F2F4F7B2', alignItems: 'center', justifyContent: 'center' },
-  divider: { height: 1, backgroundColor: colors.border, marginHorizontal: -SIZE(20) },
-  body: { flex: 1, flexDirection: 'row', marginHorizontal: -SIZE(20) },
-  left: { width: '40%' },
-  verticalDivider: { width: 1, backgroundColor: colors.border },
-  right: { flex: 1, paddingHorizontal: SIZE(14), paddingTop: SIZE(4) },
-  tab: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: SIZE(14), paddingHorizontal: SIZE(14) },
-  tabActive: { backgroundColor: '#F3F8FF', borderLeftWidth: SIZE(2), borderLeftColor: colors.primary },
-  tabText: { fontFamily: 'Manrope-Regular', fontSize: SIZE(13), color: colors.subText, flex: 1 },
-  tabTextActive: { fontFamily: 'Manrope-SemiBold', color: colors.primary },
-  badge: { backgroundColor: colors.primary, borderRadius: SIZE(10), minWidth: SIZE(18), height: SIZE(18), alignItems: 'center', justifyContent: 'center', paddingHorizontal: SIZE(4) },
-  badgeText: { color: colors.white, fontSize: SIZE(10), fontFamily: 'Manrope-SemiBold' },
-  option: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: SIZE(14) },
-  optionText: { fontFamily: 'Manrope-Regular', fontSize: SIZE(13), color: colors.subText, flex: 1 },
-  optionTextActive: { fontFamily: 'Manrope-SemiBold', color: colors.textPrimary },
-  checkbox: { width: SIZE(18), height: SIZE(18), borderRadius: SIZE(4), borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  checkboxSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
-  checkmark: { color: colors.white, fontSize: SIZE(11), lineHeight: SIZE(13) },
-  footer: { flexDirection: 'row', gap: SIZE(12), paddingTop: SIZE(14) },
-  clearBtn: { width: '38%', paddingVertical: SIZE(12), borderRadius: SIZE(10), borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
-  clearText: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(14), color: colors.textPrimary },
-  applyBtn: { width: '58%', paddingVertical: SIZE(12), borderRadius: SIZE(10), backgroundColor: colors.primary, alignItems: 'center' },
-  applyText: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(14), color: colors.white },
+  chipText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(12),
+    color: colors.primary
+  },
+  chipClose: {
+    fontSize: SIZE(10),
+    color: colors.primary
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  sheet: {
+    width: '95%',
+    height: '90%',
+    backgroundColor: colors.white,
+    borderRadius: SIZE(20),
+    padding: SIZE(20)
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SIZE(16)
+  },
+  title: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(18),
+    color: colors.textPrimary
+  },
+  closeBtn: {
+    padding: SIZE(6),
+    borderRadius: SIZE(16),
+    backgroundColor: colors.modalCloseBg,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: -SIZE(20)
+  },
+  body: {
+    flex: 1,
+    flexDirection: 'row',
+    marginHorizontal: -SIZE(20)
+  },
+  left: {
+    width: '40%'
+  },
+  verticalDivider: {
+    width: 1,
+    backgroundColor: colors.border
+  },
+  right: {
+    flex: 1,
+    paddingHorizontal: SIZE(14),
+    paddingTop: SIZE(4)
+  },
+  tab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: SIZE(14),
+    paddingHorizontal: SIZE(14)
+  },
+  tabActive: {
+    backgroundColor: colors.filterTabActiveBg,
+    borderLeftWidth: SIZE(2),
+    borderLeftColor: colors.primary
+  },
+  tabText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: colors.subText,
+    flex: 1
+  },
+  tabTextActive: {
+    fontFamily: 'Manrope-SemiBold',
+    color: colors.primary
+  },
+  badge: {
+    backgroundColor: colors.primary,
+    borderRadius: SIZE(10),
+    minWidth: SIZE(18),
+    height: SIZE(18),
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: SIZE(4)
+  },
+  badgeText: {
+    color: colors.white,
+    fontSize: SIZE(10),
+    fontFamily: 'Manrope-SemiBold'
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: SIZE(14)
+  },
+  optionText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: colors.subText,
+    flex: 1
+  },
+  optionTextActive: {
+    fontFamily: 'Manrope-SemiBold',
+    color: colors.textPrimary
+  },
+  checkbox: {
+    width: SIZE(18),
+    height: SIZE(18),
+    borderRadius: SIZE(4),
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  checkboxSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
+  },
+  checkmark: {
+    color: colors.white,
+    fontSize: SIZE(11),
+    lineHeight: SIZE(13)
+  },
+  footer: {
+    flexDirection: 'row',
+    gap: SIZE(12),
+    paddingTop: SIZE(14)
+  },
+  clearBtn: {
+    width: '38%',
+    paddingVertical: SIZE(12),
+    borderRadius: SIZE(10),
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center'
+  },
+  clearText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.textPrimary
+  },
+  applyBtn: {
+    width: '58%',
+    paddingVertical: SIZE(12),
+    borderRadius: SIZE(10),
+    backgroundColor: colors.primary,
+    alignItems: 'center'
+  },
+  applyText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.white
+  },
 });

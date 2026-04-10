@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SIZE(6),
     alignSelf: 'flex-start',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.filterBg,
     paddingHorizontal: SIZE(8),
     paddingVertical: SIZE(8),
     borderRadius: 46,
@@ -191,6 +191,6 @@ const styles = StyleSheet.create({
   filterText: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(12),
-    color: '#00001D',
+    color: colors.dark,
   },
 });

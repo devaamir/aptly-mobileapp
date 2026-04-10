@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: colors.white20,
     borderRadius: SIZE(20),
     paddingHorizontal: SIZE(10),
     paddingVertical: SIZE(4),
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   hospitalStrip: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: colors.white15,
     borderRadius: SIZE(12),
     padding: SIZE(12),
     marginTop: SIZE(8),
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     width: SIZE(40),
     height: SIZE(40),
     borderRadius: SIZE(20),
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: colors.white30,
   },
   hospitalName: {
     fontFamily: 'Manrope-Bold',
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   hospitalType: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
-    color: 'rgba(255,255,255,0.7)',
+    color: colors.white70,
   },
   hospitalActions: {
     flexDirection: 'row',
@@ -337,13 +337,13 @@ const styles = StyleSheet.create({
     width: SIZE(32),
     height: SIZE(32),
     borderRadius: SIZE(8),
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: colors.white20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   hospitalDivider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: colors.white20,
   },
   hospitalBottom: {
     flexDirection: 'row',
@@ -357,12 +357,12 @@ const styles = StyleSheet.create({
   hospitalSep: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
-    color: 'rgba(255,255,255,0.5)',
+    color: colors.white50,
   },
   doctorSpecialty: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
-    color: 'rgba(255,255,255,0.8)',
+    color: colors.white80,
   },
   cardsRow: {
     flexDirection: 'row',

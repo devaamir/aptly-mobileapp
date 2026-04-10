@@ -52,6 +52,22 @@ const colors = {
   onlineIndicator: '#22C55E',
   surfaceLight: '#F3F5F7',
   surfaceLightFaded: '#F3F5F733',
+  error: '#FF3B30',
+  filterBg: '#F5F5F5',
+  filterTabActiveBg: '#F3F8FF',
+  dangerBorder: '#FEE4E2',
+  dangerBg: '#FFF9F9',
+  modalCloseBg: '#F2F4F7B2',
+  black: '#000000',
+  overlay: 'rgba(0,0,0,0.4)',
+  overlayDark: 'rgba(0,0,0,0.5)',
+  white80: 'rgba(255,255,255,0.8)',
+  white75: 'rgba(255,255,255,0.75)',
+  white70: 'rgba(255,255,255,0.7)',
+  white50: 'rgba(255,255,255,0.5)',
+  white30: 'rgba(255,255,255,0.3)',
+  white20: 'rgba(255,255,255,0.2)',
+  white15: 'rgba(255,255,255,0.15)',
 };
 
 export default colors;

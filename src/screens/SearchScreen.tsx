@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   suggestionsTitle: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(12),
-    color: '#1C1E22',
+    color: colors.textPrimary,
     marginBottom: SIZE(8),
   },
   suggestionRow: {
@@ -173,6 +173,6 @@ const styles = StyleSheet.create({
   suggestionText: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(14),
-    color: '#494F5A',
+    color: colors.textSubdued,
   },
 });

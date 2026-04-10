@@ -175,8 +175,8 @@ const styles = StyleSheet.create({
     paddingVertical: SIZE(14),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: '#FEE4E2',
-    backgroundColor: '#FFF9F9',
+    borderColor: colors.dangerBorder,
+    backgroundColor: colors.dangerBg,
   },
   logoutText: {
     fontFamily: 'Manrope-SemiBold',
