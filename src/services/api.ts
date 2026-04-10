@@ -90,7 +90,7 @@ export const getPatients = (): Promise<{ success: boolean; data: Patient[] }> =>
 
 // specialties
 export const getspecialties = (): Promise<{ success: boolean; data: Specialty[] }> =>
-  api.get('/specialties');
+  api.get('/metadata/specialties');
 
 // Doctors
 export const getDoctors = (
