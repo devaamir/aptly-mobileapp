@@ -149,9 +149,15 @@ export const searchAll = (q: string): Promise<{ success: boolean; data: (Doctor 
 export const getAppointments = (): Promise<{ success: boolean; data: Appointment[] }> =>
   api.get('/appointments');
 
+export const getAppointment = (id: string): Promise<{ success: boolean; data: Appointment }> =>
+  api.get(`/appointments/${id}`);
+
 export const createAppointment = (
   appointmentDate: string,
   doctorScheduleId: string,
   patientId: string,
 ): Promise<{ success: boolean; data: Appointment }> =>
   api.post('/appointments', { appointmentDate, doctorScheduleId, patientId });
+
+export const cancelAppointment = (id: string): Promise<{ success: boolean }> =>
+  api.delete(`/appointments/${id}`);

@@ -189,4 +189,13 @@ export interface Appointment {
     updatedAt: string;
   };
   medicalCenter: MedicalCenter;
+  activePauses: {
+    id: string;
+    date: string;
+    startTime: string;
+    stopTime: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
 }

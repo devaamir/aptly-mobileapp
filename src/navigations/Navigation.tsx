@@ -36,7 +36,7 @@ export type RootStackParamList = {
   DoctorDetail: { doctorId: string };
   BookAppointment: { doctor: Doctor };
   BookingConfirmed: { token: number; doctorName: string; hospital: string; date: string };
-  AppointmentDetail: { doctor: string; type: string; hospital: string; date: string; time: string; token: number; status: string };
+  AppointmentDetail: { id: string; doctor: string; type: string; hospital: string; date: string; time: string; token: number; status: string };
   HospitalDetail: { id: string; name: string; specialty: string; location: string };
   Clinics: undefined;
 };

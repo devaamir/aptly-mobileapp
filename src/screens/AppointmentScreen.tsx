@@ -84,6 +84,7 @@ export default function AppointmentScreen() {
             const date = formatDate(item.appointmentDate);
             return (
               <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('AppointmentDetail', {
+                id: item.id,
                 doctor: item.doctor.name,
                 type: item.doctor.specialties[0]?.name ?? '',
                 hospital: item.medicalCenter.name,
