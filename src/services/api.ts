@@ -63,10 +63,6 @@ api.interceptors.response.use(
         original.headers.Authorization = `Bearer ${accessToken}`;
         return api(original);
       } catch {
-        console.log("error in refresh token", error.response.data);
-        console.log("error in refresh token", error.response.status);
-        console.log("error in refresh token", error);
-        console.log("error in refresh token", error.response);
         return Promise.reject(error?.response?.data || error);
       }
     }
