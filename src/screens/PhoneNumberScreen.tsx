@@ -51,7 +51,7 @@ export default function PhoneNumberScreen() {
         <TextInput allowFontScaling={false}
           style={styles.input}
           placeholder="Enter phone number"
-          placeholderTextColor=colors.textSecondary
+          placeholderTextColor={colors.textSecondary}
           keyboardType="phone-pad"
           value={phone}
           onChangeText={setPhone}
