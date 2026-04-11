@@ -19,7 +19,7 @@ import BookingConfirmedScreen from '../screens/BookingConfirmedScreen';
 import AppointmentDetailScreen from '../screens/AppointmentDetailScreen';
 import HospitalDetailScreen from '../screens/HospitalDetailScreen';
 import ClinicsScreen from '../screens/ClinicsScreen';
-import { Doctor } from '../services/api';
+import { Doctor, Appointment } from '../services/api';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
@@ -27,7 +27,7 @@ export type RootStackParamList = {
   CreateProfile: undefined;
   EditProfile: undefined;
   Main: undefined;
-  TokenDetail: undefined;
+  TokenDetail: { appointment: Appointment };
   Search: undefined;
   SearchResult: { title: string; latitude?: number; longitude?: number; radius?: number };
   LocationSearch: undefined;

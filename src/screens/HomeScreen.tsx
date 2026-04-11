@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform, RefreshControl } from 'react-native';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -13,7 +13,9 @@ import NotificationIcon from '../assets/icons/notification-icon-grey.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import PhoneIcon from '../assets/icons/phone-icon.svg';
+import PhoneIconBlue from '../assets/icons/phone-icon-blue.svg';
 import MapIcon from '../assets/icons/map-icon.svg';
+import MapIconBlue from '../assets/icons/map-icon-blue.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import { getHomeData, getAppointments, Specialty, Doctor, Clinic, Appointment } from '../services/api';
 
@@ -38,8 +40,8 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
 
   return (
     <>
-      {spotlightAppt && <View style={styles.bannerCard}>
-        {Platform.OS === 'android' && (
+      {spotlightAppt && <View style={[styles.bannerCard, !isLive && { backgroundColor: colors.upcomingCardBg }]}>
+        {isLive && Platform.OS === 'android' && (
           <Video
             source={require('../assets/images/background-video.mp4')}
             style={StyleSheet.absoluteFill}
@@ -50,14 +52,20 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
           />
         )}
         <TouchableOpacity activeOpacity={0.7} onPress={onTokenPress}>
-          <View style={styles.livebadge}>
-            <View style={styles.greenDot} />
-            <Text allowFontScaling={false} style={styles.liveText}>{isLive ? 'Live' : 'Upcoming'}</Text>
+          <View style={[styles.livebadge, !isLive && { backgroundColor: colors.badgeBg }]}>
+            <View style={[styles.greenDot, !isLive && { backgroundColor: colors.primaryAccent }]} />
+            <Text allowFontScaling={false} style={[styles.liveText, !isLive && { color: colors.textPrimary }]}>{isLive ? 'Live' : 'Upcoming'}</Text>
           </View>
           <View style={styles.tokenCenter}>
-            <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>
-            <Text allowFontScaling={false} style={styles.tokenNumber}>{token || '--'}</Text>
-            {estTime && <Text allowFontScaling={false} style={styles.tokenEst}>{isLive ? `Estimated ${estTime}` : `Starts at ${estTime}`}</Text>}
+            <Text allowFontScaling={false} style={[styles.tokenLabel, !isLive && { color: colors.textPrimary, marginTop: SIZE(20) }]}>Your Token</Text>
+            <Text allowFontScaling={false} style={[styles.tokenNumber, !isLive && { color: colors.black }]}>{token || '--'}</Text>
+            {estTime && <Text allowFontScaling={false} style={[styles.tokenEst, !isLive && { color: colors.textSecondary }]}>{isLive ? `Estimated ${estTime}` : 'Scheduled for'}</Text>}
+            {!isLive && spotlightAppt?.appointmentDate && (
+              <Text allowFontScaling={false} style={styles.scheduledDate}>
+                {new Date(spotlightAppt.appointmentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                {spotlightAppt.schedule ? `, ${to12h(spotlightAppt.schedule.startTime)} - ${to12h(spotlightAppt.schedule.stopTime)}` : ''}
+              </Text>
+            )}
             {isLive && (
               <View style={styles.tokenRow}>
                 <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>1</Text></View>
@@ -67,29 +75,29 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
             )}
           </View>
         </TouchableOpacity>
-        <View style={styles.hospitalStrip}>
+        <View style={[styles.hospitalStrip, !isLive && { backgroundColor: colors.white }]}>
           <View style={styles.hospitalTop}>
             <View style={styles.hospitalLeft}>
               <View style={styles.hospitalAvatar} />
               <View>
-                <Text allowFontScaling={false} style={styles.hospitalName}>{spotlightAppt?.medicalCenter?.name ?? 'No appointment'}</Text>
-                <Text allowFontScaling={false} style={styles.hospitalType}>{spotlightAppt?.medicalCenter?.type ?? ''}</Text>
+                <Text allowFontScaling={false} style={[styles.hospitalName, !isLive && { color: colors.textPrimary }]}>{spotlightAppt?.medicalCenter?.name ?? 'No appointment'}</Text>
+                <Text allowFontScaling={false} style={[styles.hospitalType, !isLive && { color: colors.textSecondary }]}>{spotlightAppt?.medicalCenter?.type ?? ''}</Text>
               </View>
             </View>
             <View style={styles.hospitalActions}>
-              <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-                <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
+              <TouchableOpacity style={[styles.actionBtn, !isLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7}>
+                {isLive ? <PhoneIcon width={SIZE(22)} height={SIZE(22)} /> : <PhoneIconBlue width={SIZE(22)} height={SIZE(22)} />}
               </TouchableOpacity>
-              <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-                <MapIcon width={SIZE(22)} height={SIZE(22)} />
+              <TouchableOpacity style={[styles.actionBtn, !isLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7}>
+                {isLive ? <MapIcon width={SIZE(22)} height={SIZE(22)} /> : <MapIconBlue width={SIZE(22)} height={SIZE(22)} />}
               </TouchableOpacity>
             </View>
           </View>
           <View style={styles.hospitalBottom}>
-            <Text allowFontScaling={false} style={styles.doctorName}>{spotlightAppt?.doctor?.name ?? ''}</Text>
+            <Text allowFontScaling={false} style={[styles.doctorName, !isLive && { color: colors.textPrimary }]}>{spotlightAppt?.doctor?.name ?? ''}</Text>
             {spotlightAppt?.doctor?.specialties?.[0]?.name && <>
-              <Text allowFontScaling={false} style={styles.hospitalSep}> | </Text>
-              <Text allowFontScaling={false} style={styles.doctorSpecialty}>{spotlightAppt.doctor.specialties[0].name}</Text>
+              <Text allowFontScaling={false} style={[styles.hospitalSep, !isLive && { color: colors.textSecondary }]}> | </Text>
+              <Text allowFontScaling={false} style={[styles.doctorSpecialty, !isLive && { color: colors.textSecondary }]}>{spotlightAppt.doctor.specialties[0].name}</Text>
             </>}
           </View>
         </View>
@@ -174,22 +182,25 @@ export default function HomeScreen() {
   const [totalDoctorCount, setTotalDoctorCount] = useState(0);
   const [spotlightAppt, setSpotlightAppt] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [homeDataLoaded, setHomeDataLoaded] = useState(false);
   const [appointmentsLoaded, setAppointmentsLoaded] = useState(false);
 
-  useEffect(() => {
+  const fetchData = (isRefresh = false) => {
+    if (isRefresh) { setRefreshing(true); setLoading(true); }
+    let hDone = false, aDone = false;
+    const checkDone = () => { if (hDone && aDone) { setLoading(false); setRefreshing(false); } };
+
     getHomeData().then(res => {
       setSpecialties(res.data.specialties);
       setDoctors(res.data.doctors as Doctor[]);
       setClinics(res.data.topClinics);
       setTotalDoctorCount(res.data.totalDoctorCount);
-      setHomeDataLoaded(true);
-    }).catch(() => { });
+    }).catch(() => { }).finally(() => { hDone = true; checkDone(); });
 
     getAppointments().then(res => {
       const today = new Date().toISOString().split('T')[0];
       const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-      // Find live first, then nearest upcoming
       const active = res.data.filter(a => a.tokenStatus === 'pending');
       const live = active.find(a => {
         if (a.appointmentDate !== today) return false;
@@ -200,15 +211,10 @@ export default function HomeScreen() {
       setSpotlightAppt(live ?? active.sort((a, b) =>
         new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
       )[0] ?? null);
-      setAppointmentsLoaded(true);
-    }).catch(() => { });
-  }, []);
+    }).catch(() => { }).finally(() => { aDone = true; checkDone(); });
+  };
 
-  useEffect(() => {
-    if (homeDataLoaded && appointmentsLoaded) {
-      setLoading(false);
-    }
-  }, [homeDataLoaded, appointmentsLoaded]);
+  useEffect(() => { fetchData(); }, []);
 
   if (loading) {
     return <SkeletonScreen />;
@@ -246,7 +252,8 @@ export default function HomeScreen() {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          ListHeaderComponent={<ListHeader onTokenPress={() => spotlightAppt && navigation.navigate('TokenDetail', { appointment: spotlightAppt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} />}
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}
@@ -263,7 +270,10 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+  container: {
+    flex: 1,
+    backgroundColor: colors.white
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -272,7 +282,11 @@ const styles = StyleSheet.create({
     paddingVertical: SIZE(8),
     marginBottom: SIZE(10),
   },
-  logo: { width: 94, height: SIZE(32), resizeMode: 'contain' },
+  logo: {
+    width: 94,
+    height: SIZE(32),
+    resizeMode: 'contain'
+  },
   locationBtn: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -302,7 +316,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  searchWrapper: { paddingHorizontal: SIZE(18), marginBottom: SIZE(20) },
+  searchWrapper: {
+    paddingHorizontal: SIZE(18),
+    marginBottom: SIZE(20)
+  },
   bannerCard: {
     marginHorizontal: SIZE(18),
     marginBottom: SIZE(20),
@@ -355,6 +372,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
     color: colors.white,
+  },
+  scheduledDate: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: colors.scheduledText,
+    backgroundColor: colors.white,
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(4),
+    borderRadius: SIZE(6),
   },
   tokenRow: {
     flexDirection: 'row',
@@ -465,7 +491,10 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: SIZE(18),
   },
-  iconsRow: { flexDirection: 'row', gap: SIZE(8) },
+  iconsRow: {
+    flexDirection: 'row',
+    gap: SIZE(8)
+  },
   iconBox: {
     width: SIZE(40),
     height: SIZE(40),
@@ -480,7 +509,10 @@ const styles = StyleSheet.create({
     height: SIZE(28),
     resizeMode: 'contain',
   },
-  avatarRow: { flexDirection: 'row', alignItems: 'center' },
+  avatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
   avatarCircle: {
     width: SIZE(40),
     height: SIZE(40),
@@ -542,7 +574,12 @@ const styles = StyleSheet.create({
     borderRadius: SIZE(10),
     backgroundColor: colors.backgroundLight,
   },
-  clinicInfo: { flex: 1, justifyContent: 'space-between', alignSelf: 'stretch', paddingVertical: SIZE(7) },
+  clinicInfo: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
+    paddingVertical: SIZE(7)
+  },
   clinicName: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(16),
@@ -553,7 +590,12 @@ const styles = StyleSheet.create({
     fontSize: SIZE(11),
     color: colors.textSecondary,
   },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: SIZE(4), marginTop: SIZE(2) },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(4),
+    marginTop: SIZE(2)
+  },
   arrowContainer: {
     alignItems: 'center',
     justifyContent: 'center',

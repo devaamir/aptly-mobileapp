@@ -59,6 +59,8 @@ const colors = {
   dangerBg: '#FFF9F9',
   modalCloseBg: '#F2F4F7B2',
   black: '#000000',
+  upcomingCardBg: '#FFF5E9',
+  scheduledText: '#4A4A4A',
   overlay: 'rgba(0,0,0,0.4)',
   overlayDark: 'rgba(0,0,0,0.5)',
   white80: 'rgba(255,255,255,0.8)',

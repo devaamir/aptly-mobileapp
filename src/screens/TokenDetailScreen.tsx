@@ -9,16 +9,43 @@ import { SIZE } from '../themes/sizes';
 import DangerIcon from '../assets/icons/danger-icon.svg';
 import BottomModal from '../components/BottomModal';
 import AppointmentInfoCard from '../components/AppointmentInfoCard';
+import { cancelAppointment } from '../services/api';
+import type { Appointment } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TokenDetail'>;
 
-export default function TokenDetailScreen({ navigation }: Props) {
+const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+const to12h = (t: string) => { const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2,'0')}${h >= 12 ? 'pm' : 'am'}`; };
+
+export default function TokenDetailScreen({ navigation, route }: Props) {
+  const { appointment: appt } = route.params;
   const [cancelVisible, setCancelVisible] = useState(false);
 
+  const isLive = appt ? (() => {
+    const today = new Date().toISOString().split('T')[0];
+    if (appt.appointmentDate !== today || appt.tokenStatus !== 'pending') return false;
+    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+    const [sh, sm] = (appt.schedule?.startTime ?? '').split(':').map(Number);
+    const [eh, em] = (appt.schedule?.stopTime ?? '').split(':').map(Number);
+    return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+  })() : false;
+
+  const token = appt?.tokenNumber ?? 0;
+  const consultMins = appt?.doctor?.estimateConsultationTime ?? 15;
+  const estTime = isLive
+    ? (() => { const est = new Date(Date.now() + Math.max(0, token - 1) * consultMins * 60000); const h = est.getHours(), m = est.getMinutes(); return `${h % 12 || 12}:${String(m).padStart(2,'0')}${h >= 12 ? 'pm' : 'am'}`; })()
+    : appt?.schedule ? to12h(appt.schedule.startTime) : null;
+
+  const handleCancel = async () => {
+    await cancelAppointment(appt.id).catch(console.error);
+    setCancelVisible(false);
+    navigation.goBack();
+  };
+
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
-      {Platform.OS === 'android' && (
+    <SafeAreaView style={[styles.container, !isLive && { backgroundColor: colors.upcomingCardBg }]} edges={['top', 'bottom']}>
+      <StatusBar barStyle={isLive ? 'light-content' : 'dark-content'} backgroundColor={isLive ? colors.primary : colors.upcomingCardBg} />
+      {isLive && Platform.OS === 'android' && (
         <Video
           source={require('../assets/images/background-video.mp4')}
           style={StyleSheet.absoluteFill}
@@ -32,35 +59,44 @@ export default function TokenDetailScreen({ navigation }: Props) {
       {/* TOP */}
       <View style={styles.top}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
-          <Text allowFontScaling={false} style={styles.backText}>✕</Text>
+          <Text allowFontScaling={false} style={[styles.backText, !isLive && { color: colors.textPrimary }]}>✕</Text>
         </TouchableOpacity>
-        <View style={styles.liveBadge}>
-          <View style={styles.greenDot} />
-          <Text allowFontScaling={false} style={styles.liveText}>Live</Text>
+        <View style={[styles.liveBadge, !isLive && { backgroundColor: colors.badgeBg }]}>
+          <View style={[styles.greenDot, !isLive && { backgroundColor: colors.primaryAccent }]} />
+          <Text allowFontScaling={false} style={[styles.liveText, !isLive && { color: colors.textPrimary }]}>{isLive ? 'Live' : 'Upcoming'}</Text>
         </View>
       </View>
 
       {/* CENTER */}
       <View style={styles.center}>
-        <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>
-        <Text allowFontScaling={false} style={styles.tokenNumber}>42</Text>
-        <Text allowFontScaling={false} style={styles.tokenEst}>Estimated 2:30pm</Text>
-        <View style={styles.tokenRow}>
-          <Text allowFontScaling={false} style={styles.tokenSideNum}>38</Text>
-          <Text allowFontScaling={false} style={styles.tokenCurrentNum}>39</Text>
-          <Text allowFontScaling={false} style={styles.tokenSideNum}>40</Text>
-        </View>
+        <Text allowFontScaling={false} style={[styles.tokenLabel, !isLive && { color: colors.textPrimary }]}>Your Token</Text>
+        <Text allowFontScaling={false} style={[styles.tokenNumber, !isLive && { color: colors.black }]}>{token || '--'}</Text>
+        {estTime && <Text allowFontScaling={false} style={[styles.tokenEst, !isLive && { color: colors.textSecondary }]}>{isLive ? `Estimated ${estTime}` : 'Scheduled for'}</Text>}
+        {!isLive && appt?.appointmentDate && (
+          <Text allowFontScaling={false} style={styles.scheduledDate}>
+            {new Date(appt.appointmentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+            {appt.schedule ? `, ${to12h(appt.schedule.startTime)} - ${to12h(appt.schedule.stopTime)}` : ''}
+          </Text>
+        )}
+        {isLive && (
+          <View style={styles.tokenRow}>
+            <Text allowFontScaling={false} style={styles.tokenSideNum}>1</Text>
+            <Text allowFontScaling={false} style={styles.tokenCurrentNum}>2</Text>
+            <Text allowFontScaling={false} style={styles.tokenSideNum}>3</Text>
+          </View>
+        )}
       </View>
 
       {/* BOTTOM */}
       <View style={styles.bottom}>
         <AppointmentInfoCard
-          hospital="Sunrise Hospital"
-          hospitalType="Multi Specialty"
-          location="Kakkanad, Kochi - 682030, Kerala, India."
-          doctor="Dr. Rodger Struck"
-          doctorSpecialty="Cardiologist"
+          hospital={appt?.medicalCenter?.name ?? ''}
+          hospitalType={appt?.medicalCenter?.type ?? ''}
+          location={appt?.medicalCenter ? `${appt.medicalCenter.district}, ${appt.medicalCenter.state}` : ''}
+          doctor={appt?.doctor?.name ?? ''}
+          doctorSpecialty={appt?.doctor?.specialties?.[0]?.name ?? ''}
           onCancelPress={() => setCancelVisible(true)}
+          variant={isLive ? 'dark' : 'light'}
         />
       </View>
 
@@ -75,7 +111,7 @@ export default function TokenDetailScreen({ navigation }: Props) {
           <TouchableOpacity style={[styles.modalBtn, styles.keepBtn]} onPress={() => setCancelVisible(false)} activeOpacity={0.8}>
             <Text allowFontScaling={false} style={styles.keepText}>Keep Token</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.modalBtn, styles.yesBtn]} onPress={() => setCancelVisible(false)} activeOpacity={0.8}>
+          <TouchableOpacity style={[styles.modalBtn, styles.yesBtn]} onPress={handleCancel} activeOpacity={0.8}>
             <Text allowFontScaling={false} style={styles.yesText}>Yes, Cancel</Text>
           </TouchableOpacity>
         </View>
@@ -151,6 +187,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(12),
     color: colors.white80
+  },
+  scheduledDate: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: colors.scheduledText,
+    backgroundColor: colors.white,
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(4),
+    borderRadius: SIZE(6),
   },
   tokenRow: {
     flexDirection: 'row',

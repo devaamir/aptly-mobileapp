@@ -156,8 +156,8 @@ export const searchAll = (q: string): Promise<{ success: boolean; data: (Doctor 
   api.get(`/ui/search?q=${encodeURIComponent(q)}`);
 
 // Appointments
-export const getAppointments = (): Promise<{ success: boolean; data: Appointment[] }> =>
-  api.get('/appointments');
+export const getAppointments = (page = 1, limit = 20): Promise<{ success: boolean; data: Appointment[] }> =>
+  api.get(`/appointments?page=${page}&limit=${limit}`);
 
 export const getAppointment = (id: string): Promise<{ success: boolean; data: Appointment }> =>
   api.get(`/appointments/${id}`);
