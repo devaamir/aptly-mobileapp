@@ -85,6 +85,11 @@ export const createPatient = (
 ): Promise<CreatePatientResponse> =>
   api.put('/patients/me', { name, gender, dateOfBirth });
 
+export const addPatient = (
+  name: string, phoneNumber: string, gender: string, dateOfBirth: string,
+): Promise<{ success: boolean; data: Patient }> =>
+  api.post('/patients', { name, phoneNumber, gender, dateOfBirth });
+
 export const updatePatient = (
   patientId: string, name: string, gender: string, dateOfBirth: string,
 ): Promise<{ success: boolean; data: Patient }> =>

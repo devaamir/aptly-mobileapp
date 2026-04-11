@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import PatientSelector from '../components/PatientSelector';
 import BottomModal from '../components/BottomModal';
+import AppInput from '../components/AppInput';
+import AppDropdown from '../components/AppDropdown';
+import AppDatePicker from '../components/AppDatePicker';
+import PrimaryButton from '../components/PrimaryButton';
+import { createPatient, addPatient, getPatients, Patient } from '../services/api';
 
 const MENU_ITEMS: { section: string; items: string[] }[] = [];
 
@@ -16,6 +21,33 @@ export default function ProfileScreen() {
   const { user, setUser } = useAuth();
   const navigation = useNavigation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [memberName, setMemberName] = useState('');
+  const [memberPhone, setMemberPhone] = useState('');
+  const [memberGender, setMemberGender] = useState('');
+  const [memberDob, setMemberDob] = useState<Date | null>(null);
+  const [addingMember, setAddingMember] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+
+  useFocusEffect(useCallback(() => {
+    getPatients().then(res => setPatients(res.data.filter(p => !!p.name))).catch(() => {});
+  }, []));
+
+  const handleAddMember = async () => {
+    if (!memberName || !memberPhone || !memberGender || !memberDob) return;
+    try {
+      setAddingMember(true);
+      await addPatient(memberName, memberPhone, memberGender.toLowerCase(), memberDob.toISOString().split('T')[0]);
+      const res = await getPatients();
+      setPatients(res.data.filter(p => !!p.name));
+      setShowAddMember(false);
+      setMemberName(''); setMemberPhone(''); setMemberGender(''); setMemberDob(null);
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Failed to add member');
+    } finally {
+      setAddingMember(false);
+    }
+  };
 
   const handleLogout = async () => {
     await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'patientId', 'name', 'phoneNumber', 'email']);
@@ -44,13 +76,17 @@ export default function ProfileScreen() {
 
         {/* Patients */}
         <Text allowFontScaling={false} style={styles.sectionLabel}>My Patients</Text>
-        {user && <PatientSelector patients={[{
-          id: user.patientId,
-          name: user.name,
-          phone: user.phoneNumber,
-          age: user.dateOfBirth ? new Date().getFullYear() - new Date(user.dateOfBirth).getFullYear() : 0,
-          gender: user.gender ?? '',
-        }]} showRadio={false} onAddMember={() => { }} />}
+        {user && <PatientSelector
+          patients={patients.map(p => ({
+            id: p.id,
+            name: p.name,
+            phone: p.phoneNumber,
+            age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 0,
+            gender: p.gender ?? '',
+          }))}
+          showRadio={false}
+          onAddMember={() => setShowAddMember(true)}
+        />}
 
         {/* Menu sections */}
         {MENU_ITEMS.map(section => (
@@ -88,12 +124,37 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
       </BottomModal>
+
+      <BottomModal visible={showAddMember} onClose={() => setShowAddMember(false)} variant="bottom">
+        <Text allowFontScaling={false} style={styles.modalTitle}>Add Member</Text>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ width: '100%', flex: 1 }}>
+          <View style={{ gap: SIZE(12), flex: 1 }}>
+            <AppInput value={memberName} onChangeText={setMemberName} placeholder="Full name" />
+            <AppInput value={memberPhone} onChangeText={setMemberPhone} placeholder="Phone number" keyboardType="phone-pad" prefix="+91" />
+            <View style={styles.row}>
+              <View style={{ flex: 1 }}>
+                <AppDropdown options={['Male', 'Female']} value={memberGender} onSelect={setMemberGender} placeholder="Gender" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <AppDatePicker value={memberDob} onChange={setMemberDob} placeholder="Date of birth" />
+              </View>
+            </View>
+          </View>
+          <PrimaryButton
+            label="Continue"
+            onPress={handleAddMember}
+            disabled={!memberName || !memberPhone || !memberGender || !memberDob || addingMember}
+            loading={addingMember}
+          />
+        </KeyboardAvoidingView>
+      </BottomModal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
+  row: { flexDirection: 'row', gap: SIZE(12) },
   header: {
     paddingHorizontal: SIZE(20),
     paddingVertical: SIZE(12),
