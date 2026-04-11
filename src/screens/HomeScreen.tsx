@@ -131,6 +131,41 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
   );
 };
 
+function SkeletonScreen() {
+  const shimmer = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 0, duration: 900, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] });
+
+  const S = ({ style }: { style: any }) => (
+    <Animated.View style={[style, { opacity, backgroundColor: colors.backgroundMuted, borderRadius: SIZE(10) }]} />
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <View style={styles.mainContainer}>
+        <S style={styles.height60Loader} />
+        <S style={styles.height60Loader} />
+        <S style={styles.height200Loader} />
+        <View style={styles.rowView}>
+          <S style={styles.width50Loader} />
+          <S style={styles.width50Loader} />
+        </View>
+        <S style={styles.height200Loader} />
+      </View>
+    </SafeAreaView>
+  );
+}
+
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
@@ -176,20 +211,7 @@ export default function HomeScreen() {
   }, [homeDataLoaded, appointmentsLoaded]);
 
   if (loading) {
-    return <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
-
-      <View style={styles.mainContainer}>
-        <View style={styles.height60Loader} />
-        <View style={styles.height60Loader} />
-        <View style={styles.height200Loader} />
-        <View style={styles.rowView}>
-          <View style={styles.width50Loader} />
-          <View style={styles.width50Loader} />
-        </View>
-        <View style={styles.height200Loader} />
-      </View>
-    </SafeAreaView>;
+    return <SkeletonScreen />;
   } else {
     return (
       <SafeAreaView style={styles.container}>
