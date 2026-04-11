@@ -11,6 +11,7 @@ import LocationIcon from '../assets/icons/location-black-icon.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
 import FilterModal from '../components/FilterModal';
+import DistancePicker from '../components/DistancePicker';
 import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SearchResult'>;
@@ -26,6 +27,7 @@ export default function SearchResultScreen({ navigation, route }: Props) {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>(EMPTY_FILTERS);
+  const [distance, setDistance] = useState(25);
 
   useEffect(() => {
     const fetch = isDoctor
@@ -52,7 +54,7 @@ export default function SearchResultScreen({ navigation, route }: Props) {
           <LocationIcon width={SIZE(20)} height={SIZE(20)} />
         </View>
         <Text allowFontScaling={false} style={styles.locationInput} numberOfLines={1}>{location}</Text>
-        <Text allowFontScaling={false} style={styles.distanceText}>2.5 km</Text>
+        <DistancePicker value={distance} onChange={setDistance} />
       </TouchableOpacity>
 
       <View style={styles.filterRow}>

@@ -152,6 +152,9 @@ export const getClinic = (id: string): Promise<{ success: boolean; data: Clinic 
 export const getHomeData = (): Promise<{ success: boolean; data: HomeData }> =>
   api.get('/ui/home');
 
+export const searchLocations = (q: string): Promise<{ success: boolean; data: { description: string; placeId: string; latitude: number; longitude: number; mainText: string; secondaryText: string; types: string[] }[] }> =>
+  api.get(`/ui/locations?q=${encodeURIComponent(q)}`);
+
 export const searchAll = (q: string): Promise<{ success: boolean; data: (Doctor | Clinic)[] }> =>
   api.get(`/ui/search?q=${encodeURIComponent(q)}`);
 
@@ -171,3 +174,46 @@ export const createAppointment = (
 
 export const cancelAppointment = (id: string): Promise<{ success: boolean }> =>
   api.patch(`/appointments/${id}/status`, { tokenStatus: 'cancelled' });
+
+export type TrackData = {
+  appointments: { tokenNumber: number; tokenStatus: string; createdAt: string; updatedAt: string }[];
+  activePauses: { id: string; date: string; startTime: string; stopTime: string; status: string; createdAt: string; updatedAt: string }[];
+};
+
+export function trackAppointment(
+  id: string,
+  onData: (data: TrackData) => void,
+  onError?: (err: unknown) => void,
+): () => void {
+  const controller = new AbortController();
+
+  (async () => {
+    try {
+      const token = await AsyncStorage.getItem('accessToken');
+      const res = await fetch(`https://aptly-server.onrender.com/api/appointments/${id}/track`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
+      });
+      const reader = res.body?.getReader();
+      if (!reader) return;
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            try { onData(JSON.parse(line.slice(5).trim())); } catch {}
+          }
+        }
+      }
+    } catch (err) {
+      if ((err as any)?.name !== 'AbortError') onError?.(err);
+    }
+  })();
+
+  return () => controller.abort();
+}

@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import ClinicCard from '../components/ClinicCard';
 import FilterModal from '../components/FilterModal';
+import DistancePicker from '../components/DistancePicker';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
@@ -18,6 +19,7 @@ export default function ClinicsScreen({ navigation }: Props) {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
+  const [distance, setDistance] = useState(25);
 
   useEffect(() => {
     getClinics()
@@ -45,7 +47,7 @@ export default function ClinicsScreen({ navigation }: Props) {
           <LocationIcon width={SIZE(20)} height={SIZE(20)} />
         </View>
         <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>Malappuram, Kerala</Text>
-        <Text allowFontScaling={false} style={styles.distanceText}>25 km</Text>
+        <DistancePicker value={distance} onChange={setDistance} />
       </TouchableOpacity>
       <View style={styles.filterRow}>
         <FilterModal applied={appliedFilters} onApply={setAppliedFilters} />
