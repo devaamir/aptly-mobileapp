@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert, KeyboardAvoidingView } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -12,7 +12,12 @@ import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import CalendarIcon from '../assets/icons/calendar-icon.svg';
 import SwipeToBook from '../components/SwipeToBook';
 import PatientSelector from '../components/PatientSelector';
-import { createAppointment, getPatients, Patient } from '../services/api';
+import BottomModal from '../components/BottomModal';
+import AppInput from '../components/AppInput';
+import AppDropdown from '../components/AppDropdown';
+import AppDatePicker from '../components/AppDatePicker';
+import PrimaryButton from '../components/PrimaryButton';
+import { createAppointment, getPatients, addPatient, Patient } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookAppointment'>;
@@ -49,6 +54,29 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [memberName, setMemberName] = useState('');
+  const [memberPhone, setMemberPhone] = useState('');
+  const [memberGender, setMemberGender] = useState('');
+  const [memberDob, setMemberDob] = useState<Date | null>(null);
+  const [addingMember, setAddingMember] = useState(false);
+
+  const handleAddMember = async () => {
+    if (!memberName || !memberPhone || !memberGender || !memberDob) return;
+    try {
+      setAddingMember(true);
+      await addPatient(memberName, memberPhone, memberGender.toLowerCase(), memberDob.toISOString().split('T')[0]);
+      const res = await getPatients();
+      const valid = res.data.filter(p => !!p.name);
+      setPatients(valid);
+      setShowAddMember(false);
+      setMemberName(''); setMemberPhone(''); setMemberGender(''); setMemberDob(null);
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Failed to add member');
+    } finally {
+      setAddingMember(false);
+    }
+  };
 
   useEffect(() => {
     getPatients().then(res => {
@@ -62,7 +90,11 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
     if (!selectedPatient || !selectedSession) return;
     try {
       setLoading(true);
-      const appointmentDate = DAYS[selectedDay].full.toISOString().split('T')[0];
+      const d = DAYS[selectedDay].full;
+
+      const appointmentDate = `${d.getFullYear()}-${String(
+        d.getMonth() + 1
+      ).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       console.log(appointmentDate, selectedSession, selectedPatient);
       const res = await createAppointment(appointmentDate, selectedSession, selectedPatient);
       navigation.navigate('BookingConfirmed', {
@@ -162,6 +194,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
                 activeOpacity={0.8}>
                 <Text allowFontScaling={false} style={[styles.dayLabel, selectedDay === i && styles.dayLabelActive]}>{d.weekday}</Text>
                 <Text allowFontScaling={false} style={[styles.dayDate, selectedDay === i && styles.dayLabelActive]}>{d.dateMonth}</Text>
+                {i === 0 && <View style={styles.todayDot} />}
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -190,7 +223,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           ) : (
             <View style={styles.slotCard}>
               <Text allowFontScaling={false} style={styles.slotTime}>No sessions</Text>
-              <Text allowFontScaling={false} style={styles.slotTickets}>Doctor is not available this day</Text>
+              <Text allowFontScaling={false} style={[styles.slotTickets, { color: colors.danger }]}>Doctor is not available</Text>
             </View>
           )}
 
@@ -201,7 +234,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             selectedId={selectedPatient}
             onSelect={setSelectedPatient}
             showRadio
-            onAddMember={() => { }}
+            onAddMember={() => setShowAddMember(true)}
           />
         </ScrollView>
 
@@ -218,14 +251,34 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             }}
           /> */}
           <TouchableOpacity
-            style={[styles.getTokenBtn, (!selectedPatient || loading) && styles.getTokenBtnDisabled]}
-            disabled={!selectedPatient || loading}
+            style={[styles.getTokenBtn, (!selectedPatient || loading || todaySessions.length === 0) && styles.getTokenBtnDisabled]}
+            disabled={!selectedPatient || loading || todaySessions.length === 0}
             activeOpacity={0.8}
             onPress={handleGetToken}>
             <Text allowFontScaling={false} style={styles.getTokenBtnText}>{loading ? 'Booking...' : 'Get Token'}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+
+      <BottomModal visible={showAddMember} onClose={() => setShowAddMember(false)} variant="bottom">
+        <Text allowFontScaling={false} style={styles.addMemberTitle}>Add Member</Text>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ width: '100%', flex: 1 }}>
+          <View style={{ gap: SIZE(12), flex: 1 }}>
+            <AppInput value={memberName} onChangeText={setMemberName} placeholder="Full name" />
+            <AppInput value={memberPhone} onChangeText={setMemberPhone} placeholder="Phone number" keyboardType="phone-pad" prefix="+91" />
+            <View style={styles.memberRow}>
+              <View style={{ flex: 1 }}><AppDropdown options={['Male', 'Female']} value={memberGender} onSelect={setMemberGender} placeholder="Gender" /></View>
+              <View style={{ flex: 1 }}><AppDatePicker value={memberDob} onChange={setMemberDob} placeholder="Date of birth" /></View>
+            </View>
+          </View>
+          <PrimaryButton
+            label="Continue"
+            onPress={handleAddMember}
+            disabled={!memberName || !memberPhone || !memberGender || !memberDob || addingMember}
+            loading={addingMember}
+          />
+        </KeyboardAvoidingView>
+      </BottomModal>
     </GestureHandlerRootView>
   );
 }
@@ -488,6 +541,15 @@ const styles = StyleSheet.create({
     marginTop: SIZE(2),
   },
   dayLabelActive: { color: colors.white },
+  todayDot: {
+    position: 'absolute',
+    top: SIZE(6),
+    right: SIZE(6),
+    width: SIZE(6),
+    height: SIZE(6),
+    borderRadius: SIZE(3),
+    backgroundColor: colors.onlineIndicator,
+  },
   slotsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -555,4 +617,12 @@ const styles = StyleSheet.create({
     color: colors.white,
     textAlign: 'center',
   },
+  addMemberTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(18),
+    color: colors.textPrimary,
+    marginBottom: SIZE(16),
+    alignSelf: 'flex-start',
+  },
+  memberRow: { flexDirection: 'row', gap: SIZE(12) },
 });

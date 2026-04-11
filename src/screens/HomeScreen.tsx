@@ -17,7 +17,7 @@ import PhoneIconBlue from '../assets/icons/phone-icon-blue.svg';
 import MapIcon from '../assets/icons/map-icon.svg';
 import MapIconBlue from '../assets/icons/map-icon-blue.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
-import { getHomeData, getAppointments, Specialty, Doctor, Clinic, Appointment } from '../services/api';
+import { getHomeData, Specialty, Doctor, Clinic, Appointment } from '../services/api';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -183,25 +183,19 @@ export default function HomeScreen() {
   const [spotlightAppt, setSpotlightAppt] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [homeDataLoaded, setHomeDataLoaded] = useState(false);
-  const [appointmentsLoaded, setAppointmentsLoaded] = useState(false);
 
   const fetchData = (isRefresh = false) => {
     if (isRefresh) { setRefreshing(true); setLoading(true); }
-    let hDone = false, aDone = false;
-    const checkDone = () => { if (hDone && aDone) { setLoading(false); setRefreshing(false); } };
-
     getHomeData().then(res => {
+      console.log(res.data);
+
       setSpecialties(res.data.specialties);
       setDoctors(res.data.doctors as Doctor[]);
       setClinics(res.data.topClinics);
       setTotalDoctorCount(res.data.totalDoctorCount);
-    }).catch(() => { }).finally(() => { hDone = true; checkDone(); });
-
-    getAppointments().then(res => {
       const today = new Date().toISOString().split('T')[0];
       const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-      const active = res.data.filter(a => a.tokenStatus === 'pending');
+      const active = (res.data.appointments ?? []).filter(a => a.tokenStatus === 'pending');
       const live = active.find(a => {
         if (a.appointmentDate !== today) return false;
         const [sh, sm] = (a.schedule?.startTime ?? '').split(':').map(Number);
@@ -211,7 +205,7 @@ export default function HomeScreen() {
       setSpotlightAppt(live ?? active.sort((a, b) =>
         new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
       )[0] ?? null);
-    }).catch(() => { }).finally(() => { aDone = true; checkDone(); });
+    }).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); });
   };
 
   useEffect(() => { fetchData(); }, []);

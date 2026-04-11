@@ -159,9 +159,10 @@ export interface Pagination {
 
 export interface HomeData {
   specialties: Specialty[];
-  doctors: Pick<Doctor, 'id' | 'name' | 'phoneNumber' | 'emailAddress' | 'about' | 'consultationFee' | 'yearsOfExperience' | 'advanceBookingLimit' | 'estimateConsultationTime' | 'latitude' | 'longitude' | 'address' | 'district' | 'state' | 'country' | 'profilePicture' | 'createdAt' | 'updatedAt'>[];
+  doctors: Doctor[];
   totalDoctorCount: number;
-  topClinics: Clinic[];
+  topClinics: (Clinic & { distanceInMeters?: number })[];
+  appointments: Appointment[];
 }
 
 export interface Patient {
