@@ -75,9 +75,9 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
           />
           <Text allowFontScaling={false} style={[styles.tokenLabel, styles.tokenLabelLive]}>Your Token</Text>
           <View style={styles.tokenQueue}>
-            <Text allowFontScaling={false} style={styles.tokenNextPrev}>{token - 3}</Text>
-            <Text allowFontScaling={false} style={styles.tokenCurrent}>{token - 2}</Text>
-            <Text allowFontScaling={false} style={styles.tokenNextPrev}>{token - 1}</Text>
+            <Text allowFontScaling={false} style={styles.tokenNextPrev}>1</Text>
+            <Text allowFontScaling={false} style={styles.tokenCurrent}>2</Text>
+            <Text allowFontScaling={false} style={styles.tokenNextPrev}>3</Text>
             <Text allowFontScaling={false} style={styles.ourTokenNumber}>{token}</Text>
           </View>
         </View>

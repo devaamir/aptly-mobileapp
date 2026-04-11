@@ -136,11 +136,11 @@ export default function AppointmentDetailScreen() {
               <Text allowFontScaling={false} style={styles.statusText}>{displayStatus}</Text>
             </View>
             <View style={styles.liveRight}>
-              {displayStatus === 'Live' && displayToken > 1 && (
+              {displayStatus === 'Live' && (
                 <View style={styles.tokenQueue}>
-                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>{displayToken - 1}</Text>
-                  <Text allowFontScaling={false} style={styles.tokenCurrent}>{displayToken}</Text>
-                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>{displayToken + 1}</Text>
+                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>1</Text>
+                  <Text allowFontScaling={false} style={styles.tokenCurrent}>2</Text>
+                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>3</Text>
                 </View>
               )}
               <View style={styles.liveTokenContent}>

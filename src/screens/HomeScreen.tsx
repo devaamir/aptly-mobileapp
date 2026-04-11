@@ -15,105 +15,121 @@ import ArrowRight from '../assets/icons/arrow-right.svg';
 import PhoneIcon from '../assets/icons/phone-icon.svg';
 import MapIcon from '../assets/icons/map-icon.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
-import { getHomeData, Specialty, Doctor, Clinic } from '../services/api';
+import { getHomeData, getAppointments, Specialty, Doctor, Clinic, Appointment } from '../services/api';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount }: { onTokenPress: () => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number }) => (
-  <>
-    <View style={styles.bannerCard}>
-      {Platform.OS === 'android' && (
-        <Video
-          source={require('../assets/images/background-video.mp4')}
-          style={StyleSheet.absoluteFill}
-          resizeMode="cover"
-          repeat
-          muted
-          disableFocus
-        />
-      )}
-      <TouchableOpacity activeOpacity={0.7} onPress={onTokenPress}>
-        <View style={styles.livebadge}>
-          <View style={styles.greenDot} />
-          <Text allowFontScaling={false} style={styles.liveText}>Live</Text>
-        </View>
-        <View style={styles.tokenCenter}>
-          <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>
-          <Text allowFontScaling={false} style={styles.tokenNumber}>42</Text>
-          <Text allowFontScaling={false} style={styles.tokenEst}>Estimated 2:30pm</Text>
-          <View style={styles.tokenRow}>
-            <View style={styles.tokenSide}>
-              <Text allowFontScaling={false} style={styles.tokenSideNum}>38</Text>
+const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt }: { onTokenPress: () => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null }) => {
+  const today = new Date().toISOString().split('T')[0];
+  const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+  const isLive = spotlightAppt
+    ? spotlightAppt.appointmentDate === today && (() => {
+      const [sh, sm] = (spotlightAppt.schedule?.startTime ?? '').split(':').map(Number);
+      const [eh, em] = (spotlightAppt.schedule?.stopTime ?? '').split(':').map(Number);
+      return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+    })()
+    : false;
+  const token = spotlightAppt?.tokenNumber ?? 0;
+  const to12h = (t: string) => { const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; };
+  const consultMins = spotlightAppt?.doctor?.estimateConsultationTime ?? 15;
+  const estTime = spotlightAppt && isLive
+    ? (() => { const est = new Date(Date.now() + Math.max(0, token - 1) * consultMins * 60000); const h = est.getHours(), m = est.getMinutes(); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; })()
+    : spotlightAppt?.schedule ? to12h(spotlightAppt.schedule.startTime) : null;
+
+  return (
+    <>
+      {spotlightAppt && <View style={styles.bannerCard}>
+        {Platform.OS === 'android' && (
+          <Video
+            source={require('../assets/images/background-video.mp4')}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+            repeat
+            muted
+            disableFocus
+          />
+        )}
+        <TouchableOpacity activeOpacity={0.7} onPress={onTokenPress}>
+          <View style={styles.livebadge}>
+            <View style={styles.greenDot} />
+            <Text allowFontScaling={false} style={styles.liveText}>{isLive ? 'Live' : 'Upcoming'}</Text>
+          </View>
+          <View style={styles.tokenCenter}>
+            <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>
+            <Text allowFontScaling={false} style={styles.tokenNumber}>{token || '--'}</Text>
+            {estTime && <Text allowFontScaling={false} style={styles.tokenEst}>{isLive ? `Estimated ${estTime}` : `Starts at ${estTime}`}</Text>}
+            {isLive && (
+              <View style={styles.tokenRow}>
+                <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>1</Text></View>
+                <View style={styles.tokenCurrent}><Text allowFontScaling={false} style={styles.tokenCurrentNum}>2</Text></View>
+                <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>3</Text></View>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+        <View style={styles.hospitalStrip}>
+          <View style={styles.hospitalTop}>
+            <View style={styles.hospitalLeft}>
+              <View style={styles.hospitalAvatar} />
+              <View>
+                <Text allowFontScaling={false} style={styles.hospitalName}>{spotlightAppt?.medicalCenter?.name ?? 'No appointment'}</Text>
+                <Text allowFontScaling={false} style={styles.hospitalType}>{spotlightAppt?.medicalCenter?.type ?? ''}</Text>
+              </View>
             </View>
-            <View style={styles.tokenCurrent}>
-              <Text allowFontScaling={false} style={styles.tokenCurrentNum}>39</Text>
-            </View>
-            <View style={styles.tokenSide}>
-              <Text allowFontScaling={false} style={styles.tokenSideNum}>40</Text>
+            <View style={styles.hospitalActions}>
+              <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
+                <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
+                <MapIcon width={SIZE(22)} height={SIZE(22)} />
+              </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </TouchableOpacity>
-      <View style={styles.hospitalStrip}>
-        <View style={styles.hospitalTop}>
-          <View style={styles.hospitalLeft}>
-            <View style={styles.hospitalAvatar} />
-            <View>
-              <Text allowFontScaling={false} style={styles.hospitalName}>Sunrise Hospital</Text>
-              <Text allowFontScaling={false} style={styles.hospitalType}>Multi Specialty</Text>
-            </View>
-          </View>
-          <View style={styles.hospitalActions}>
-            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-              <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-              <MapIcon width={SIZE(22)} height={SIZE(22)} />
-            </TouchableOpacity>
+          <View style={styles.hospitalBottom}>
+            <Text allowFontScaling={false} style={styles.doctorName}>{spotlightAppt?.doctor?.name ?? ''}</Text>
+            {spotlightAppt?.doctor?.specialties?.[0]?.name && <>
+              <Text allowFontScaling={false} style={styles.hospitalSep}> | </Text>
+              <Text allowFontScaling={false} style={styles.doctorSpecialty}>{spotlightAppt.doctor.specialties[0].name}</Text>
+            </>}
           </View>
         </View>
-        <View style={styles.hospitalBottom}>
-          <Text allowFontScaling={false} style={styles.doctorName}>Dr. Rodger Struck</Text>
-          <Text allowFontScaling={false} style={styles.hospitalSep}> | </Text>
-          <Text allowFontScaling={false} style={styles.doctorSpecialty}>Cardiologist</Text>
-        </View>
+      </View>}
+      <View style={styles.cardsRow}>
+        <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onspecialstPress}>
+          <Text allowFontScaling={false} style={styles.cardTitle}>All specialst</Text>
+          <View style={styles.iconsRow}>
+            {specialties.slice(0, 3).map(s => (
+              <View key={s.id} style={styles.iconBox}>
+                <Image source={{ uri: s.icon }} style={styles.iconImg} />
+              </View>
+            ))}
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onDoctorsPress}>
+          <Text allowFontScaling={false} style={styles.cardTitle}>All doctors</Text>
+          <View style={styles.avatarRow}>
+            {doctors.slice(0, 3).map((d, i) => (
+              <View key={d.id} style={[styles.avatarCircle, { marginLeft: i === 0 ? 0 : -SIZE(12) }]}>
+                {d.profilePicture ? (
+                  <Image source={{ uri: d.profilePicture }} style={styles.avatarImg} />
+                ) : null}
+              </View>
+            ))}
+            {totalDoctorCount > 3 && (
+              <Text allowFontScaling={false} style={styles.avatarCount}>{totalDoctorCount - 3}+</Text>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
-    </View>
-    <View style={styles.cardsRow}>
-      <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onspecialstPress}>
-        <Text allowFontScaling={false} style={styles.cardTitle}>All specialst</Text>
-        <View style={styles.iconsRow}>
-          {specialties.slice(0, 3).map(s => (
-            <View key={s.id} style={styles.iconBox}>
-              <Image source={{ uri: s.icon }} style={styles.iconImg} />
-            </View>
-          ))}
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onDoctorsPress}>
-        <Text allowFontScaling={false} style={styles.cardTitle}>All doctors</Text>
-        <View style={styles.avatarRow}>
-          {doctors.slice(0, 3).map((d, i) => (
-            <View key={d.id} style={[styles.avatarCircle, { marginLeft: i === 0 ? 0 : -SIZE(12) }]}>
-              {d.profilePicture ? (
-                <Image source={{ uri: d.profilePicture }} style={styles.avatarImg} />
-              ) : null}
-            </View>
-          ))}
-          {totalDoctorCount > 3 && (
-            <Text allowFontScaling={false} style={styles.avatarCount}>{totalDoctorCount - 3}+</Text>
-          )}
-        </View>
-      </TouchableOpacity>
-    </View>
-    <View style={styles.sectionHeader}>
-      <Text allowFontScaling={false} style={styles.sectionTitle}>Near by Clinics</Text>
-      <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
-        <Text allowFontScaling={false} style={styles.viewAll}>See all</Text>
-      </TouchableOpacity>
-    </View>
-  </>
-);
+      <View style={styles.sectionHeader}>
+        <Text allowFontScaling={false} style={styles.sectionTitle}>Near by Clinics</Text>
+        <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
+          <Text allowFontScaling={false} style={styles.viewAll}>See all</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+};
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
@@ -121,6 +137,10 @@ export default function HomeScreen() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [totalDoctorCount, setTotalDoctorCount] = useState(0);
+  const [spotlightAppt, setSpotlightAppt] = useState<Appointment | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [homeDataLoaded, setHomeDataLoaded] = useState(false);
+  const [appointmentsLoaded, setAppointmentsLoaded] = useState(false);
 
   useEffect(() => {
     getHomeData().then(res => {
@@ -128,55 +148,96 @@ export default function HomeScreen() {
       setDoctors(res.data.doctors as Doctor[]);
       setClinics(res.data.topClinics);
       setTotalDoctorCount(res.data.totalDoctorCount);
+      setHomeDataLoaded(true);
+    }).catch(() => { });
+
+    getAppointments().then(res => {
+      const today = new Date().toISOString().split('T')[0];
+      const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+      // Find live first, then nearest upcoming
+      const active = res.data.filter(a => a.tokenStatus === 'pending');
+      const live = active.find(a => {
+        if (a.appointmentDate !== today) return false;
+        const [sh, sm] = (a.schedule?.startTime ?? '').split(':').map(Number);
+        const [eh, em] = (a.schedule?.stopTime ?? '').split(':').map(Number);
+        return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+      });
+      setSpotlightAppt(live ?? active.sort((a, b) =>
+        new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
+      )[0] ?? null);
+      setAppointmentsLoaded(true);
     }).catch(() => { });
   }, []);
 
-  return (
-    <SafeAreaView style={styles.container}>
+  useEffect(() => {
+    if (homeDataLoaded && appointmentsLoaded) {
+      setLoading(false);
+    }
+  }, [homeDataLoaded, appointmentsLoaded]);
+
+  if (loading) {
+    return <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.locationBtn} activeOpacity={0.7} onPress={() => navigation.navigate('LocationSearch')}>
-          <LocationIcon width={SIZE(19)} height={SIZE(19)} style={styles.locationIcon} />
-          <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SIZE(4) }}>
-              <Text allowFontScaling={false} style={styles.locationText}>Bangalore</Text>
-              <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
+
+      <View style={styles.mainContainer}>
+        <View style={styles.height60Loader} />
+        <View style={styles.height60Loader} />
+        <View style={styles.height200Loader} />
+        <View style={styles.rowView}>
+          <View style={styles.width50Loader} />
+          <View style={styles.width50Loader} />
+        </View>
+        <View style={styles.height200Loader} />
+      </View>
+    </SafeAreaView>;
+  } else {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.locationBtn} activeOpacity={0.7} onPress={() => navigation.navigate('LocationSearch')}>
+            <LocationIcon width={SIZE(19)} height={SIZE(19)} style={styles.locationIcon} />
+            <View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SIZE(4) }}>
+                <Text allowFontScaling={false} style={styles.locationText}>Bangalore</Text>
+                <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
+              </View>
+              <Text allowFontScaling={false} style={styles.locationSub}>Malappuram, Kerala</Text>
             </View>
-            <Text allowFontScaling={false} style={styles.locationSub}>Malappuram, Kerala</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.notifBtn} activeOpacity={0.7}>
-          <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
-        </TouchableOpacity>
-      </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.notifBtn} activeOpacity={0.7}>
+            <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
+          </TouchableOpacity>
+        </View>
 
-      {/* Search - stays fixed */}
-      <View style={styles.searchWrapper}>
-        <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Search')}>
-          <SearchBar placeholder='Search for "Skin Doctor"' editable={false} />
-        </TouchableOpacity>
-      </View>
+        {/* Search - stays fixed */}
+        <View style={styles.searchWrapper}>
+          <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Search')}>
+            <SearchBar placeholder='Search for "Skin Doctor"' editable={false} />
+          </TouchableOpacity>
+        </View>
 
-      {/* Everything below scrolls */}
-      <FlatList
-        data={clinics}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} />}
-        renderItem={({ item }) => (
-          <ClinicCard
-            name={item.name}
-            subType={item.specialties[0]?.name ?? item.type}
-            location={`${item.district}, ${item.state}`}
-            image={item.profilePicture}
-            onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
-          />
-        )}
-      />
-    </SafeAreaView>
-  );
+        {/* Everything below scrolls */}
+        <FlatList
+          data={clinics}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={<ListHeader onTokenPress={() => navigation.navigate('TokenDetail')} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} />}
+          renderItem={({ item }) => (
+            <ClinicCard
+              name={item.name}
+              subType={item.specialties[0]?.name ?? item.type}
+              location={`${item.district}, ${item.state}`}
+              image={item.profilePicture}
+              onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
+            />
+          )}
+        />
+      </SafeAreaView>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
@@ -475,5 +536,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingRight: SIZE(12),
+  },
+  mainContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+    paddingTop: SIZE(12),
+    paddingHorizontal: SIZE(18),
+    gap: SIZE(12),
+  },
+  height60Loader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    height: SIZE(60),
+    borderRadius: SIZE(12),
+    backgroundColor: colors.backgroundLight,
+  },
+  height200Loader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    height: SIZE(300),
+    borderRadius: SIZE(12),
+    backgroundColor: colors.backgroundLight,
+    marginVertical: SIZE(12),
+  },
+  rowView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: SIZE(12),
+  },
+  width50Loader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '48%',
+    height: SIZE(100),
+    borderRadius: SIZE(12),
+    backgroundColor: colors.backgroundLight,
   },
 });
