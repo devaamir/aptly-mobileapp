@@ -37,7 +37,7 @@ export default function BookingConfirmedScreen({ navigation, route }: Props) {
       )}
 
       <View style={styles.content}>
-        <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token Number</Text>
+        <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>
         <Text allowFontScaling={false} style={styles.tokenNumber}>{token}</Text>
       </View>
 

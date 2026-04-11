@@ -25,6 +25,7 @@ export type RootStackParamList = {
   PhoneNumber: undefined;
   Otp: { phone: string; code: number };
   CreateProfile: undefined;
+  EditProfile: undefined;
   Main: undefined;
   TokenDetail: undefined;
   Search: undefined;
@@ -34,7 +35,7 @@ export type RootStackParamList = {
   SpecialstDetail: { name: string; id: string; desc: string; clinics: number; doctors: number };
   Doctors: undefined;
   DoctorDetail: { doctorId: string };
-  BookAppointment: { doctor: Doctor };
+  BookAppointment: { doctor: Doctor; clinicId?: string };
   BookingConfirmed: { token: number; doctorName: string; hospital: string; date: string };
   AppointmentDetail: { id: string; doctor: string; type: string; hospital: string; date: string; time: string; token: number; status: string };
   HospitalDetail: { id: string; name: string; specialty: string; location: string };
@@ -66,6 +67,7 @@ export default function Navigation() {
         <Stack.Screen name="PhoneNumber" component={PhoneNumberScreen} />
         <Stack.Screen name="Otp" component={OtpScreen} />
         <Stack.Screen name="CreateProfile" component={CreateProfileScreen} />
+        <Stack.Screen name="EditProfile" component={CreateProfileScreen} />
         <Stack.Screen name="Main" component={BottomTabNavigator} />
         <Stack.Screen
           name="TokenDetail"

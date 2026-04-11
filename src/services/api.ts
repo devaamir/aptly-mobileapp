@@ -85,6 +85,11 @@ export const createPatient = (
 ): Promise<CreatePatientResponse> =>
   api.put('/patients/me', { name, gender, dateOfBirth });
 
+export const updatePatient = (
+  patientId: string, name: string, gender: string, dateOfBirth: string,
+): Promise<{ success: boolean; data: Patient }> =>
+  api.patch(`/patients/${patientId}`, { name, gender, dateOfBirth });
+
 export const getPatients = (): Promise<{ success: boolean; data: Patient[] }> =>
   api.get('/patients');
 
@@ -160,4 +165,4 @@ export const createAppointment = (
   api.post('/appointments', { appointmentDate, doctorScheduleId, patientId });
 
 export const cancelAppointment = (id: string): Promise<{ success: boolean }> =>
-  api.delete(`/appointments/${id}`);
+  api.patch(`/appointments/${id}/status`, { tokenStatus: 'cancelled' });

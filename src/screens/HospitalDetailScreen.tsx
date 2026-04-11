@@ -12,7 +12,7 @@ import PhoneIcon from '../assets/icons/phone-icon-blue.svg';
 import MapIcon from '../assets/icons/map-icon-blue.svg';
 import WebIcon from '../assets/icons/web-icon-blue.svg';
 import DoctorCard from '../components/DoctorCard';
-import { getClinic } from '../services/api';
+import { getClinic, getDoctor } from '../services/api';
 import type { Clinic } from '../services/api';
 
 const BANNER_HEIGHT = SIZE(254);
@@ -123,26 +123,10 @@ export default function HospitalDetailScreen() {
               image={doc.profilePicture}
               status="Booking Opened"
               onPress={() => navigation.navigate('DoctorDetail', { doctorId: doc.id })}
-              onBookPress={() => navigation.navigate('BookAppointment', {
-                name: doc.name, type: doc.specialties[0]?.name ?? '', hospital: displayClinic.name,
-              })}
-            />
-          </View>
-        ))}
-        {!loading && tab === 'Doctors' && displayClinic.doctors.map(doc => (
-          <View key={doc.id} style={styles.doctorCardWrapper}>
-            <DoctorCard
-              name={doc.name}
-              type={doc.specialties[0]?.name ?? ''}
-              hospital={displayClinic.name}
-              clinicType={specialty}
-              experience={doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''}
-              image={doc.profilePicture}
-              status="Booking Opened"
-              onPress={() => navigation.navigate('DoctorDetail', { doctorId: doc.id })}
-              onBookPress={() => navigation.navigate('BookAppointment', {
-                name: doc.name, type: doc.specialties[0]?.name ?? '', hospital: displayClinic.name,
-              })}
+              onBookPress={async () => {
+                const res = await getDoctor(doc.id);
+                navigation.navigate('BookAppointment', { doctor: res.data, clinicId: clinic?.id });
+              }}
             />
           </View>
         ))}

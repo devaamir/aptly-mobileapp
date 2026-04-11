@@ -23,6 +23,17 @@ export interface VerifyOtpResponse {
       createdAt: string;
       updatedAt: string;
     };
+    patient: {
+      id: string;
+      name: string;
+      referenceId: string;
+      phoneNumber: string;
+      gender: string;
+      dateOfBirth: string;
+      createdAt: string;
+      updatedAt: string;
+      deletedAt: string | null;
+    } | null;
   };
 }
 

@@ -73,7 +73,7 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
             repeat
             muted
           />
-          <Text allowFontScaling={false} style={[styles.tokenLabel, styles.tokenLabelLive]}>Your token number</Text>
+          <Text allowFontScaling={false} style={[styles.tokenLabel, styles.tokenLabelLive]}>Your Token</Text>
           <View style={styles.tokenQueue}>
             <Text allowFontScaling={false} style={styles.tokenNextPrev}>{token - 3}</Text>
             <Text allowFontScaling={false} style={styles.tokenCurrent}>{token - 2}</Text>
@@ -84,7 +84,7 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
       )}
       {status === 'Upcoming' && (
         <View style={[styles.tokenCard, { backgroundColor: colors.tokenBg }]}>
-          <Text allowFontScaling={false} style={styles.tokenLabel}>Your token number</Text>
+          <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>
           <Text allowFontScaling={false} style={styles.tokenNumber}>{token}</Text>
         </View>
       )}

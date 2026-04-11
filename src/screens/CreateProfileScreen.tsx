@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppDropdown from '../components/AppDropdown';
 import AppDatePicker from '../components/AppDatePicker';
@@ -12,15 +12,17 @@ import ArrowRight from '../assets/icons/arrow-right-grey.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import AppInput from '../components/AppInput';
-import { createPatient } from '../services/api';
+import { createPatient, updatePatient } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function CreateProfileScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const isEdit = (route.name as string) === 'EditProfile';
   const { user, updateUser } = useAuth();
-  const [name, setName] = useState('');
-  const [gender, setGender] = useState('');
-  const [dob, setDob] = useState<Date | null>(null);
+  const [name, setName] = useState(isEdit ? (user?.name ?? '') : '');
+  const [gender, setGender] = useState(isEdit ? (user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : '') : '');
+  const [dob, setDob] = useState<Date | null>(isEdit && user?.dateOfBirth ? new Date(user.dateOfBirth) : null);
   const [loading, setLoading] = useState(false);
 
   const isValid = !!name && !!gender && !!dob;
@@ -28,14 +30,22 @@ export default function CreateProfileScreen() {
   const handleContinue = async () => {
     try {
       setLoading(true);
-      const phoneNumber = user?.phoneNumber ?? await AsyncStorage.getItem('phoneNumber') ?? '';
       const dateOfBirth = dob!.toISOString().split('T')[0];
-      const res = await createPatient(name, gender.toLowerCase(), dateOfBirth);
-      await AsyncStorage.multiSet([['name', name], ['patientId', res.data.id]]);
-      updateUser({ name, patientId: res.data.id });
-      navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
+      const genderLower = gender.toLowerCase();
+      let patientId: string;
+      if (isEdit && user?.patientId) {
+        const res = await updatePatient(user.patientId, name, genderLower, dateOfBirth);
+        patientId = res.data.id;
+      } else {
+        const res = await createPatient(name, genderLower, dateOfBirth);
+        patientId = res.data.id;
+      }
+      await AsyncStorage.multiSet([['name', name], ['patientId', patientId], ['gender', genderLower], ['dateOfBirth', dateOfBirth]]);
+      updateUser({ name, patientId, gender: genderLower, dateOfBirth });
+      if (isEdit) navigation.goBack();
+      else navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
     } catch (err: any) {
-      Alert.alert('Error', err?.message || 'Failed to create profile');
+      Alert.alert('Error', err?.message || 'Failed to save profile');
     } finally {
       setLoading(false);
     }
@@ -48,8 +58,8 @@ export default function CreateProfileScreen() {
         <BackArrow width={SIZE(24)} height={SIZE(24)} />
       </TouchableOpacity>
 
-      <Text allowFontScaling={false} style={styles.title}>Welcome to APTLY</Text>
-      <Text allowFontScaling={false} style={styles.subtitle}>Create your profile to book appointments, track tokens, and manage your clinic visits easily.</Text>
+      <Text allowFontScaling={false} style={styles.title}>{isEdit ? 'Edit Profile' : 'Welcome to APTLY'}</Text>
+      <Text allowFontScaling={false} style={styles.subtitle}>{isEdit ? 'Update your name, gender and date of birth.' : 'Create your profile to book appointments, track tokens, and manage your clinic visits easily.'}</Text>
 
       <AppInput
         value={name}

@@ -42,7 +42,7 @@ export default function TokenDetailScreen({ navigation }: Props) {
 
       {/* CENTER */}
       <View style={styles.center}>
-        <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token Number</Text>
+        <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>
         <Text allowFontScaling={false} style={styles.tokenNumber}>42</Text>
         <Text allowFontScaling={false} style={styles.tokenEst}>Estimated 2:30pm</Text>
         <View style={styles.tokenRow}>

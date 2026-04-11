@@ -37,14 +37,20 @@ export default function ProfileScreen() {
             <Text allowFontScaling={false} style={styles.name}>{user?.name}</Text>
             <Text allowFontScaling={false} style={styles.phone}>{user?.phoneNumber}</Text>
           </View>
-          <TouchableOpacity style={styles.editBtn} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.editBtn} activeOpacity={0.7} onPress={() => navigation.navigate('EditProfile' as never)}>
             <Text allowFontScaling={false} style={styles.editText}>Edit</Text>
           </TouchableOpacity>
         </View>
 
         {/* Patients */}
         <Text allowFontScaling={false} style={styles.sectionLabel}>My Patients</Text>
-        {user && <PatientSelector patients={[{ id: user.patientId, name: user.name, phone: user.phoneNumber, age: 0, gender: '' }]} showRadio={false} onAddMember={() => { }} />}
+        {user && <PatientSelector patients={[{
+          id: user.patientId,
+          name: user.name,
+          phone: user.phoneNumber,
+          age: user.dateOfBirth ? new Date().getFullYear() - new Date(user.dateOfBirth).getFullYear() : 0,
+          gender: user.gender ?? '',
+        }]} showRadio={false} onAddMember={() => { }} />}
 
         {/* Menu sections */}
         {MENU_ITEMS.map(section => (

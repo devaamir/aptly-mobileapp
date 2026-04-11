@@ -12,11 +12,7 @@ import AppointmentInfoCard from '../components/AppointmentInfoCard';
 import PatientSelector from '../components/PatientSelector';
 import { cancelAppointment, getAppointment } from '../services/api';
 import type { Appointment } from '../services/api';
-
-const PATIENTS = [
-  { id: '1', name: 'Alen', phone: '+91 98765 43210', age: 28, gender: 'Male' },
-  { id: '2', name: 'Sara', phone: '+91 91234 56789', age: 24, gender: 'Female' },
-];
+import { useAuth } from '../context/AuthContext';
 
 type Route = RouteProp<RootStackParamList, 'AppointmentDetail'>;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -25,6 +21,7 @@ export default function AppointmentDetailScreen() {
   const navigation = useNavigation<Nav>();
   const { params } = useRoute<Route>();
   const { id, doctor, type, hospital, date, time, token, status } = params;
+  const { user } = useAuth();
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [appointment, setAppointment] = useState<Appointment | null>(null);
@@ -78,11 +75,15 @@ export default function AppointmentDetailScreen() {
     id: displayPatient.id,
     name: displayPatient.name,
     phone: displayPatient.phoneNumber,
-    age: displayPatient.dateOfBirth
-      ? new Date().getFullYear() - new Date(displayPatient.dateOfBirth).getFullYear()
-      : 0,
+    age: displayPatient.dateOfBirth ? new Date().getFullYear() - new Date(displayPatient.dateOfBirth).getFullYear() : 0,
     gender: displayPatient.gender,
-  }] : [PATIENTS[0]];
+  }] : user ? [{
+    id: user.patientId,
+    name: user.name,
+    phone: user.phoneNumber,
+    age: user.dateOfBirth ? new Date().getFullYear() - new Date(user.dateOfBirth).getFullYear() : 0,
+    gender: user.gender ?? '',
+  }] : [];
 
   const handleCancel = async () => {
     setCancelling(true);
@@ -143,7 +144,7 @@ export default function AppointmentDetailScreen() {
                 </View>
               )}
               <View style={styles.liveTokenContent}>
-                <Text allowFontScaling={false} style={[styles.liveLabel, displayStatus === 'Upcoming' && { color: colors.textMuted }]}>Your token number</Text>
+                <Text allowFontScaling={false} style={[styles.liveLabel, displayStatus === 'Upcoming' && { color: colors.textMuted }]}>Your Token</Text>
                 <Text allowFontScaling={false} style={[styles.liveToken, displayStatus === 'Upcoming' && { color: colors.textPrimary }]}>{displayToken}</Text>
                 {displayStatus === 'Live' && estimatedTime && (
                   <Text allowFontScaling={false} style={styles.liveEstimated}>Estimated {estimatedTime}</Text>
@@ -190,9 +191,11 @@ export default function AppointmentDetailScreen() {
         </View>
 
         {/* Cancel button */}
-        <TouchableOpacity style={styles.cancelBtn} activeOpacity={0.8} onPress={() => setConfirmVisible(true)}>
-          <Text allowFontScaling={false} style={styles.cancelBtnText}>Cancel Appointment</Text>
-        </TouchableOpacity>
+        {displayStatus !== 'Completed' && displayStatus !== 'Cancelled' && (
+          <TouchableOpacity style={styles.cancelBtn} activeOpacity={0.8} onPress={() => setConfirmVisible(true)}>
+            <Text allowFontScaling={false} style={styles.cancelBtnText}>Cancel Appointment</Text>
+          </TouchableOpacity>
+        )}
 
       </ScrollView>
 

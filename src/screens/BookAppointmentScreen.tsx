@@ -34,13 +34,16 @@ const to12h = (time: string) => {
 };
 
 export default function BookAppointmentScreen({ navigation, route }: Props) {
-  const { doctor } = route.params;
+  const { doctor, clinicId } = route.params;
+  const relevantCenters = clinicId
+    ? doctor.medicalCenters.filter(mc => mc.id === clinicId)
+    : doctor.medicalCenters;
   const { user } = useAuth();
   const [selectedDay, setSelectedDay] = useState(0);
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<string | null>(() => {
     const todayName = WEEK_DAYS[new Date().getDay()];
-    const first = doctor.medicalCenters.flatMap(mc => mc.schedules ?? []).find(s => s.dayOfWeek === todayName);
+    const first = relevantCenters.flatMap(mc => mc.schedules ?? []).find(s => s.dayOfWeek === todayName);
     return first?.id ?? null;
   });
   const [showCalendar, setShowCalendar] = useState(false);
@@ -65,7 +68,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
       navigation.navigate('BookingConfirmed', {
         token: res.data.tokenNumber,
         doctorName: doctor.name,
-        hospital: doctor.medicalCenters[0]?.name ?? '',
+        hospital: relevantCenters[0]?.name ?? '',
         date: DAYS[selectedDay].dateMonth,
       });
     } catch (err: any) {
@@ -77,7 +80,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
 
 
   const selectedDayName = WEEK_DAYS[DAYS[selectedDay].full.getDay()];
-  const todaySessions = doctor.medicalCenters
+  const todaySessions = relevantCenters
     .flatMap(mc => mc.schedules ?? [])
     .filter(s => s.dayOfWeek === selectedDayName)
     .filter((s, i, arr) => arr.findIndex(x => x.startTime === s.startTime && x.stopTime === s.stopTime) === i);
@@ -115,7 +118,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           </View>
           <View>
             <Text allowFontScaling={false} style={styles.title}>{doctor.name}</Text>
-            {doctor.medicalCenters[0]?.name ? <Text allowFontScaling={false} style={styles.headerSubtitle}>{doctor.medicalCenters[0].name}</Text> : null}
+            {relevantCenters[0]?.name ? <Text allowFontScaling={false} style={styles.headerSubtitle}>{relevantCenters[0].name}</Text> : null}
           </View>
         </View>
         <View style={styles.divider} />
@@ -194,7 +197,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           {/* Select patient */}
           <Text allowFontScaling={false} style={styles.sectionTitle}>Select Patient</Text>
           <PatientSelector
-            patients={patients.map(p => ({ id: p.id, name: p.name, phone: p.phoneNumber, age: 0, gender: p.gender }))}
+            patients={patients.map(p => ({ id: p.id, name: p.name, phone: p.phoneNumber, age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 0, gender: p.gender }))}
             selectedId={selectedPatient}
             onSelect={setSelectedPatient}
             showRadio
