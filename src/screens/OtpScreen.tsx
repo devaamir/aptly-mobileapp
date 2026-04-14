@@ -57,7 +57,7 @@ export default function OtpScreen() {
         ['dateOfBirth', patient?.dateOfBirth ?? ''],
       ]);
       setUser({ userId: user.id, patientId: patient?.id ?? '', name: user.name ?? '', phoneNumber: user.phoneNumber, email: user.emailAddress ?? '', accessToken, refreshToken, gender: patient?.gender ?? '', dateOfBirth: patient?.dateOfBirth ?? '' });
-      navigation.reset({ index: 0, routes: [{ name: (patient || user.name) ? ('Main' as never) : ('CreateProfile' as never) }] });
+      navigation.reset({ index: 0, routes: [{ name: (user.name) ? ('Main' as never) : ('CreateProfile' as never) }] });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Verification failed');
     } finally {
