@@ -6,8 +6,22 @@ import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
-import LocationIcon from '../assets/icons/location-icon.svg';
+import LocationIcon from '../assets/icons/location-black-icon.svg';
+import GpsIcon from '../assets/icons/gps-icon.svg';
 import { searchLocations } from '../services/api';
+
+const POPULAR_PLACES = [
+  'Manjeri',
+  'Perinthalmanna',
+  'Tirur',
+  'Kondotty',
+  'Malappuram Town',
+  'Ponnani',
+  'Kottakkal',
+  'Nilambur',
+  'Wandoor',
+  'Tanur',
+];
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LocationSearch'>;
 type Location = { description: string; placeId: string; latitude: number; longitude: number; mainText: string; secondaryText: string };
@@ -23,7 +37,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
       setLoading(true);
       searchLocations(query)
         .then(res => setResults(res.data))
-        .catch(() => {})
+        .catch(() => { })
         .finally(() => setLoading(false));
     }, 400);
     return () => clearTimeout(timer);
@@ -54,10 +68,40 @@ export default function LocationSearchScreen({ navigation }: Props) {
       {loading && <ActivityIndicator style={{ marginTop: SIZE(20) }} color={colors.primary} />}
 
       <FlatList
-        data={results}
+        data={results.length > 0 ? results : []}
         keyExtractor={item => item.placeId}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.list}
+        ListHeaderComponent={
+          <>
+            {/* Current Location Button */}
+            <TouchableOpacity style={styles.currentLocationBtn} activeOpacity={0.7}>
+              <GpsIcon width={SIZE(18)} height={SIZE(18)} />
+              <Text allowFontScaling={false} style={styles.currentLocationText}>Choose your current location</Text>
+            </TouchableOpacity>
+
+            <View style={styles.separator} />
+
+            {/* Popular Places — only show when not searching */}
+            {!query.trim() && (
+              <>
+                <Text allowFontScaling={false} style={styles.sectionTitle}>Popular Places</Text>
+                {POPULAR_PLACES.map(place => (
+                  <TouchableOpacity key={place} style={styles.row} activeOpacity={0.7}>
+                    <LocationIcon width={SIZE(16)} height={SIZE(16)} />
+                    <View style={{ flex: 1 }}>
+                      <Text allowFontScaling={false} style={styles.rowText}>{place}</Text>
+                      <Text allowFontScaling={false} style={styles.rowSub}>Malappuram, Kerala</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </>
+            )}
+
+            {/* Separator before search results */}
+            {results.length > 0 && <View style={styles.separator} />}
+          </>
+        }
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={() => navigation.goBack()}>
             <LocationIcon width={SIZE(16)} height={SIZE(16)} />
@@ -67,14 +111,17 @@ export default function LocationSearchScreen({ navigation }: Props) {
             </View>
           </TouchableOpacity>
         )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={null}
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+  container: {
+    flex: 1,
+    backgroundColor: colors.white
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -84,7 +131,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  backBtn: { padding: SIZE(4) },
+  backBtn: {
+    padding: SIZE(4)
+  },
   searchBox: {
     flex: 1,
     flexDirection: 'row',
@@ -102,7 +151,30 @@ const styles = StyleSheet.create({
     fontSize: SIZE(15),
     color: colors.textPrimary,
   },
-  list: { paddingHorizontal: SIZE(18), paddingTop: SIZE(8), paddingBottom: SIZE(24) },
+  list: {
+    paddingHorizontal: SIZE(18),
+    paddingTop: SIZE(8),
+    paddingBottom: SIZE(24)
+  },
+  currentLocationBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(12),
+    paddingTop: SIZE(8),
+    paddingBottom: SIZE(12),
+  },
+  currentLocationText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.primaryAccent,
+  },
+  sectionTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(13),
+    color: colors.textSecondary,
+    marginTop: SIZE(12),
+    marginBottom: SIZE(4),
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

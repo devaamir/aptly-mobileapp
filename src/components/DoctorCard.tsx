@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ViewStyle, StyleProp } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon.svg';
@@ -16,6 +16,7 @@ type Props = {
   bookingTime?: string;
   onPress?: () => void;
   onBookPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 };
 
 const statusConfig = {
@@ -31,10 +32,10 @@ const statusConfig = {
   },
 };
 
-const DoctorCard = ({ name, type, hospital, clinicType, experience, image, location, status = 'Booking Opened', bookingTime, onPress, onBookPress }: Props) => {
+const DoctorCard = ({ name, type, hospital, clinicType, experience, image, location, status = 'Booking Opened', bookingTime, onPress, onBookPress, style }: Props) => {
   const s = statusConfig[status];
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={onPress}>
+    <TouchableOpacity style={[styles.card, style]} activeOpacity={0.8} onPress={onPress}>
       <View style={styles.topCard}>
         <View style={styles.cardTop}>
           <View style={styles.avatar}>

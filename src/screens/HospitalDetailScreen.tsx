@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, StatusBar, Image, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, StatusBar, Image, ActivityIndicator, Dimensions, ScrollView } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -43,9 +43,9 @@ export default function HospitalDetailScreen() {
   const backBtnBottom = top + SIZE(8) + SIZE(36) + SIZE(8);
   const collapsedBannerHeight = backBtnBottom;
 
-  const marginTop = scrollY.interpolate({
-    inputRange: [0, 160],
-    outputRange: [top + BANNER_HEIGHT - SHEET_OVERLAP, top + BANNER_HEIGHT - SHEET_OVERLAP - 160],
+  const borderRadius = scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [24, 0],
     extrapolate: 'clamp',
   });
 
@@ -65,10 +65,8 @@ export default function HospitalDetailScreen() {
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
       </View>
-
-      {/* ScrollView fills remaining space; sheet scrolls up but stops at collapsedBannerHeight */}
       <Animated.ScrollView
-        style={[styles.scrollView, { marginTop }]}
+        style={[styles.scrollView, { marginTop: collapsedBannerHeight }]}
         contentContainerStyle={[styles.sheetContent, { minHeight: Dimensions.get('window').height - collapsedBannerHeight }]}
         showsVerticalScrollIndicator={false}
         scrollIndicatorInsets={{ top: 0 }}
@@ -78,36 +76,39 @@ export default function HospitalDetailScreen() {
           { useNativeDriver: false },
         )}
         scrollEventThrottle={16}
-      >
-        <View style={styles.sheetHandle} />
-        <Text allowFontScaling={false} style={styles.clinicTitle}>{displayClinic.name}</Text>
-        <Text allowFontScaling={false} style={styles.clinicSpecialty}>{specialty}</Text>
-        <View style={styles.locationRow}>
-          <LocationIcon width={SIZE(12)} height={SIZE(12)} />
-          <Text allowFontScaling={false} style={styles.clinicLocation}>{location}</Text>
-        </View>
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-            <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-            <MapIcon width={SIZE(22)} height={SIZE(22)} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
-            <WebIcon width={SIZE(22)} height={SIZE(22)} />
-          </TouchableOpacity>
-        </View>
+        stickyHeaderIndices={[1]}>
+        <View style={{ height: BANNER_HEIGHT - top - SIZE(50) }} />
+        <View style={[styles.topHeader, { borderRadius }]}>
+          <View style={styles.sheetHandle} />
+          <Text allowFontScaling={false} style={styles.clinicTitle}>{displayClinic.name}</Text>
+          <Text allowFontScaling={false} style={styles.clinicSpecialty}>{specialty}</Text>
+          <View style={styles.locationRow}>
+            <LocationIcon width={SIZE(12)} height={SIZE(12)} />
+            <Text allowFontScaling={false} style={styles.clinicLocation}>{location}</Text>
+          </View>
+          <View style={styles.actions}>
+            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
+              <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
+              <MapIcon width={SIZE(22)} height={SIZE(22)} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
+              <WebIcon width={SIZE(22)} height={SIZE(22)} />
+            </TouchableOpacity>
+          </View>
 
-        {/* Tabs */}
-        <View style={styles.tabs}>
-          <TouchableOpacity onPress={() => setTab('Doctors')} style={styles.tab} activeOpacity={0.8}>
-            <Text allowFontScaling={false} style={[styles.tabText, tab === 'Doctors' && styles.tabTextActive]}>Doctors</Text>
-            {tab === 'Doctors' && <View style={styles.tabUnderline} />}
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setTab('Details')} style={styles.tab} activeOpacity={0.8}>
-            <Text allowFontScaling={false} style={[styles.tabText, tab === 'Details' && styles.tabTextActive]}>Details</Text>
-            {tab === 'Details' && <View style={styles.tabUnderline} />}
-          </TouchableOpacity>
+          {/* Tabs */}
+          <View style={styles.tabs}>
+            <TouchableOpacity onPress={() => setTab('Doctors')} style={styles.tab} activeOpacity={0.8}>
+              <Text allowFontScaling={false} style={[styles.tabText, tab === 'Doctors' && styles.tabTextActive]}>Doctors</Text>
+              {tab === 'Doctors' && <View style={styles.tabUnderline} />}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setTab('Details')} style={styles.tab} activeOpacity={0.8}>
+              <Text allowFontScaling={false} style={[styles.tabText, tab === 'Details' && styles.tabTextActive]}>Details</Text>
+              {tab === 'Details' && <View style={styles.tabUnderline} />}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {loading && <ActivityIndicator color={colors.accent} />}
@@ -127,6 +128,7 @@ export default function HospitalDetailScreen() {
                 const res = await getDoctor(doc.id);
                 navigation.navigate('BookAppointment', { doctor: res.data, clinicId: clinic?.id });
               }}
+              style={{ marginBottom: SIZE(16) }}
             />
           </View>
         ))}
@@ -165,14 +167,17 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    backgroundColor: colors.white,
-    borderTopLeftRadius: SIZE(24),
-    borderTopRightRadius: SIZE(24),
+    // paddingHorizontal: 10
+    // backgroundColor: colors.white,
   },
   sheetContent: {
-    padding: SIZE(18),
-    gap: SIZE(16),
+    // gap: SIZE(16),
     paddingBottom: SIZE(40),
+  },
+  topHeader: {
+    backgroundColor: colors.white,
+    // paddingTop: 0,
+    padding: SIZE(18),
   },
   sheetHandle: {
     width: SIZE(40),
@@ -181,25 +186,37 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     alignSelf: 'center',
     marginBottom: SIZE(4),
+
   },
   clinicTitle: {
     fontFamily: 'Manrope-Bold',
     fontSize: SIZE(20),
     color: colors.black,
+    marginBottom: SIZE(16)
   },
   clinicSpecialty: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
     color: colors.subText,
     marginTop: -SIZE(10),
+    marginBottom: SIZE(16)
   },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: SIZE(4) },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(4),
+    marginBottom: SIZE(16)
+  },
   clinicLocation: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
     color: colors.subText,
   },
-  actions: { flexDirection: 'row', gap: SIZE(8) },
+  actions: {
+    flexDirection: 'row',
+    gap: SIZE(8),
+    marginBottom: SIZE(16)
+  },
   actionBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -238,10 +255,12 @@ const styles = StyleSheet.create({
   },
   doctorCardWrapper: {
     marginHorizontal: -SIZE(2),
+    paddingHorizontal: SIZE(18),
   },
   detailsText: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(13),
     color: colors.textSecondary,
+    padding: SIZE(16)
   },
 });

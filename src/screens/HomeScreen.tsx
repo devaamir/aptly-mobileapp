@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform, RefreshControl } from 'react-native';
+import { View, Image, ScrollView, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform, RefreshControl } from 'react-native';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -21,27 +21,28 @@ import { getHomeData, Specialty, Doctor, Clinic, Appointment } from '../services
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt }: { onTokenPress: () => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null }) => {
+const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt, activeAppointments }: { onTokenPress: (appt: Appointment) => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null; activeAppointments: Appointment[] }) => {
   const today = new Date().toISOString().split('T')[0];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-  const isLive = spotlightAppt
-    ? spotlightAppt.appointmentDate === today && (() => {
-      const [sh, sm] = (spotlightAppt.schedule?.startTime ?? '').split(':').map(Number);
-      const [eh, em] = (spotlightAppt.schedule?.stopTime ?? '').split(':').map(Number);
-      return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
-    })()
-    : false;
-  const token = spotlightAppt?.tokenNumber ?? 0;
   const to12h = (t: string) => { const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; };
-  const consultMins = spotlightAppt?.doctor?.estimateConsultationTime ?? 15;
-  const estTime = spotlightAppt && isLive
-    ? (() => { const est = new Date(Date.now() + Math.max(0, token - 1) * consultMins * 60000); const h = est.getHours(), m = est.getMinutes(); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; })()
-    : spotlightAppt?.schedule ? to12h(spotlightAppt.schedule.startTime) : null;
 
-  return (
-    <>
-      {spotlightAppt && <View style={[styles.bannerCard, !isLive && { backgroundColor: colors.upcomingCardBg }]}>
-        {isLive && Platform.OS === 'android' && (
+  const renderBannerCard = (appt: Appointment) => {
+    const apptIsLive = appt.appointmentDate === today && (() => {
+      const [sh, sm] = (appt.schedule?.startTime ?? '').split(':').map(Number);
+      const [eh, em] = (appt.schedule?.stopTime ?? '').split(':').map(Number);
+      return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+    })();
+    const apptToken = appt.tokenNumber ?? 0;
+    const apptConsultMins = appt.doctor?.estimateConsultationTime ?? 15;
+    const apptEstTime = apptIsLive
+      ? (() => { const est = new Date(Date.now() + Math.max(0, apptToken - 1) * apptConsultMins * 60000); const h = est.getHours(), m = est.getMinutes(); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; })()
+      : appt.schedule ? to12h(appt.schedule.startTime) : null;
+
+    return (
+      <View
+        key={appt.id}
+        style={[styles.bannerCard, !apptIsLive && { backgroundColor: colors.upcomingCardBg }, activeAppointments.length > 1 && styles.bannerCardMulti]}>
+        {apptIsLive && Platform.OS === 'android' && (
           <Video
             source={require('../assets/images/background-video.mp4')}
             style={StyleSheet.absoluteFill}
@@ -51,22 +52,22 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
             disableFocus
           />
         )}
-        <TouchableOpacity activeOpacity={0.7} onPress={onTokenPress}>
-          <View style={[styles.livebadge, !isLive && { backgroundColor: colors.badgeBg }]}>
-            <View style={[styles.greenDot, !isLive && { backgroundColor: colors.primaryAccent }]} />
-            <Text allowFontScaling={false} style={[styles.liveText, !isLive && { color: colors.textPrimary }]}>{isLive ? 'Live' : 'Upcoming'}</Text>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => onTokenPress(appt)}>
+          <View style={[styles.livebadge, !apptIsLive && { backgroundColor: colors.badgeBg }]}>
+            <View style={[styles.greenDot, !apptIsLive && { backgroundColor: colors.primaryAccent }]} />
+            <Text allowFontScaling={false} style={[styles.liveText, !apptIsLive && { color: colors.textPrimary }]}>{apptIsLive ? 'Live' : 'Upcoming'}</Text>
           </View>
           <View style={styles.tokenCenter}>
-            <Text allowFontScaling={false} style={[styles.tokenLabel, !isLive && { color: colors.textPrimary, marginTop: SIZE(20) }]}>Your Token</Text>
-            <Text allowFontScaling={false} style={[styles.tokenNumber, !isLive && { color: colors.black }]}>{token || '--'}</Text>
-            {estTime && <Text allowFontScaling={false} style={[styles.tokenEst, !isLive && { color: colors.textSecondary }]}>{isLive ? `Estimated ${estTime}` : 'Scheduled for'}</Text>}
-            {!isLive && spotlightAppt?.appointmentDate && (
+            <Text allowFontScaling={false} style={[styles.tokenLabel, !apptIsLive && { color: colors.textPrimary, marginTop: SIZE(20) }]}>Your Token</Text>
+            <Text allowFontScaling={false} style={[styles.tokenNumber, !apptIsLive && { color: colors.black }]}>{apptToken || '--'}</Text>
+            {apptEstTime && <Text allowFontScaling={false} style={[styles.tokenEst, !apptIsLive && { color: colors.textSecondary }]}>{apptIsLive ? `Estimated ${apptEstTime}` : 'Scheduled for'}</Text>}
+            {!apptIsLive && appt.appointmentDate && (
               <Text allowFontScaling={false} style={styles.scheduledDate}>
-                {new Date(spotlightAppt.appointmentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                {spotlightAppt.schedule ? `, ${to12h(spotlightAppt.schedule.startTime)} - ${to12h(spotlightAppt.schedule.stopTime)}` : ''}
+                {new Date(appt.appointmentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                {appt.schedule ? `, ${to12h(appt.schedule.startTime)} - ${to12h(appt.schedule.stopTime)}` : ''}
               </Text>
             )}
-            {isLive && (
+            {apptIsLive && (
               <View style={styles.tokenRow}>
                 <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>1</Text></View>
                 <View style={styles.tokenCurrent}><Text allowFontScaling={false} style={styles.tokenCurrentNum}>2</Text></View>
@@ -75,33 +76,44 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
             )}
           </View>
         </TouchableOpacity>
-        <View style={[styles.hospitalStrip, !isLive && { backgroundColor: colors.white }]}>
+        <View style={[styles.hospitalStrip, !apptIsLive && { backgroundColor: colors.white }]}>
           <View style={styles.hospitalTop}>
             <View style={styles.hospitalLeft}>
-              <View style={styles.hospitalAvatar} />
+              <Image source={{ uri: appt.medicalCenter?.profilePicture }} style={styles.hospitalAvatar} />
               <View>
-                <Text allowFontScaling={false} style={[styles.hospitalName, !isLive && { color: colors.textPrimary }]}>{spotlightAppt?.medicalCenter?.name ?? 'No appointment'}</Text>
-                <Text allowFontScaling={false} style={[styles.hospitalType, !isLive && { color: colors.textSecondary }]}>{spotlightAppt?.medicalCenter?.type ?? ''}</Text>
+                <Text allowFontScaling={false} style={[styles.hospitalName, !apptIsLive && { color: colors.textPrimary }]}>{appt.medicalCenter?.name ?? 'No appointment'}</Text>
+                <Text allowFontScaling={false} style={[styles.hospitalType, !apptIsLive && { color: colors.textSecondary }]}>{appt.medicalCenter?.type ?? ''}</Text>
               </View>
             </View>
             <View style={styles.hospitalActions}>
-              <TouchableOpacity style={[styles.actionBtn, !isLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7}>
-                {isLive ? <PhoneIcon width={SIZE(22)} height={SIZE(22)} /> : <PhoneIconBlue width={SIZE(22)} height={SIZE(22)} />}
+              <TouchableOpacity style={[styles.actionBtn, !apptIsLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7}>
+                {apptIsLive ? <PhoneIcon width={SIZE(22)} height={SIZE(22)} /> : <PhoneIconBlue width={SIZE(22)} height={SIZE(22)} />}
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtn, !isLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7}>
-                {isLive ? <MapIcon width={SIZE(22)} height={SIZE(22)} /> : <MapIconBlue width={SIZE(22)} height={SIZE(22)} />}
+              <TouchableOpacity style={[styles.actionBtn, !apptIsLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7}>
+                {apptIsLive ? <MapIcon width={SIZE(22)} height={SIZE(22)} /> : <MapIconBlue width={SIZE(22)} height={SIZE(22)} />}
               </TouchableOpacity>
             </View>
           </View>
           <View style={styles.hospitalBottom}>
-            <Text allowFontScaling={false} style={[styles.doctorName, !isLive && { color: colors.textPrimary }]}>{spotlightAppt?.doctor?.name ?? ''}</Text>
-            {spotlightAppt?.doctor?.specialties?.[0]?.name && <>
-              <Text allowFontScaling={false} style={[styles.hospitalSep, !isLive && { color: colors.textSecondary }]}> | </Text>
-              <Text allowFontScaling={false} style={[styles.doctorSpecialty, !isLive && { color: colors.textSecondary }]}>{spotlightAppt.doctor.specialties[0].name}</Text>
+            <Text allowFontScaling={false} style={[styles.doctorName, !apptIsLive && { color: colors.textPrimary }]}>{appt.doctor?.name ?? ''}</Text>
+            {appt.doctor?.specialties?.[0]?.name && <>
+              <Text allowFontScaling={false} style={[styles.hospitalSep, !apptIsLive && { color: colors.textSecondary }]}> | </Text>
+              <Text allowFontScaling={false} style={[styles.doctorSpecialty, !apptIsLive && { color: colors.textSecondary }]}>{appt.doctor.specialties[0].name}</Text>
             </>}
           </View>
         </View>
-      </View>}
+      </View>
+    );
+  };
+
+  return (
+    <>
+      {activeAppointments.length > 1
+        ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bannerScroll}>
+          {activeAppointments.map(renderBannerCard)}
+        </ScrollView>
+        : spotlightAppt && renderBannerCard(spotlightAppt)
+      }
       <View style={styles.cardsRow}>
         <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onspecialstPress}>
           <Text allowFontScaling={false} style={styles.cardTitle}>All specialst</Text>
@@ -181,6 +193,7 @@ export default function HomeScreen() {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [totalDoctorCount, setTotalDoctorCount] = useState(0);
   const [spotlightAppt, setSpotlightAppt] = useState<Appointment | null>(null);
+  const [activeAppointments, setActiveAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -202,13 +215,14 @@ export default function HomeScreen() {
         const [eh, em] = (a.schedule?.stopTime ?? '').split(':').map(Number);
         return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
       });
-      setSpotlightAppt(live ?? active.sort((a, b) =>
-        new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
-      )[0] ?? null);
+      const sorted = active.sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
+      setActiveAppointments(live ? [live, ...sorted.filter(a => a.id !== live.id)] : sorted);
+      setSpotlightAppt(live ?? sorted[0] ?? null);
     }).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); });
   };
 
   useEffect(() => { fetchData(); }, []);
+  useEffect(() => navigation.addListener('focus', () => fetchData()), [navigation]);
 
   if (loading) {
     return <SkeletonScreen />;
@@ -228,7 +242,7 @@ export default function HomeScreen() {
               <Text allowFontScaling={false} style={styles.locationSub}>Malappuram, Kerala</Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.notifBtn} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.notifBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Notifications')}>
             <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
           </TouchableOpacity>
         </View>
@@ -247,7 +261,7 @@ export default function HomeScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[colors.primary]} tintColor={colors.primary} />}
-          ListHeaderComponent={<ListHeader onTokenPress={() => spotlightAppt && navigation.navigate('TokenDetail', { appointment: spotlightAppt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} />}
+          ListHeaderComponent={<ListHeader onTokenPress={(appt) => navigation.navigate('TokenDetail', { appointment: appt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} activeAppointments={activeAppointments} />}
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}
@@ -323,6 +337,14 @@ const styles = StyleSheet.create({
     padding: SIZE(10),
     overflow: 'hidden',
     justifyContent: 'space-between',
+  },
+  bannerCardMulti: {
+    marginHorizontal: SIZE(8),
+    width: SIZE(361),
+  },
+  bannerScroll: {
+    paddingHorizontal: SIZE(10),
+    paddingBottom: SIZE(20),
   },
   livebadge: {
     flexDirection: 'row',
