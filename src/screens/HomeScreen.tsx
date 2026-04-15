@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Image, ScrollView, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform, RefreshControl } from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
+import { useLocation } from '../context/LocationContext';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -188,6 +190,7 @@ function SkeletonScreen() {
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
+  const { location } = useLocation();
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -199,8 +202,19 @@ export default function HomeScreen() {
 
   const fetchData = (isRefresh = false) => {
     if (isRefresh) { setRefreshing(true); setLoading(true); }
-    getHomeData().then(res => {
-      console.log(res.data);
+    if (location) {
+      getHomeData(location.latitude, location.longitude).then(handleHomeData).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); });
+    } else {
+      Geolocation.getCurrentPosition(
+        ({ coords }) => getHomeData(coords.latitude, coords.longitude).then(handleHomeData).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); }),
+        () => getHomeData().then(handleHomeData).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); }),
+        { timeout: 5000, maximumAge: 60000 },
+      );
+    }
+  };
+
+  const handleHomeData = (res: { success: boolean; data: any }) => {
+    console.log(res.data);
 
       setSpecialties(res.data.specialties);
       setDoctors(res.data.doctors as Doctor[]);
@@ -218,11 +232,11 @@ export default function HomeScreen() {
       const sorted = active.sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
       setActiveAppointments(live ? [live, ...sorted.filter(a => a.id !== live.id)] : sorted);
       setSpotlightAppt(live ?? sorted[0] ?? null);
-    }).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); });
   };
 
   useEffect(() => { fetchData(); }, []);
   useEffect(() => navigation.addListener('focus', () => fetchData()), [navigation]);
+  useEffect(() => { if (location) fetchData(); }, [location]);
 
   if (loading) {
     return <SkeletonScreen />;
@@ -236,10 +250,14 @@ export default function HomeScreen() {
             <LocationIcon width={SIZE(19)} height={SIZE(19)} style={styles.locationIcon} />
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SIZE(4) }}>
-                <Text allowFontScaling={false} style={styles.locationText}>Bangalore</Text>
+                <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>
+                  {location ? location.mainText : 'Select your location'}
+                </Text>
                 <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
               </View>
-              <Text allowFontScaling={false} style={styles.locationSub}>Malappuram, Kerala</Text>
+              {location?.secondaryText ? (
+                <Text allowFontScaling={false} style={styles.locationSub} numberOfLines={1}>{location.secondaryText}</Text>
+              ) : null}
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.notifBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Notifications')}>

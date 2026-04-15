@@ -12,5 +12,5 @@ export async function requestLocationPermission(): Promise<void> {
       },
     );
   }
-  // iOS: permission is requested automatically on first Geolocation use
+  // iOS: permission dialog is triggered automatically by getCurrentPosition
 }

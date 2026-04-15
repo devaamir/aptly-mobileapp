@@ -21,6 +21,7 @@ import HospitalDetailScreen from '../screens/HospitalDetailScreen';
 import ClinicsScreen from '../screens/ClinicsScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import { Doctor, Appointment } from '../services/api';
+import { LocationProvider } from '../context/LocationContext';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
@@ -62,7 +63,8 @@ export default function Navigation() {
   if (initialRoute === null) return null;
 
   return (
-    <NavigationContainer>
+    <LocationProvider>
+      <NavigationContainer>
       <Stack.Navigator
         initialRouteName={initialRoute}
         screenOptions={{ headerShown: false }}>
@@ -91,5 +93,6 @@ export default function Navigation() {
         <Stack.Screen name="Notifications" component={NotificationScreen} />
       </Stack.Navigator>
     </NavigationContainer>
+    </LocationProvider>
   );
 }

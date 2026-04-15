@@ -9,6 +9,8 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import LocationIcon from '../assets/icons/location-black-icon.svg';
 import GpsIcon from '../assets/icons/gps-icon.svg';
 import { searchLocations } from '../services/api';
+import { useLocation } from '../context/LocationContext';
+import Geolocation from '@react-native-community/geolocation';
 
 const POPULAR_PLACES = [
   'Manjeri',
@@ -27,9 +29,26 @@ type Props = NativeStackScreenProps<RootStackParamList, 'LocationSearch'>;
 type Location = { description: string; placeId: string; latitude: number; longitude: number; mainText: string; secondaryText: string };
 
 export default function LocationSearchScreen({ navigation }: Props) {
+  const { setLocation } = useLocation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const handleSelect = (item: Location) => {
+    setLocation({ mainText: item.mainText, secondaryText: item.secondaryText, latitude: item.latitude, longitude: item.longitude, isGps: false });
+    navigation.goBack();
+  };
+
+  const handleGps = () => {
+    Geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setLocation({ mainText: 'Current Location', secondaryText: '', latitude: coords.latitude, longitude: coords.longitude, isGps: true });
+        navigation.goBack();
+      },
+      () => { },
+      { timeout: 8000, maximumAge: 0 },
+    );
+  };
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
@@ -75,7 +94,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
         ListHeaderComponent={
           <>
             {/* Current Location Button */}
-            <TouchableOpacity style={styles.currentLocationBtn} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.currentLocationBtn} activeOpacity={0.7} onPress={handleGps}>
               <GpsIcon width={SIZE(18)} height={SIZE(18)} />
               <Text allowFontScaling={false} style={styles.currentLocationText}>Choose your current location</Text>
             </TouchableOpacity>
@@ -87,7 +106,13 @@ export default function LocationSearchScreen({ navigation }: Props) {
               <>
                 <Text allowFontScaling={false} style={styles.sectionTitle}>Popular Places</Text>
                 {POPULAR_PLACES.map(place => (
-                  <TouchableOpacity key={place} style={styles.row} activeOpacity={0.7}>
+                  <TouchableOpacity key={place} style={styles.row} activeOpacity={0.7} onPress={() => {
+                    setLoading(true);
+                    searchLocations(place)
+                      .then(res => { if (res.data[0]) handleSelect(res.data[0]); })
+                      .catch(() => { })
+                      .finally(() => setLoading(false));
+                  }}>
                     <LocationIcon width={SIZE(16)} height={SIZE(16)} />
                     <View style={{ flex: 1 }}>
                       <Text allowFontScaling={false} style={styles.rowText}>{place}</Text>
@@ -103,7 +128,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
           </>
         }
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.row} activeOpacity={0.7} onPress={() => handleSelect(item)}>
             <LocationIcon width={SIZE(16)} height={SIZE(16)} />
             <View style={{ flex: 1 }}>
               <Text allowFontScaling={false} style={styles.rowText}>{item.mainText}</Text>

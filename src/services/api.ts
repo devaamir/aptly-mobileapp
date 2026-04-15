@@ -149,8 +149,8 @@ export const getClinic = (id: string): Promise<{ success: boolean; data: Clinic 
   api.get(`/clinics/${id}`);
 
 // Home
-export const getHomeData = (): Promise<{ success: boolean; data: HomeData }> =>
-  api.get('/ui/home');
+export const getHomeData = (latitude?: number, longitude?: number): Promise<{ success: boolean; data: HomeData }> =>
+  api.get('/ui/home', { params: { latitude, longitude } });
 
 export const searchLocations = (q: string): Promise<{ success: boolean; data: { description: string; placeId: string; latitude: number; longitude: number; mainText: string; secondaryText: string; types: string[] }[] }> =>
   api.get(`/ui/locations?q=${encodeURIComponent(q)}`);
