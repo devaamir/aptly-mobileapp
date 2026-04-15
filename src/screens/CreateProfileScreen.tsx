@@ -7,6 +7,7 @@ import AppDropdown from '../components/AppDropdown';
 import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
 import BackArrow from '../assets/icons/back-arrows.svg';
+import { requestLocationPermission } from '../utils/requestLocationPermission';
 import ArrowRightWhite from '../assets/icons/arrow-right-white.svg';
 import ArrowRight from '../assets/icons/arrow-right-grey.svg';
 import colors from '../themes/colors';
@@ -43,7 +44,7 @@ export default function CreateProfileScreen() {
       await AsyncStorage.multiSet([['name', name], ['patientId', patientId], ['gender', genderLower], ['dateOfBirth', dateOfBirth]]);
       updateUser({ name, patientId, gender: genderLower, dateOfBirth });
       if (isEdit) navigation.goBack();
-      else navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] });
+      else { await requestLocationPermission(); navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] }); }
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to save profile');
     } finally {
