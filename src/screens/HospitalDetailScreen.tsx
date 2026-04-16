@@ -55,7 +55,7 @@ export default function HospitalDetailScreen() {
 
       {/* Fixed banner — always behind everything */}
       <Image
-        source={{ uri: 'https://eternisclinic.com/wp-content/uploads/2025/08/clinic.jpg' }}
+        source={{ uri: clinic?.profilePicture }}
         style={[styles.banner, { height: BANNER_HEIGHT + top }]}
       />
 

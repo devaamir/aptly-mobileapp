@@ -14,12 +14,14 @@ import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
 import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
 import FilterModal from '../components/FilterModal';
+import { useLocation } from '../context/LocationContext';
 
 type Tab = 'clinics' | 'doctors';
 type Props = NativeStackScreenProps<RootStackParamList, 'SpecialstDetail'>;
 
 export default function SpecialstDetailScreen({ navigation, route }: Props) {
   const { name, id } = route.params;
+  const { location } = useLocation();
   const [tab, setTab] = useState<Tab>('clinics');
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -67,7 +69,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
       <View style={styles.locationFilterRow}>
         <TouchableOpacity style={styles.locationLeft} activeOpacity={0.7} onPress={() => navigation.navigate('LocationSearch')}>
           <LocationIcon width={SIZE(14)} height={SIZE(14)} />
-          <Text allowFontScaling={false} style={styles.locationText}>Malappuram, Kerala</Text>
+          <Text allowFontScaling={false} style={styles.locationText}>{location ? location.mainText : 'Select location'}</Text>
           <DownArrowGrey width={SIZE(14)} height={SIZE(14)} />
         </TouchableOpacity>
         <FilterModal applied={appliedFilters} onApply={setAppliedFilters} triggerOnly />

@@ -12,6 +12,7 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
 import { getDoctors, getDoctor, Doctor } from '../services/api';
+import { useLocation } from '../context/LocationContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Doctors'>;
 
@@ -53,6 +54,7 @@ function getBookingTime(doctor: Doctor): string {
 }
 
 export default function DoctorsScreen({ navigation }: Props) {
+  const { location } = useLocation();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
@@ -84,7 +86,7 @@ export default function DoctorsScreen({ navigation }: Props) {
         <View style={styles.locationIconContainer}>
           <LocationIcon width={SIZE(20)} height={SIZE(20)} />
         </View>
-        <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>Malappuram, Kerala</Text>
+        <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location ? location.mainText : 'Select location'}</Text>
         <DistancePicker value={distance} onChange={setDistance} />
       </TouchableOpacity>
       <View style={styles.filterRow}>

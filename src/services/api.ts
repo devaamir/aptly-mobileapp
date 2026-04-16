@@ -155,6 +155,9 @@ export const getHomeData = (latitude?: number, longitude?: number): Promise<{ su
 export const searchLocations = (q: string): Promise<{ success: boolean; data: { description: string; placeId: string; latitude: number; longitude: number; mainText: string; secondaryText: string; types: string[] }[] }> =>
   api.get(`/ui/locations?q=${encodeURIComponent(q)}`);
 
+export const reverseGeocode = (latitude: number, longitude: number): Promise<{ success: boolean; data: { address: string; name: string; placeId: string; types: string[] } }> =>
+  api.get(`/ui/reverse-geocode`, { params: { latitude, longitude } });
+
 export const searchAll = (q: string): Promise<{ success: boolean; data: (Doctor | Clinic)[] }> =>
   api.get(`/ui/search?q=${encodeURIComponent(q)}`);
 

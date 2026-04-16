@@ -8,7 +8,7 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import LocationIcon from '../assets/icons/location-black-icon.svg';
 import GpsIcon from '../assets/icons/gps-icon.svg';
-import { searchLocations } from '../services/api';
+import { searchLocations, reverseGeocode } from '../services/api';
 import { useLocation } from '../context/LocationContext';
 import Geolocation from '@react-native-community/geolocation';
 
@@ -33,6 +33,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
 
   const handleSelect = (item: Location) => {
     setLocation({ mainText: item.mainText, secondaryText: item.secondaryText, latitude: item.latitude, longitude: item.longitude, isGps: false });
@@ -40,12 +41,22 @@ export default function LocationSearchScreen({ navigation }: Props) {
   };
 
   const handleGps = () => {
+    setGpsLoading(true);
     Geolocation.getCurrentPosition(
-      ({ coords }) => {
-        setLocation({ mainText: 'Current Location', secondaryText: '', latitude: coords.latitude, longitude: coords.longitude, isGps: true });
+      async ({ coords }) => {
+        const { latitude, longitude } = coords;
+        let mainText = 'Current Location';
+        let secondaryText = '';
+        try {
+          const res = await reverseGeocode(latitude, longitude);
+          mainText = res.data.name;
+          secondaryText = res.data.address;
+        } catch { /* fallback to defaults */ }
+        setLocation({ mainText, secondaryText, latitude, longitude, isGps: true });
+        setGpsLoading(false);
         navigation.goBack();
       },
-      () => { },
+      () => { setGpsLoading(false); },
       { timeout: 8000, maximumAge: 0 },
     );
   };
@@ -94,8 +105,10 @@ export default function LocationSearchScreen({ navigation }: Props) {
         ListHeaderComponent={
           <>
             {/* Current Location Button */}
-            <TouchableOpacity style={styles.currentLocationBtn} activeOpacity={0.7} onPress={handleGps}>
-              <GpsIcon width={SIZE(18)} height={SIZE(18)} />
+            <TouchableOpacity style={styles.currentLocationBtn} activeOpacity={0.7} onPress={handleGps} disabled={gpsLoading}>
+              {gpsLoading
+                ? <ActivityIndicator size={SIZE(18)} color={colors.primary} />
+                : <GpsIcon width={SIZE(18)} height={SIZE(18)} />}
               <Text allowFontScaling={false} style={styles.currentLocationText}>Choose your current location</Text>
             </TouchableOpacity>
 

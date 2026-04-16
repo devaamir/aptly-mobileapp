@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Image, ScrollView, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform, RefreshControl } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import { useLocation } from '../context/LocationContext';
+import { getDistance } from '../utils/getDistance';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -19,11 +20,13 @@ import PhoneIconBlue from '../assets/icons/phone-icon-blue.svg';
 import MapIcon from '../assets/icons/map-icon.svg';
 import MapIconBlue from '../assets/icons/map-icon-blue.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
-import { getHomeData, Specialty, Doctor, Clinic, Appointment } from '../services/api';
+import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
+import { getHomeData, getClinics, Specialty, Doctor, Clinic, Appointment } from '../services/api';
+import PrimaryButton from '../components/PrimaryButton';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt, activeAppointments }: { onTokenPress: (appt: Appointment) => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null; activeAppointments: Appointment[] }) => {
+const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt, activeAppointments, hasNearbyClinics }: { onTokenPress: (appt: Appointment) => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null; activeAppointments: Appointment[]; hasNearbyClinics: boolean }) => {
   const today = new Date().toISOString().split('T')[0];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
   const to12h = (t: string) => { const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; };
@@ -130,8 +133,8 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
         <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onDoctorsPress}>
           <Text allowFontScaling={false} style={styles.cardTitle}>All doctors</Text>
           <View style={styles.avatarRow}>
-            {doctors.slice(0, 3).map((d, i) => (
-              <View key={d.id} style={[styles.avatarCircle, { marginLeft: i === 0 ? 0 : -SIZE(12) }]}>
+            {doctors.slice(0, 3).map((d) => (
+              <View key={d.id} style={styles.avatarCircle}>
                 {d.profilePicture ? (
                   <Image source={{ uri: d.profilePicture }} style={styles.avatarImg} />
                 ) : null}
@@ -145,9 +148,9 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
       </View>
       <View style={styles.sectionHeader}>
         <Text allowFontScaling={false} style={styles.sectionTitle}>Near by Clinics</Text>
-        <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
+        {hasNearbyClinics && <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
           <Text allowFontScaling={false} style={styles.viewAll}>See all</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
     </>
   );
@@ -190,7 +193,7 @@ function SkeletonScreen() {
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
-  const { location } = useLocation();
+  const { location, ready } = useLocation();
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -199,44 +202,44 @@ export default function HomeScreen() {
   const [activeAppointments, setActiveAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [fallbackClinics, setFallbackClinics] = useState<Clinic[]>([]);
 
   const fetchData = (isRefresh = false) => {
     if (isRefresh) { setRefreshing(true); setLoading(true); }
-    if (location) {
-      getHomeData(location.latitude, location.longitude).then(handleHomeData).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); });
-    } else {
-      Geolocation.getCurrentPosition(
-        ({ coords }) => getHomeData(coords.latitude, coords.longitude).then(handleHomeData).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); }),
-        () => getHomeData().then(handleHomeData).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); }),
-        { timeout: 5000, maximumAge: 60000 },
-      );
-    }
+    Promise.all([
+      getHomeData(location?.latitude, location?.longitude),
+      getClinics(1, 20),
+    ]).then(([homeRes, clinicsRes]) => {
+      console.log(clinicsRes.data);
+
+      handleHomeData(homeRes);
+      setFallbackClinics(clinicsRes.data);
+    }).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); });
   };
 
   const handleHomeData = (res: { success: boolean; data: any }) => {
     console.log(res.data);
 
-      setSpecialties(res.data.specialties);
-      setDoctors(res.data.doctors as Doctor[]);
-      setClinics(res.data.topClinics);
-      setTotalDoctorCount(res.data.totalDoctorCount);
-      const today = new Date().toISOString().split('T')[0];
-      const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-      const active = (res.data.appointments ?? []).filter(a => a.tokenStatus === 'pending');
-      const live = active.find(a => {
-        if (a.appointmentDate !== today) return false;
-        const [sh, sm] = (a.schedule?.startTime ?? '').split(':').map(Number);
-        const [eh, em] = (a.schedule?.stopTime ?? '').split(':').map(Number);
-        return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
-      });
-      const sorted = active.sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
-      setActiveAppointments(live ? [live, ...sorted.filter(a => a.id !== live.id)] : sorted);
-      setSpotlightAppt(live ?? sorted[0] ?? null);
+    setSpecialties(res.data.specialties);
+    setDoctors(res.data.doctors as Doctor[]);
+    setClinics(res.data.topClinics);
+    setTotalDoctorCount(res.data.totalDoctorCount);
+    const today = new Date().toISOString().split('T')[0];
+    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+    const active = (res.data.appointments ?? []).filter(a => a.tokenStatus === 'pending');
+    const live = active.find(a => {
+      if (a.appointmentDate !== today) return false;
+      const [sh, sm] = (a.schedule?.startTime ?? '').split(':').map(Number);
+      const [eh, em] = (a.schedule?.stopTime ?? '').split(':').map(Number);
+      return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+    });
+    const sorted = active.sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
+    setActiveAppointments(live ? [live, ...sorted.filter(a => a.id !== live.id)] : sorted);
+    setSpotlightAppt(live ?? sorted[0] ?? null);
   };
 
-  useEffect(() => { fetchData(); }, []);
-  useEffect(() => navigation.addListener('focus', () => fetchData()), [navigation]);
-  useEffect(() => { if (location) fetchData(); }, [location]);
+  useEffect(() => { if (ready) fetchData(); }, [ready, location]);
+  useEffect(() => navigation.addListener('focus', () => { if (ready) fetchData(); }), [navigation, ready]);
 
   if (loading) {
     return <SkeletonScreen />;
@@ -268,7 +271,7 @@ export default function HomeScreen() {
         {/* Search - stays fixed */}
         <View style={styles.searchWrapper}>
           <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Search')}>
-            <SearchBar placeholder='Search for "Skin Doctor"' editable={false} />
+            <SearchBar placeholder='Search for "Skin Doctor"' editable={false} style={{ borderColor: colors.searchBorder }} />
           </TouchableOpacity>
         </View>
 
@@ -279,13 +282,39 @@ export default function HomeScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[colors.primary]} tintColor={colors.primary} />}
-          ListHeaderComponent={<ListHeader onTokenPress={(appt) => navigation.navigate('TokenDetail', { appointment: appt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} activeAppointments={activeAppointments} />}
+          ListFooterComponent={null}
+          ListEmptyComponent={
+            <View>
+              <View style={styles.emptyContainer}>
+                <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
+                <Text allowFontScaling={false} style={styles.emptyTitle}>No clinics available here</Text>
+                <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any clinics in this area right now. Try changing your location or adjusting filters.</Text>
+                <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
+                  <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
+                </View>
+              </View>
+              {fallbackClinics.map(item => (
+                <ClinicCard
+                  key={item.id}
+                  name={item.name}
+                  subType={item.specialties[0]?.name ?? item.type}
+                  location={`${item.district}, ${item.state}`}
+                  image={item.profilePicture}
+                  distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
+                  onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
+                  style={styles.clinicCard}
+                />
+              ))}
+            </View>
+          }
+          ListHeaderComponent={<ListHeader onTokenPress={(appt) => navigation.navigate('TokenDetail', { appointment: appt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} activeAppointments={activeAppointments} hasNearbyClinics={clinics.length > 0} />}
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
               location={`${item.district}, ${item.state}`}
               image={item.profilePicture}
+              distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
               onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
             />
           )}
@@ -515,6 +544,8 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
     borderRadius: SIZE(22),
     padding: SIZE(18),
     backgroundColor: colors.surfaceLight,
@@ -590,6 +621,31 @@ const styles = StyleSheet.create({
     paddingBottom: SIZE(24),
     gap: SIZE(12),
   },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingHorizontal: SIZE(32),
+    paddingVertical: SIZE(32),
+    width: '80%',
+    alignSelf: 'center'
+    // gap: SIZE(10),
+  },
+  emptyTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(16),
+    color: '#1C1E22',
+    marginTop: SIZE(16),
+    marginBottom: SIZE(8)
+  },
+  emptyMessage: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: '#636A79',
+    textAlign: 'center',
+    lineHeight: SIZE(15),
+    maxWidth: SIZE(260),
+    marginBottom: SIZE(8)
+  },
+
   clinicCard: {
     flexDirection: 'row',
     marginHorizontal: SIZE(18),
@@ -600,6 +656,7 @@ const styles = StyleSheet.create({
     padding: SIZE(4),
     gap: SIZE(12),
     alignItems: 'center',
+    marginBottom: SIZE(6),
 
   },
   clinicImage: {

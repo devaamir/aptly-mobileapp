@@ -59,6 +59,7 @@ const colors = {
   dangerBg: '#FFF9F9',
   modalCloseBg: '#F2F4F7B2',
   black: '#000000',
+  searchBorder: '#A0A5B1',
   upcomingCardBg: '#FFF5E9',
   scheduledText: '#4A4A4A',
   overlay: 'rgba(0,0,0,0.4)',

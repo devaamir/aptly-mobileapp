@@ -11,6 +11,7 @@ import LocationIcon from '../assets/icons/location-black-icon.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
 import FilterModal from '../components/FilterModal';
+import { useLocation } from '../context/LocationContext';
 import DistancePicker from '../components/DistancePicker';
 import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
 
@@ -22,7 +23,7 @@ const EMPTY_FILTERS = { specialties: [], availability: [], type: [] } as Record<
 export default function SearchResultScreen({ navigation, route }: Props) {
   const { title, latitude, longitude, radius } = route.params;
   const isDoctor = DOCTOR_TITLES.includes(title.toLowerCase());
-  const [location] = useState('Malappuram, Kerala');
+  const { location } = useLocation();
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +54,7 @@ export default function SearchResultScreen({ navigation, route }: Props) {
         <View style={styles.locationIconContainer}>
           <LocationIcon width={SIZE(20)} height={SIZE(20)} />
         </View>
-        <Text allowFontScaling={false} style={styles.locationInput} numberOfLines={1}>{location}</Text>
+        <Text allowFontScaling={false} style={styles.locationInput} numberOfLines={1}>{location ? location.mainText : 'Select location'}</Text>
         <DistancePicker value={distance} onChange={setDistance} />
       </TouchableOpacity>
 
