@@ -70,6 +70,7 @@ export interface Schedule {
   tokenLimit: number;
   createdAt: string;
   updatedAt: string;
+  remainingTokenCount?: number;
 }
 
 export interface MedicalCenter {

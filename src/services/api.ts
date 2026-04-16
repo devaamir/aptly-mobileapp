@@ -104,6 +104,9 @@ export const getPatients = (): Promise<{ success: boolean; data: Patient[] }> =>
 export const getspecialties = (): Promise<{ success: boolean; data: Specialty[] }> =>
   api.get('/metadata/specialties');
 
+export const getDoctorSchedule = (id: string, date: string, medicalCenterId?: string): Promise<{ success: boolean; data: Schedule[] }> =>
+  api.get(`/doctors/${id}/schedule`, { params: { date, ...(medicalCenterId ? { medicalCenterId } : {}) } });
+
 export const getMedicalSystems = (): Promise<{ success: boolean; data: MedicalSystem[] }> =>
   api.get('/metadata/medical-systems');
 

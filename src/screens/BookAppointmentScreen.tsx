@@ -17,8 +17,9 @@ import AppInput from '../components/AppInput';
 import AppDropdown from '../components/AppDropdown';
 import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
-import { createAppointment, getPatients, addPatient, Patient } from '../services/api';
+import { createAppointment, getPatients, addPatient, getDoctorSchedule, Patient } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { Schedule } from '../services/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookAppointment'>;
 
@@ -53,6 +54,8 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
   });
   const [showCalendar, setShowCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [scheduleCache, setScheduleCache] = useState<Record<string, Schedule[]>>({});
+  const [scheduleFetching, setScheduleFetching] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberName, setMemberName] = useState('');
@@ -90,13 +93,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
     if (!selectedPatient || !selectedSession) return;
     try {
       setLoading(true);
-      const d = DAYS[selectedDay].full;
-
-      const appointmentDate = `${d.getFullYear()}-${String(
-        d.getMonth() + 1
-      ).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      console.log(appointmentDate, selectedSession, selectedPatient);
-      const res = await createAppointment(appointmentDate, selectedSession, selectedPatient);
+      const res = await createAppointment(selectedDateStr, selectedSession, selectedPatient);
       navigation.navigate('BookingConfirmed', {
         token: res.data.tokenNumber,
         doctorName: doctor.name,
@@ -111,12 +108,16 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
   };
 
 
-  const selectedDayName = WEEK_DAYS[DAYS[selectedDay].full.getDay()];
-  const todaySessions = relevantCenters
-    .flatMap(mc => mc.schedules ?? [])
-    .filter(s => s.dayOfWeek === selectedDayName)
-    .filter((s, i, arr) => arr.findIndex(x => x.startTime === s.startTime && x.stopTime === s.stopTime) === i);
+  const selectedDate = DAYS[selectedDay].full;
+  const selectedDateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+  const todaySessions = scheduleCache[selectedDateStr] ?? [];
+  const isToday = selectedDay === 0;
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+  const isSessionExpired = (s: { stopTime: string }) => {
+    if (!isToday) return false;
+    const [eh, em] = s.stopTime.split(':').map(Number);
+    return nowMins > eh * 60 + em;
+  };
   const isOpen = todaySessions.some(s => {
     const [sh, sm] = s.startTime.split(':').map(Number);
     const [eh, em] = s.stopTime.split(':').map(Number);
@@ -124,7 +125,21 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
   });
 
   useEffect(() => {
-    setSelectedSession(todaySessions[0]?.id ?? null);
+    const d = DAYS[selectedDay].full;
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (scheduleCache[dateStr]) {
+      setSelectedSession(scheduleCache[dateStr][0]?.id ?? null);
+      return;
+    }
+    setScheduleFetching(true);
+    getDoctorSchedule(doctor.id, dateStr, clinicId ?? undefined)
+      .then(res => {
+        console.log("schedule", res.data);
+        setScheduleCache(prev => ({ ...prev, [dateStr]: res.data }));
+        setSelectedSession(res.data[0]?.id ?? null);
+      })
+      .catch(() => { })
+      .finally(() => setScheduleFetching(false));
   }, [selectedDay]);
 
   const onDateChange = (_: any, date?: Date) => {
@@ -199,11 +214,17 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             ))}
           </ScrollView>
 
-          {todaySessions.length > 0 ? (
+          {scheduleFetching ? (
+            <View style={styles.slotCard}>
+              <Text allowFontScaling={false} style={styles.slotTime}>Loading sessions...</Text>
+            </View>
+          ) : todaySessions.length > 0 ? (
             todaySessions.length === 1 ? (
               <View style={styles.slotCard}>
                 <Text allowFontScaling={false} style={styles.slotTime}>{to12h(todaySessions[0].startTime)} - {to12h(todaySessions[0].stopTime)}</Text>
-                <Text allowFontScaling={false} style={styles.slotTickets}>{todaySessions[0].tokenLimit} tokens available</Text>
+                <Text allowFontScaling={false} style={[styles.slotTickets, isSessionExpired(todaySessions[0]) && { color: colors.danger }]}>
+                  {isSessionExpired(todaySessions[0]) ? 'Session Expired' : `${todaySessions[0].remainingTokenCount ?? todaySessions[0].tokenLimit} tokens remaining`}
+                </Text>
               </View>
             ) : (
               <View style={styles.sessionList}>
@@ -214,7 +235,9 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
                     </View>
                     <View>
                       <Text allowFontScaling={false} style={styles.slotTime}>{to12h(s.startTime)} - {to12h(s.stopTime)}</Text>
-                      <Text allowFontScaling={false} style={styles.slotTickets}>{s.tokenLimit} tokens available</Text>
+                      <Text allowFontScaling={false} style={[styles.slotTickets, isSessionExpired(s) && { color: colors.danger }]}>
+                        {isSessionExpired(s) ? 'Session Expired' : `${s.remainingTokenCount ?? s.tokenLimit} tokens remaining`}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 ))}
@@ -251,11 +274,11 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             }}
           /> */}
           <TouchableOpacity
-            style={[styles.getTokenBtn, (!selectedPatient || loading || todaySessions.length === 0) && styles.getTokenBtnDisabled]}
-            disabled={!selectedPatient || loading || todaySessions.length === 0}
+            style={[styles.getTokenBtn, (!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })) && styles.getTokenBtnDisabled]}
+            disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
             activeOpacity={0.8}
             onPress={handleGetToken}>
-            <Text allowFontScaling={false} style={styles.getTokenBtnText}>{loading ? 'Booking...' : 'Get Token'}</Text>
+            <Text allowFontScaling={false} style={styles.getTokenBtnText}>{loading ? 'Booking...' : 'Book Appointment'}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
