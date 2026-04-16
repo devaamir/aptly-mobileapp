@@ -15,7 +15,7 @@ type Props = {
   style?: ViewStyle;
 };
 
-export default function ClinicCard({ name, subType, location, distance = '2.5 km', image, onPress, style }: Props) {
+export default function ClinicCard({ name, subType, location, distance = 'NA', image, onPress, style }: Props) {
   return (
     <TouchableOpacity style={[styles.card, style]} activeOpacity={0.8} onPress={onPress}>
       <Image

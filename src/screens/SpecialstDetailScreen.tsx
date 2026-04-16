@@ -15,6 +15,10 @@ import DoctorCard from '../components/DoctorCard';
 import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
 import FilterModal from '../components/FilterModal';
 import { useLocation } from '../context/LocationContext';
+import { getDistance } from '../utils/getDistance';
+import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
+import PrimaryButton from '../components/PrimaryButton';
+import { useMetadata } from '../context/MetadataContext';
 
 type Tab = 'clinics' | 'doctors';
 type Props = NativeStackScreenProps<RootStackParamList, 'SpecialstDetail'>;
@@ -22,6 +26,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'SpecialstDetail'>;
 export default function SpecialstDetailScreen({ navigation, route }: Props) {
   const { name, id } = route.params;
   const { location } = useLocation();
+  const { specialties: allSpecialties, medicalSystems } = useMetadata();
   const [tab, setTab] = useState<Tab>('clinics');
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -29,14 +34,19 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
   const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
 
   useEffect(() => {
+    if (!location) { setLoading(false); setClinics([]); setDoctors([]); return; }
+    setLoading(true);
+    const filterSpecialtyId = allSpecialties.find(s => appliedFilters.specialties?.includes(s.name))?.id;
+    const medicalSystemId = medicalSystems.find(s => appliedFilters.type?.includes(s.name))?.id;
+    const baseFilters = { specialtyId: filterSpecialtyId ?? id, latitude: location.latitude, longitude: location.longitude };
     Promise.all([
-      getClinics(1, 20, { specialtyId: id }),
-      getDoctors(1, 20, { specialtyId: id }),
+      getClinics(1, 20, { ...baseFilters, ...(medicalSystemId ? { medicalSystemId } : {}) }),
+      getDoctors(1, 20, { ...baseFilters, ...(medicalSystemId ? { medicalSystemId } : {}) }),
     ]).then(([clinicRes, doctorRes]) => {
       setClinics(clinicRes.data);
       setDoctors(doctorRes.data);
-    }).finally(() => setLoading(false));
-  }, [id]);
+    }).catch(() => { }).finally(() => setLoading(false));
+  }, [id, location, appliedFilters]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -81,26 +91,36 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
       {/* List */}
       {tab === 'doctors' ? (
         loading ? <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} /> :
-        <FlatList
-          key="doctors"
-          data={doctors}
-          keyExtractor={item => item.id}
-          contentContainerStyle={[styles.listContent, { paddingHorizontal: SIZE(18) }]}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <DoctorCard
-              name={item.name}
-              type={item.specialties[0]?.name ?? ''}
-              hospital={item.medicalCenters[0]?.name ?? ''}
-              clinicType={item.medicalCenters[0]?.type ?? ''}
-              experience={`${item.yearsOfExperience} yrs exp`}
-              image={item.profilePicture}
-              onPress={() => navigation.navigate('DoctorDetail', { doctorId: item.id })}
-              onBookPress={() => navigation.navigate('BookAppointment', { doctor: item })}
-            />
-          )}
-          ListEmptyComponent={<Text allowFontScaling={false} style={styles.emptyText}>No available doctors</Text>}
-        />
+          <FlatList
+            key="doctors"
+            data={doctors}
+            keyExtractor={item => item.id}
+            contentContainerStyle={[styles.listContent, { paddingHorizontal: SIZE(18) }]}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <DoctorCard
+                name={item.name}
+                type={item.specialties[0]?.name ?? ''}
+                hospital={item.medicalCenters[0]?.name ?? ''}
+                clinicType={item.medicalCenters[0]?.type ?? ''}
+                experience={`${item.yearsOfExperience} yrs exp`}
+                image={item.profilePicture}
+                distance={(() => { const mc = item.medicalCenters[0]; return (location && mc) ? getDistance(location.latitude, location.longitude, mc.latitude, mc.longitude) : undefined; })()}
+                onPress={() => navigation.navigate('DoctorDetail', { doctorId: item.id })}
+                onBookPress={() => navigation.navigate('BookAppointment', { doctor: item })}
+              />
+            )}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
+                <Text allowFontScaling={false} style={styles.emptyTitle}>No doctors available here</Text>
+                <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any doctors in this area right now. Try changing your location or adjusting filters.</Text>
+                <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
+                  <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
+                </View>
+              </View>
+            }
+          />
       ) : loading ? (
         <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
       ) : (
@@ -116,10 +136,20 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
               subType={item.specialties[0]?.name ?? item.type}
               location={`${item.district}, ${item.state}`}
               image={item.profilePicture}
+              distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
               onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
             />
           )}
-          ListEmptyComponent={<Text allowFontScaling={false} style={styles.emptyText}>No available clinics</Text>}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
+              <Text allowFontScaling={false} style={styles.emptyTitle}>No clinics available here</Text>
+              <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any clinics in this area right now. Try changing your location or adjusting filters.</Text>
+              <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
+                <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
+              </View>
+            </View>
+          }
         />
       )}
     </SafeAreaView>
@@ -189,6 +219,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: SIZE(40),
   },
+  emptyContainer: { alignItems: 'center', paddingHorizontal: SIZE(32), paddingVertical: SIZE(32), gap: SIZE(10) },
+  emptyTitle: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(16), color: '#1C1E22', marginTop: SIZE(8) },
+  emptyMessage: { fontFamily: 'Manrope-Regular', fontSize: SIZE(11), color: '#636A79', textAlign: 'center', lineHeight: SIZE(20) },
   locationFilterRow: {
     flexDirection: 'row',
     alignItems: 'center',

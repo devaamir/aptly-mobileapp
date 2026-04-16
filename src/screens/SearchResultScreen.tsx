@@ -14,6 +14,10 @@ import FilterModal from '../components/FilterModal';
 import { useLocation } from '../context/LocationContext';
 import DistancePicker from '../components/DistancePicker';
 import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
+import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
+import PrimaryButton from '../components/PrimaryButton';
+import { getDistance } from '../utils/getDistance';
+import { useMetadata } from '../context/MetadataContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SearchResult'>;
 
@@ -24,6 +28,7 @@ export default function SearchResultScreen({ navigation, route }: Props) {
   const { title, latitude, longitude, radius } = route.params;
   const isDoctor = DOCTOR_TITLES.includes(title.toLowerCase());
   const { location } = useLocation();
+  const { specialties: allSpecialties, medicalSystems } = useMetadata();
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,11 +36,20 @@ export default function SearchResultScreen({ navigation, route }: Props) {
   const [distance, setDistance] = useState(25);
 
   useEffect(() => {
+    if (!location) { setLoading(false); setClinics([]); setDoctors([]); return; }
+    setLoading(true);
+    const specialtyId = allSpecialties.find(s => appliedFilters.specialties?.includes(s.name))?.id;
+    const medicalSystemId = medicalSystems.find(s => appliedFilters.type?.includes(s.name))?.id;
+    const filters = {
+      latitude: location.latitude, longitude: location.longitude, radius: distance,
+      ...(specialtyId ? { specialtyId } : {}),
+      ...(medicalSystemId ? { medicalSystemId } : {}),
+    };
     const fetch = isDoctor
-      ? getDoctors(1, 20, { latitude, longitude, radius }).then(res => setDoctors(res.data))
-      : getClinics(1, 20, { latitude, longitude, radius }).then(res => setClinics(res.data));
-    fetch.finally(() => setLoading(false));
-  }, []);
+      ? getDoctors(1, 20, filters).then(res => setDoctors(res.data))
+      : getClinics(1, 20, filters).then(res => setClinics(res.data));
+    fetch.catch(() => { }).finally(() => setLoading(false));
+  }, [location, distance, appliedFilters]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -87,11 +101,21 @@ export default function SearchResultScreen({ navigation, route }: Props) {
               subType={(item as Clinic).specialties[0]?.name ?? (item as Clinic).type}
               location={`${(item as Clinic).district}, ${(item as Clinic).state}`}
               image={(item as Clinic).profilePicture}
+              distance={location ? getDistance(location.latitude, location.longitude, (item as Clinic).latitude, (item as Clinic).longitude) : undefined}
               onPress={() => navigation.navigate('HospitalDetail', { id: (item as Clinic).id, name: (item as Clinic).name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })}
               style={{ marginHorizontal: 0 }}
             />
           )}
-          ListEmptyComponent={<Text allowFontScaling={false} style={styles.emptyText}>No results found</Text>}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
+              <Text allowFontScaling={false} style={styles.emptyTitle}>No {isDoctor ? 'doctors' : 'clinics'} available here</Text>
+              <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any {isDoctor ? 'doctors' : 'clinics'} in this area right now. Try changing your location or adjusting filters.</Text>
+              <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
+                <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch' as never)} />
+              </View>
+            </View>
+          }
         />
       )}
     </SafeAreaView>
@@ -131,4 +155,7 @@ const styles = StyleSheet.create({
   filterRow: { paddingHorizontal: SIZE(18), marginBottom: SIZE(12) },
   list: { paddingHorizontal: SIZE(18), gap: SIZE(12), paddingBottom: SIZE(24) },
   emptyText: { fontFamily: 'Manrope-Regular', fontSize: SIZE(14), color: colors.textMuted, textAlign: 'center', marginTop: SIZE(40) },
+  emptyContainer: { alignItems: 'center', paddingHorizontal: SIZE(32), paddingVertical: SIZE(32), gap: SIZE(10) },
+  emptyTitle: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(16), color: '#1C1E22', marginTop: SIZE(8) },
+  emptyMessage: { fontFamily: 'Manrope-Regular', fontSize: SIZE(11), color: '#636A79', textAlign: 'center', lineHeight: SIZE(20) },
 });

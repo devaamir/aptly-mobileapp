@@ -12,6 +12,7 @@ type Props = {
   experience: string;
   image?: string;
   location?: string;
+  distance?: string;
   status?: 'Booking Opened' | 'Not Started';
   bookingTime?: string;
   onPress?: () => void;
@@ -32,7 +33,7 @@ const statusConfig = {
   },
 };
 
-const DoctorCard = ({ name, type, hospital, clinicType, experience, image, location, status = 'Booking Opened', bookingTime, onPress, onBookPress, style }: Props) => {
+const DoctorCard = ({ name, type, hospital, clinicType, experience, image, location, distance, status = 'Booking Opened', bookingTime, onPress, onBookPress, style }: Props) => {
   const s = statusConfig[status];
   return (
     <TouchableOpacity style={[styles.card, style]} activeOpacity={0.8} onPress={onPress}>
@@ -52,7 +53,7 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
           {location ? (
             <View style={styles.locationRow}>
               <LocationIcon width={SIZE(11)} height={SIZE(11)} />
-              <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location} | 2.5 km</Text>
+              <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location}{distance ? ` | ${distance}` : ''}</Text>
             </View>
           ) : null}
         </View>

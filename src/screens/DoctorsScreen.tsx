@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -11,8 +11,11 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
+import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
 import { getDoctors, getDoctor, Doctor } from '../services/api';
 import { useLocation } from '../context/LocationContext';
+import PrimaryButton from '../components/PrimaryButton';
+import { getDistance } from '../utils/getDistance';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Doctors'>;
 
@@ -54,18 +57,23 @@ function getBookingTime(doctor: Doctor): string {
 }
 
 export default function DoctorsScreen({ navigation }: Props) {
-  const { location } = useLocation();
+  const { location: userLocation } = useLocation();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
   const [distance, setDistance] = useState(25);
 
-  useEffect(() => {
-    getDoctors()
+  const fetchDoctors = (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true); else setLoading(true);
+    getDoctors(1, 20, userLocation ? { latitude: userLocation.latitude, longitude: userLocation.longitude, radius: distance } : undefined)
       .then(res => Promise.all(res.data.map(d => getDoctor(d.id).then(r => r.data))))
       .then(setDoctors)
-      .finally(() => setLoading(false));
-  }, []);
+      .catch(() => { })
+      .finally(() => { setLoading(false); setRefreshing(false); });
+  };
+
+  useEffect(() => { fetchDoctors(); }, [userLocation, distance]);
 
 
   return (
@@ -86,7 +94,7 @@ export default function DoctorsScreen({ navigation }: Props) {
         <View style={styles.locationIconContainer}>
           <LocationIcon width={SIZE(20)} height={SIZE(20)} />
         </View>
-        <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location ? location.mainText : 'Select location'}</Text>
+        <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{userLocation ? userLocation.mainText : 'Select location'}</Text>
         <DistancePicker value={distance} onChange={setDistance} />
       </TouchableOpacity>
       <View style={styles.filterRow}>
@@ -101,6 +109,7 @@ export default function DoctorsScreen({ navigation }: Props) {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchDoctors(true)} colors={[colors.primary]} tintColor={colors.primary} />}
           renderItem={({ item }) => {
             const specialty = item.specialties[0]?.name ?? '';
             const hospital = item.medicalCenters[0]?.name ?? '';
@@ -113,6 +122,7 @@ export default function DoctorsScreen({ navigation }: Props) {
                 hospital={hospital}
                 clinicType={clinicType}
                 location={location}
+                distance={(() => { const mc = item.medicalCenters[0]; return (userLocation && mc) ? getDistance(userLocation.latitude, userLocation.longitude, mc.latitude, mc.longitude) : undefined; })()}
                 experience={`${item.yearsOfExperience} yrs exp`}
                 image={item.profilePicture}
                 status={getBookingStatus(item)}
@@ -122,6 +132,16 @@ export default function DoctorsScreen({ navigation }: Props) {
               />
             );
           }}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
+              <Text allowFontScaling={false} style={styles.emptyTitle}>No doctors available here</Text>
+              <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any doctors in this area right now. Try changing your location or adjusting filters.</Text>
+              <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
+                <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
+              </View>
+            </View>
+          }
         />
       )}
     </SafeAreaView>
@@ -175,6 +195,25 @@ const styles = StyleSheet.create({
   filterRow: {
     paddingHorizontal: SIZE(18),
     marginBottom: SIZE(8),
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingHorizontal: SIZE(32),
+    paddingVertical: SIZE(32),
+    gap: SIZE(10),
+  },
+  emptyTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(16),
+    color: '#1C1E22',
+    marginTop: SIZE(8),
+  },
+  emptyMessage: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: '#636A79',
+    textAlign: 'center',
+    lineHeight: SIZE(20),
   },
   distanceText: {
     fontFamily: 'Manrope-SemiBold',

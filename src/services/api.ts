@@ -5,6 +5,7 @@ import type {
   VerifyOtpResponse,
   CreatePatientResponse,
   Specialty,
+  MedicalSystem,
   Doctor,
   Clinic,
   Pagination,
@@ -19,6 +20,7 @@ export type {
   VerifyOtpResponse,
   CreatePatientResponse,
   Specialty,
+  MedicalSystem,
   Doctor,
   Clinic,
   Pagination,
@@ -101,6 +103,9 @@ export const getPatients = (): Promise<{ success: boolean; data: Patient[] }> =>
 // specialties
 export const getspecialties = (): Promise<{ success: boolean; data: Specialty[] }> =>
   api.get('/metadata/specialties');
+
+export const getMedicalSystems = (): Promise<{ success: boolean; data: MedicalSystem[] }> =>
+  api.get('/metadata/medical-systems');
 
 // Doctors
 export const getDoctors = (
@@ -209,7 +214,7 @@ export function trackAppointment(
         buffer = lines.pop() ?? '';
         for (const line of lines) {
           if (line.startsWith('data:')) {
-            try { onData(JSON.parse(line.slice(5).trim())); } catch {}
+            try { onData(JSON.parse(line.slice(5).trim())); } catch { }
           }
         }
       }

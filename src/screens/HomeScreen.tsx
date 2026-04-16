@@ -26,7 +26,7 @@ import PrimaryButton from '../components/PrimaryButton';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt, activeAppointments, hasNearbyClinics }: { onTokenPress: (appt: Appointment) => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null; activeAppointments: Appointment[]; hasNearbyClinics: boolean }) => {
+const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt, activeAppointments, hasNearbyClinics, hasLocation }: { onTokenPress: (appt: Appointment) => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null; activeAppointments: Appointment[]; hasNearbyClinics: boolean; hasLocation: boolean }) => {
   const today = new Date().toISOString().split('T')[0];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
   const to12h = (t: string) => { const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; };
@@ -146,12 +146,12 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
           </View>
         </TouchableOpacity>
       </View>
-      <View style={styles.sectionHeader}>
+      {hasLocation && <View style={styles.sectionHeader}>
         <Text allowFontScaling={false} style={styles.sectionTitle}>Near by Clinics</Text>
         {hasNearbyClinics && <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
           <Text allowFontScaling={false} style={styles.viewAll}>See all</Text>
         </TouchableOpacity>}
-      </View>
+      </View>}
     </>
   );
 };
@@ -238,8 +238,21 @@ export default function HomeScreen() {
     setSpotlightAppt(live ?? sorted[0] ?? null);
   };
 
-  useEffect(() => { if (ready) fetchData(); }, [ready, location]);
-  useEffect(() => navigation.addListener('focus', () => { if (ready) fetchData(); }), [navigation, ready]);
+  useEffect(() => { if (ready) fetchData(); }, [ready, location?.latitude, location?.longitude]);
+  const locationRef = useRef(location);
+  useEffect(() => { locationRef.current = location; }, [location]);
+
+  useEffect(() => navigation.addListener('focus', () => {
+    if (!ready) return;
+    const loc = locationRef.current;
+    Promise.all([
+      getHomeData(loc?.latitude, loc?.longitude),
+      getClinics(1, 20),
+    ]).then(([homeRes, clinicsRes]) => {
+      handleHomeData(homeRes);
+      setFallbackClinics(clinicsRes.data);
+    }).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); });
+  }), [navigation, ready]);
 
   if (loading) {
     return <SkeletonScreen />;
@@ -277,7 +290,7 @@ export default function HomeScreen() {
 
         {/* Everything below scrolls */}
         <FlatList
-          data={clinics}
+          data={location ? clinics : []}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -307,7 +320,7 @@ export default function HomeScreen() {
               ))}
             </View>
           }
-          ListHeaderComponent={<ListHeader onTokenPress={(appt) => navigation.navigate('TokenDetail', { appointment: appt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} activeAppointments={activeAppointments} hasNearbyClinics={clinics.length > 0} />}
+          ListHeaderComponent={<ListHeader onTokenPress={(appt) => navigation.navigate('TokenDetail', { appointment: appt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} activeAppointments={activeAppointments} hasNearbyClinics={clinics.length > 0} hasLocation={!!location} />}
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}

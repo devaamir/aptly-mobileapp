@@ -4,18 +4,13 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import CloseIcon from '../assets/icons/close-icon.svg';
+import { useMetadata } from '../context/MetadataContext';
 
 const FILTER_SECTIONS = [
   { key: 'specialties', label: 'Specialties' },
   { key: 'availability', label: 'Availability' },
   { key: 'type', label: 'Type of Practices' },
 ];
-
-const FILTER_OPTIONS: Record<string, string[]> = {
-  specialties: ['Cardiology', 'Dermatology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Gynecology', 'Ayurveda', 'Homeopathy'],
-  availability: ['Live', 'Booking Opened'],
-  type: ['Clinic', 'Hospital', 'Ayurveda', 'Homeopathy', 'Dental', 'Diagnostic'],
-};
 
 const EMPTY = { specialties: [], availability: [], type: [] } as Record<string, string[]>;
 
@@ -32,6 +27,12 @@ export default function FilterModal({ applied, onApply, chipsOnly, triggerOnly }
   const [visible, setVisible] = useState(false);
   const [activeSection, setActiveSection] = useState('specialties');
   const [selected, setSelected] = useState<Record<string, string[]>>(EMPTY);
+  const { specialties, medicalSystems } = useMetadata();
+  const filterOptions: Record<string, string[]> = {
+    specialties: specialties.map(s => s.name),
+    availability: ['Live', 'Booking Opened'],
+    type: medicalSystems.map(s => s.name),
+  };
 
   const open = () => { setSelected(applied); setVisible(true); };
   const close = () => setVisible(false);
@@ -87,7 +88,7 @@ export default function FilterModal({ applied, onApply, chipsOnly, triggerOnly }
             </View>
             <View style={styles.verticalDivider} />
             <ScrollView style={styles.right} showsVerticalScrollIndicator={false}>
-              {FILTER_OPTIONS[activeSection].map((opt, i) => {
+              {filterOptions[activeSection].map((opt, i) => {
                 const isSelected = selected[activeSection].includes(opt);
                 return (
                   <React.Fragment key={opt}>
@@ -97,7 +98,7 @@ export default function FilterModal({ applied, onApply, chipsOnly, triggerOnly }
                         {isSelected && <Text style={styles.checkmark}>✓</Text>}
                       </View>
                     </TouchableOpacity>
-                    {i < FILTER_OPTIONS[activeSection].length - 1 && <View style={styles.divider} />}
+                    {i < filterOptions[activeSection].length - 1 && <View style={styles.divider} />}
                   </React.Fragment>
                 );
               })}

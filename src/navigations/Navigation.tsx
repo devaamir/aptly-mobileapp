@@ -22,6 +22,7 @@ import ClinicsScreen from '../screens/ClinicsScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import { Doctor, Appointment } from '../services/api';
 import { LocationProvider } from '../context/LocationContext';
+import { MetadataProvider } from '../context/MetadataContext';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
@@ -63,6 +64,7 @@ export default function Navigation() {
   if (initialRoute === null) return null;
 
   return (
+    <MetadataProvider>
     <LocationProvider>
       <NavigationContainer>
       <Stack.Navigator
@@ -94,5 +96,6 @@ export default function Navigation() {
       </Stack.Navigator>
     </NavigationContainer>
     </LocationProvider>
+    </MetadataProvider>
   );
 }

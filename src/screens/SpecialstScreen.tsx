@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,20 +8,13 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
-import { getspecialties, Specialty } from '../services/api';
+import { useMetadata } from '../context/MetadataContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'specialst'>;
 
 export default function SpecialstScreen({ navigation }: Props) {
+  const { specialties } = useMetadata();
   const [query, setQuery] = useState('');
-  const [specialties, setspecialties] = useState<Specialty[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getspecialties()
-      .then(res => setspecialties(res.data))
-      .finally(() => setLoading(false));
-  }, []);
 
   const filtered = specialties.filter(s =>
     s.name.toLowerCase().includes(query.toLowerCase())
@@ -46,7 +39,7 @@ export default function SpecialstScreen({ navigation }: Props) {
       </View>
 
       {/* List */}
-      {loading ? (
+      {specialties.length === 0 ? (
         <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
       ) : (
         <FlatList

@@ -95,10 +95,8 @@ export default function LocationSearchScreen({ navigation }: Props) {
         </View>
       </View>
 
-      {loading && <ActivityIndicator style={{ marginTop: SIZE(20) }} color={colors.primary} />}
-
       <FlatList
-        data={results.length > 0 ? results : []}
+        data={loading ? [] : results}
         keyExtractor={item => item.placeId}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.list}
@@ -150,6 +148,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
           </TouchableOpacity>
         )}
         ItemSeparatorComponent={null}
+        ListEmptyComponent={loading && query.trim() ? <ActivityIndicator style={{ marginTop: SIZE(20) }} color={colors.primary} /> : null}
       />
     </SafeAreaView>
   );
