@@ -3,6 +3,7 @@ import { View, Image, ScrollView, TouchableOpacity, StyleSheet, Text, FlatList, 
 import Geolocation from '@react-native-community/geolocation';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
+import { useTracking } from '../context/TrackingContext';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -27,6 +28,7 @@ import PrimaryButton from '../components/PrimaryButton';
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
 const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt, activeAppointments, hasNearbyClinics, hasLocation }: { onTokenPress: (appt: Appointment) => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null; activeAppointments: Appointment[]; hasNearbyClinics: boolean; hasLocation: boolean }) => {
+  const { currentToken, prevToken, nextToken } = useTracking();
   const today = new Date().toISOString().split('T')[0];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
   const to12h = (t: string) => { const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; };
@@ -74,9 +76,9 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
             )}
             {apptIsLive && (
               <View style={styles.tokenRow}>
-                <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>1</Text></View>
-                <View style={styles.tokenCurrent}><Text allowFontScaling={false} style={styles.tokenCurrentNum}>2</Text></View>
-                <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>3</Text></View>
+                <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>{prevToken ?? ''}</Text></View>
+                <View style={styles.tokenCurrent}><Text allowFontScaling={false} style={styles.tokenCurrentNum}>{currentToken ?? ''}</Text></View>
+                <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>{nextToken ?? ''}</Text></View>
               </View>
             )}
           </View>
@@ -86,7 +88,7 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
             <View style={styles.hospitalLeft}>
               <Image source={{ uri: appt.medicalCenter?.profilePicture }} style={styles.hospitalAvatar} />
               <View>
-                <Text allowFontScaling={false} style={[styles.hospitalName, !apptIsLive && { color: colors.textPrimary }]}>{appt.medicalCenter?.name ?? 'No appointment'}</Text>
+                <Text allowFontScaling={false} style={[styles.hospitalName, !apptIsLive && { color: colors.textPrimary }]} numberOfLines={1}>{appt.medicalCenter?.name ?? 'No appointment'}</Text>
                 <Text allowFontScaling={false} style={[styles.hospitalType, !apptIsLive && { color: colors.textSecondary }]}>{appt.medicalCenter?.type ?? ''}</Text>
               </View>
             </View>
@@ -114,7 +116,7 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
   return (
     <>
       {activeAppointments.length > 1
-        ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.bannerScroll}>
+        ? <ScrollView horizontal showsHorizontalScrollIndicator={false} snapToInterval={SIZE(361 + 16)} decelerationRate="fast" contentContainerStyle={styles.bannerScroll}>
           {activeAppointments.map(renderBannerCard)}
         </ScrollView>
         : spotlightAppt && renderBannerCard(spotlightAppt)
@@ -194,6 +196,7 @@ function SkeletonScreen() {
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
   const { location, ready } = useLocation();
+  const { startTracking, stopTracking } = useTracking();
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -239,6 +242,17 @@ export default function HomeScreen() {
   };
 
   useEffect(() => { if (ready) fetchData(); }, [ready, location?.latitude, location?.longitude]);
+
+  useEffect(() => {
+    if (!spotlightAppt) { stopTracking(); return; }
+    const today = new Date().toISOString().split('T')[0];
+    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+    const [sh, sm] = (spotlightAppt.schedule?.startTime ?? '').split(':').map(Number);
+    const [eh, em] = (spotlightAppt.schedule?.stopTime ?? '').split(':').map(Number);
+    const isLive = spotlightAppt.appointmentDate === today && nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+    if (isLive) startTracking(spotlightAppt.id);
+    else stopTracking();
+  }, [spotlightAppt]);
   const locationRef = useRef(location);
   useEffect(() => { locationRef.current = location; }, [location]);
 
@@ -264,7 +278,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <TouchableOpacity style={styles.locationBtn} activeOpacity={0.7} onPress={() => navigation.navigate('LocationSearch')}>
             <LocationIcon width={SIZE(19)} height={SIZE(19)} style={styles.locationIcon} />
-            <View>
+            <View style={{ maxWidth: SIZE(150) }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SIZE(4) }}>
                 <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>
                   {location ? location.mainText : 'Select your location'}
@@ -365,12 +379,12 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontFamily: 'Manrope-Bold',
-    fontSize: SIZE(18),
+    fontSize: SIZE(16),
     color: colors.dark,
   },
   locationSub: {
     fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(12),
+    fontSize: SIZE(11),
     color: colors.textSecondary,
     marginTop: SIZE(1),
   },
@@ -508,6 +522,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Bold',
     fontSize: SIZE(13),
     color: colors.white,
+    width: SIZE(150),
   },
   hospitalType: {
     fontFamily: 'Manrope-Regular',

@@ -9,15 +9,21 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
 import { searchAll, Doctor, Clinic } from '../services/api';
+import { useMetadata } from '../context/MetadataContext';
 
-const SUGGESTIONS = ['Clinics', 'Doctors', 'Ayurveda Clinics', 'Cardio'];
 
 export default function SearchScreen() {
   const navigation = useNavigation<any>();
+  const { specialties, medicalSystems, randomSuggestions } = useMetadata();
+  const SUGGESTIONS = ['Clinics', 'Doctors', ...randomSuggestions.map(s => s.label)];
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<(Doctor | Clinic)[]>([]);
   const [loading, setLoading] = useState(false);
   const [coords] = useState<{ latitude: number; longitude: number } | null>(null);
+
+  const q = query.trim().toLowerCase();
+  const matchedSpecialties = q ? specialties.filter(s => s.name.toLowerCase().includes(q)) : [];
+  const matchedSystems = q ? medicalSystems.filter(s => s.name.toLowerCase().includes(q)) : [];
 
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
@@ -55,6 +61,32 @@ export default function SearchScreen() {
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.list}
             style={{ backgroundColor: colors.backgroundGrey }}
+            ListHeaderComponent={
+              (matchedSpecialties.length > 0 || matchedSystems.length > 0) ? (
+                <View style={styles.metaSection}>
+                  {matchedSpecialties.map(s => (
+                    <TouchableOpacity key={s.id} style={styles.metaRow} activeOpacity={0.7}
+                      onPress={() => navigation.navigate('SpecialstDetail', { name: s.name, id: s.id, desc: s.description, clinics: 0, doctors: 0 })}>
+                      <SearchIcon width={SIZE(16)} height={SIZE(16)} />
+                      <View>
+                        <Text allowFontScaling={false} style={styles.metaName}>{s.name}</Text>
+                        <Text allowFontScaling={false} style={styles.metaType}>Specialty</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                  {matchedSystems.map(s => (
+                    <TouchableOpacity key={s.id} style={styles.metaRow} activeOpacity={0.7}
+                      onPress={() => navigation.navigate('SearchResult', { title: s.name, ...coords, radius: 30, initialFilters: { specialties: [], availability: [], type: [s.name] } })}>
+                      <SearchIcon width={SIZE(16)} height={SIZE(16)} />
+                      <View>
+                        <Text allowFontScaling={false} style={styles.metaName}>{s.name}</Text>
+                        <Text allowFontScaling={false} style={styles.metaType}>Medical System</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ) : null
+            }
             ListEmptyComponent={<Text allowFontScaling={false} style={styles.empty}>No results found</Text>}
             renderItem={({ item }) => {
               const isDoctor = (item as any).type === 'doctor';
@@ -97,8 +129,11 @@ export default function SearchScreen() {
           <Text allowFontScaling={false} style={styles.suggestionsTitle}>Search suggestions</Text>
           {SUGGESTIONS.map(s => (
             <TouchableOpacity key={s} style={styles.suggestionRow} activeOpacity={0.7} onPress={() => {
-              if (s.toLowerCase() === 'cardio') {
-                navigation.navigate('SpecialstDetail', { name: 'Cardiologist', id: '', desc: '', clinics: 0, doctors: 0 });
+              const match = randomSuggestions.find(r => r.label === s);
+              if (match?.type === 'specialty') {
+                navigation.navigate('SpecialstDetail', { name: match.label, id: match.id, desc: '', clinics: 0, doctors: 0 });
+              } else if (match?.type === 'medicalSystem') {
+                navigation.navigate('SearchResult', { title: s, ...coords, radius: 30, initialFilters: { specialties: [], availability: [], type: [match.label] } });
               } else {
                 navigation.navigate('SearchResult', { title: s, ...coords, radius: 30 });
               }
@@ -152,6 +187,19 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: SIZE(4), marginTop: SIZE(2) },
   locationText: { fontFamily: 'Manrope-Regular', fontSize: SIZE(11), color: colors.textMuted, flex: 1 },
   empty: { fontFamily: 'Manrope-Regular', fontSize: SIZE(14), color: colors.textMuted, textAlign: 'center', marginTop: SIZE(40) },
+  metaSection: { marginBottom: SIZE(8) },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(12),
+    paddingVertical: SIZE(10),
+    paddingHorizontal: SIZE(12),
+    backgroundColor: colors.white,
+    borderRadius: SIZE(12),
+    marginBottom: SIZE(8),
+  },
+  metaName: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(14), color: colors.textPrimary },
+  metaType: { fontFamily: 'Manrope-Regular', fontSize: SIZE(11), color: colors.textSecondary, marginTop: SIZE(2) },
   suggestionsBox: {
     backgroundColor: colors.white,
     paddingHorizontal: SIZE(16),

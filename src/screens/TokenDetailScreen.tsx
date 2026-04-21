@@ -11,6 +11,7 @@ import BottomModal from '../components/BottomModal';
 import AppointmentInfoCard from '../components/AppointmentInfoCard';
 import { cancelAppointment } from '../services/api';
 import type { Appointment } from '../services/api';
+import { useTracking } from '../context/TrackingContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TokenDetail'>;
 
@@ -19,6 +20,7 @@ const to12h = (t: string) => { const [h, m] = t.split(':').map(Number); return `
 
 export default function TokenDetailScreen({ navigation, route }: Props) {
   const { appointment: appt } = route.params;
+  const { trackData, currentToken, prevToken, nextToken } = useTracking();
   const [cancelVisible, setCancelVisible] = useState(false);
 
   const isLive = appt ? (() => {
@@ -30,8 +32,10 @@ export default function TokenDetailScreen({ navigation, route }: Props) {
     return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
   })() : false;
 
-  const token = appt?.tokenNumber ?? 0;
-  const consultMins = appt?.doctor?.estimateConsultationTime ?? 15;
+  // Use live SSE data when available
+  const liveAppt = trackData?.appointments.find(a => a.id === appt.id);
+  const token = liveAppt?.tokenNumber ?? appt?.tokenNumber ?? 0;
+  const consultMins = liveAppt?.doctor?.estimateConsultationTime ?? appt?.doctor?.estimateConsultationTime ?? 15;
   const estTime = isLive
     ? (() => { const est = new Date(Date.now() + Math.max(0, token - 1) * consultMins * 60000); const h = est.getHours(), m = est.getMinutes(); return `${h % 12 || 12}:${String(m).padStart(2,'0')}${h >= 12 ? 'pm' : 'am'}`; })()
     : appt?.schedule ? to12h(appt.schedule.startTime) : null;
@@ -80,9 +84,9 @@ export default function TokenDetailScreen({ navigation, route }: Props) {
         )}
         {isLive && (
           <View style={styles.tokenRow}>
-            <Text allowFontScaling={false} style={styles.tokenSideNum}>1</Text>
-            <Text allowFontScaling={false} style={styles.tokenCurrentNum}>2</Text>
-            <Text allowFontScaling={false} style={styles.tokenSideNum}>3</Text>
+            <Text allowFontScaling={false} style={styles.tokenSideNum}>{prevToken ?? ''}</Text>
+            <Text allowFontScaling={false} style={styles.tokenCurrentNum}>{currentToken ?? ''}</Text>
+            <Text allowFontScaling={false} style={styles.tokenSideNum}>{nextToken ?? ''}</Text>
           </View>
         )}
       </View>

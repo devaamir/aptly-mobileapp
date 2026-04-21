@@ -12,6 +12,7 @@ import AppointmentInfoCard from '../components/AppointmentInfoCard';
 import PatientSelector from '../components/PatientSelector';
 import { cancelAppointment, getAppointment } from '../services/api';
 import type { Appointment } from '../services/api';
+import { useTracking } from '../context/TrackingContext';
 import { useAuth } from '../context/AuthContext';
 
 type Route = RouteProp<RootStackParamList, 'AppointmentDetail'>;
@@ -22,6 +23,7 @@ export default function AppointmentDetailScreen() {
   const { params } = useRoute<Route>();
   const { id, doctor, type, hospital, date, time, token, status } = params;
   const { user } = useAuth();
+  const { currentToken, prevToken, nextToken } = useTracking();
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [appointment, setAppointment] = useState<Appointment | null>(null);
@@ -45,7 +47,7 @@ export default function AppointmentDetailScreen() {
   };
   const displayTime = appt ? `${to12h(appt.schedule.startTime)} - ${to12h(appt.schedule.stopTime)}` : time;
   const displayToken = appt?.tokenNumber ?? token;
-  const statusMap: Record<string, string> = { pending: 'Upcoming', active: 'Live', completed: 'Completed', cancelled: 'Cancelled' };
+  const statusMap: Record<string, string> = { pending: 'Upcoming', active: 'Live', completed: 'Completed', done: 'Completed', cancelled: 'Cancelled' };
 
   const computeStatus = (): string => {
     if (!appt) return status;
@@ -138,9 +140,9 @@ export default function AppointmentDetailScreen() {
             <View style={styles.liveRight}>
               {displayStatus === 'Live' && (
                 <View style={styles.tokenQueue}>
-                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>1</Text>
-                  <Text allowFontScaling={false} style={styles.tokenCurrent}>2</Text>
-                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>3</Text>
+                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>{prevToken ?? ''}</Text>
+                  <Text allowFontScaling={false} style={styles.tokenCurrent}>{currentToken ?? ''}</Text>
+                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>{nextToken ?? ''}</Text>
                 </View>
               )}
               <View style={styles.liveTokenContent}>

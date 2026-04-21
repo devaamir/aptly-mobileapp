@@ -8,6 +8,7 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import AppointmentCard from '../components/AppointmentCard';
 import { getAppointments, Appointment } from '../services/api';
+import { useTracking } from '../context/TrackingContext';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Tab = 'Upcoming' | 'Completed' | 'Cancelled';
@@ -17,11 +18,13 @@ const statusMap: Record<string, 'Upcoming' | 'Completed' | 'Cancelled' | 'Live'>
   pending: 'Upcoming',
   active: 'Live',
   completed: 'Completed',
+  done: 'Completed',
   cancelled: 'Cancelled',
 };
 
 export default function AppointmentScreen() {
   const navigation = useNavigation<Nav>();
+  const { trackData } = useTracking();
   const [tab, setTab] = useState<Tab>('Upcoming');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +77,7 @@ export default function AppointmentScreen() {
           }
           ListEmptyComponent={<Text allowFontScaling={false} style={styles.empty}>No {tab.toLowerCase()} appointments</Text>}
           renderItem={({ item }) => {
+            const liveAppt = trackData?.appointments.find(a => a.id === item.id);
             const isLive = () => {
               const today = new Date().toISOString().split('T')[0];
               if (item.appointmentDate !== today || item.tokenStatus !== 'pending') return false;
@@ -83,6 +87,7 @@ export default function AppointmentScreen() {
               return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
             };
             const status = isLive() ? 'Live' : (statusMap[item.tokenStatus] ?? 'Upcoming');
+            const liveToken = liveAppt?.tokenNumber ?? item.tokenNumber;
             const formatDate = (d: string) => {
               const dt = new Date(d);
               return `${String(dt.getDate()).padStart(2, '0')} ${dt.toLocaleDateString('en-US', { month: 'short' })} ${dt.getFullYear()}`;
@@ -103,7 +108,7 @@ export default function AppointmentScreen() {
                 hospital: item.medicalCenter.name,
                 date,
                 time,
-                token: item.tokenNumber,
+                token: liveToken,
                 status,
               })}>
                 <AppointmentCard
@@ -112,7 +117,7 @@ export default function AppointmentScreen() {
                   hospital={item.medicalCenter.name}
                   date={date}
                   time={time}
-                  token={item.tokenNumber}
+                  token={liveToken}
                   status={status}
                   avatar={item.doctor.profilePicture}
                 />

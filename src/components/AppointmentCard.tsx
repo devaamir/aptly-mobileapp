@@ -4,6 +4,7 @@ import Video from 'react-native-video';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import ArrowRight from '../assets/icons/arrow-right.svg';
+import { useTracking } from '../context/TrackingContext';
 
 type Status = 'Upcoming' | 'Completed' | 'Cancelled' | 'Live';
 
@@ -26,6 +27,7 @@ const statusColors: Record<Status, { bg: string; dot: string }> = {
 };
 
 export default function AppointmentCard({ doctor, type, hospital, date, time, token, status, avatar }: Props) {
+  const { currentToken, prevToken, nextToken } = useTracking();
   const s = statusColors[status];
   return (
     <View style={styles.card}>
@@ -75,9 +77,9 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
           />
           <Text allowFontScaling={false} style={[styles.tokenLabel, styles.tokenLabelLive]}>Your Token</Text>
           <View style={styles.tokenQueue}>
-            <Text allowFontScaling={false} style={styles.tokenNextPrev}>1</Text>
-            <Text allowFontScaling={false} style={styles.tokenCurrent}>2</Text>
-            <Text allowFontScaling={false} style={styles.tokenNextPrev}>3</Text>
+            <Text allowFontScaling={false} style={styles.tokenNextPrev}>{prevToken ?? ''}</Text>
+            <Text allowFontScaling={false} style={styles.tokenCurrent}>{currentToken ?? ''}</Text>
+            <Text allowFontScaling={false} style={styles.tokenNextPrev}>{nextToken ?? ''}</Text>
             <Text allowFontScaling={false} style={styles.ourTokenNumber}>{token}</Text>
           </View>
         </View>

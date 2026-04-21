@@ -23,6 +23,7 @@ import NotificationScreen from '../screens/NotificationScreen';
 import { Doctor, Appointment } from '../services/api';
 import { LocationProvider } from '../context/LocationContext';
 import { MetadataProvider } from '../context/MetadataContext';
+import { TrackingProvider } from '../context/TrackingContext';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
@@ -32,7 +33,7 @@ export type RootStackParamList = {
   Main: undefined;
   TokenDetail: { appointment: Appointment };
   Search: undefined;
-  SearchResult: { title: string; latitude?: number; longitude?: number; radius?: number };
+  SearchResult: { title: string; latitude?: number; longitude?: number; radius?: number; initialFilters?: Record<string, string[]> };
   LocationSearch: undefined;
   specialst: undefined;
   SpecialstDetail: { name: string; id: string; desc: string; clinics: number; doctors: number };
@@ -65,6 +66,7 @@ export default function Navigation() {
 
   return (
     <MetadataProvider>
+    <TrackingProvider>
     <LocationProvider>
       <NavigationContainer>
       <Stack.Navigator
@@ -96,6 +98,7 @@ export default function Navigation() {
       </Stack.Navigator>
     </NavigationContainer>
     </LocationProvider>
+    </TrackingProvider>
     </MetadataProvider>
   );
 }

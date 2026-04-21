@@ -60,7 +60,7 @@ const colors = {
   modalCloseBg: '#F2F4F7B2',
   black: '#000000',
   searchBorder: '#A0A5B1',
-  upcomingCardBg: '#FFF5E9',
+  upcomingCardBg: '#FFDEB6',
   scheduledText: '#4A4A4A',
   overlay: 'rgba(0,0,0,0.4)',
   overlayDark: 'rgba(0,0,0,0.5)',

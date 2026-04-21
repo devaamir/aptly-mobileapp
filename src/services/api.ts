@@ -187,7 +187,15 @@ export const cancelAppointment = (id: string): Promise<{ success: boolean }> =>
   api.patch(`/appointments/${id}/status`, { tokenStatus: 'cancelled' });
 
 export type TrackData = {
-  appointments: { tokenNumber: number; tokenStatus: string; createdAt: string; updatedAt: string }[];
+  appointments: {
+    id: string;
+    tokenNumber: number;
+    tokenStatus: string;
+    createdAt: string;
+    updatedAt: string;
+    patient: { name: string; phoneNumber: string; gender: string; dateOfBirth: string };
+    doctor: { estimateConsultationTime: number };
+  }[];
   activePauses: { id: string; date: string; startTime: string; stopTime: string; status: string; createdAt: string; updatedAt: string }[];
 };
 
@@ -196,35 +204,22 @@ export function trackAppointment(
   onData: (data: TrackData) => void,
   onError?: (err: unknown) => void,
 ): () => void {
-  const controller = new AbortController();
+  let es: any = null;
 
-  (async () => {
-    try {
-      const token = await AsyncStorage.getItem('accessToken');
-      const res = await fetch(`https://aptly-server.onrender.com/api/appointments/${id}/track`, {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: controller.signal,
-      });
-      const reader = res.body?.getReader();
-      if (!reader) return;
-      const decoder = new TextDecoder();
-      let buffer = '';
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            try { onData(JSON.parse(line.slice(5).trim())); } catch { }
-          }
-        }
-      }
-    } catch (err) {
-      if ((err as any)?.name !== 'AbortError') onError?.(err);
-    }
-  })();
+  AsyncStorage.getItem('accessToken').then(token => {
+    const EventSource = require('react-native-sse').default;
+    es = new EventSource(`https://aptly-server.onrender.com/api/appointments/${id}/track`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    es.addEventListener('message', (e: any) => {
+      console.log('[SSE] message:', e.data);
+      try { onData(JSON.parse(e.data)); } catch { }
+    });
+    es.addEventListener('error', (e: any) => {
+      console.log('[SSE] error:', e);
+      onError?.(e);
+    });
+  });
 
-  return () => controller.abort();
+  return () => { es?.close(); };
 }
