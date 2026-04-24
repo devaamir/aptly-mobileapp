@@ -1,4 +1,5 @@
 import { PermissionsAndroid, Platform } from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
 
 export async function requestLocationPermission(): Promise<void> {
   if (Platform.OS === 'android') {
@@ -11,6 +12,9 @@ export async function requestLocationPermission(): Promise<void> {
         buttonNegative: 'Deny',
       },
     );
+  } else {
+    await new Promise<void>(resolve => {
+      Geolocation.requestAuthorization(resolve, resolve);
+    });
   }
-  // iOS: permission dialog is triggered automatically by getCurrentPosition
 }

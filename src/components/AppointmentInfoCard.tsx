@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Image } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon-light.svg';
@@ -14,9 +14,15 @@ import ArrowRight from '../assets/icons/arrow-right.svg';
 type Props = {
   hospital: string;
   hospitalType: string;
+  hospitalPicture?: string;
   location: string;
   doctor: string;
   doctorSpecialty: string;
+  doctorPicture?: string;
+  phoneNumber?: string;
+  latitude?: number;
+  longitude?: number;
+  websiteUrl?: string;
   onDoctorPress?: () => void;
   onCancelPress?: () => void;
   cancelLabel?: string;
@@ -26,9 +32,15 @@ type Props = {
 export default function AppointmentInfoCard({
   hospital,
   hospitalType,
+  hospitalPicture,
   location,
   doctor,
   doctorSpecialty,
+  doctorPicture,
+  phoneNumber,
+  latitude,
+  longitude,
+  websiteUrl,
   onDoctorPress,
   onCancelPress,
   cancelLabel = 'Cancel Token',
@@ -40,7 +52,9 @@ export default function AppointmentInfoCard({
       <View style={[styles.hospitalCard, isLight && styles.hospitalCardLight]}>
         <View style={styles.hospitalTop}>
           <View style={styles.hospitalLeft}>
-            <View style={[styles.hospitalAvatar, isLight && styles.avatarLight]} />
+            {hospitalPicture
+              ? <Image source={{ uri: hospitalPicture }} style={styles.hospitalAvatar} resizeMode="cover" />
+              : <View style={[styles.hospitalAvatar, isLight && styles.avatarLight]} />}
             <View>
               <Text allowFontScaling={false} style={[styles.hospitalName, isLight && styles.textDark]}>{hospital}</Text>
               <Text allowFontScaling={false} style={[styles.hospitalType, isLight && styles.textMuted]}>{hospitalType}</Text>
@@ -52,13 +66,13 @@ export default function AppointmentInfoCard({
           <Text allowFontScaling={false} style={[styles.locationText, isLight && styles.textMuted]}>{location}</Text>
         </View>
         <View style={styles.hospitalActions}>
-          <TouchableOpacity style={[styles.actionBtn, isLight && styles.actionBtnLight]} activeOpacity={0.7}>
+          <TouchableOpacity style={[styles.actionBtn, isLight && styles.actionBtnLight]} activeOpacity={0.7} onPress={() => phoneNumber && Linking.openURL(`tel:${phoneNumber}`)}>
             {isLight ? <PhoneIconBlue width={SIZE(22)} height={SIZE(22)} /> : <PhoneIcon width={SIZE(22)} height={SIZE(22)} />}
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, isLight && styles.actionBtnLight]} activeOpacity={0.7}>
+          <TouchableOpacity style={[styles.actionBtn, isLight && styles.actionBtnLight]} activeOpacity={0.7} onPress={() => latitude && Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`)}>
             {isLight ? <MapIconBlue width={SIZE(22)} height={SIZE(22)} /> : <MapIcon width={SIZE(22)} height={SIZE(22)} />}
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, isLight && styles.actionBtnLight]} activeOpacity={0.7}>
+          <TouchableOpacity style={[styles.actionBtn, isLight && styles.actionBtnLight]} activeOpacity={0.7} onPress={() => websiteUrl && Linking.openURL(websiteUrl)}>
             {isLight ? <WebIconBlue width={SIZE(22)} height={SIZE(22)} /> : <WebIcon width={SIZE(22)} height={SIZE(22)} />}
           </TouchableOpacity>
         </View>
@@ -66,7 +80,9 @@ export default function AppointmentInfoCard({
           <View style={styles.dashedLine} />
         </View>
         <TouchableOpacity style={styles.hospitalBottom} activeOpacity={0.7} onPress={onDoctorPress}>
-          <View style={[styles.doctorAvatar, isLight && styles.avatarLight]} />
+          {doctorPicture
+            ? <Image source={{ uri: doctorPicture }} style={styles.doctorAvatar} resizeMode="cover" />
+            : <View style={[styles.doctorAvatar, isLight && styles.avatarLight]} />}
           <View style={styles.doctorInfo}>
             <Text allowFontScaling={false} style={[styles.doctorName, isLight && styles.textDark]}>{doctor}</Text>
             <Text allowFontScaling={false} style={[styles.doctorSpecialty, isLight && styles.textMuted]}>{doctorSpecialty}</Text>
@@ -114,6 +130,7 @@ const styles = StyleSheet.create({
     height: SIZE(44),
     borderRadius: SIZE(22),
     backgroundColor: colors.white30,
+    overflow: 'hidden',
   },
   hospitalName: {
     fontFamily: 'Manrope-Bold',
@@ -171,6 +188,7 @@ const styles = StyleSheet.create({
     height: SIZE(44),
     borderRadius: SIZE(22),
     backgroundColor: colors.white30,
+    overflow: 'hidden',
   },
   doctorInfo: { flex: 1 },
   doctorName: {

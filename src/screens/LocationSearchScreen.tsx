@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, TextInput, ActivityIndicator, Alert, Linking, Platform, PermissionsAndroid } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -33,14 +33,34 @@ export default function LocationSearchScreen({ navigation }: Props) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
+  const [popularLoading, setPopularLoading] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
 
   const handleSelect = (item: Location) => {
+    console.log(item);
+
     setLocation({ mainText: item.mainText, secondaryText: item.secondaryText, latitude: item.latitude, longitude: item.longitude, isGps: false });
     navigation.goBack();
   };
 
-  const handleGps = () => {
+  const handleGps = async () => {
+    if (Platform.OS === 'android') {
+      const status = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+      if (!status) {
+        const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+        if (result !== PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert(
+            'Location Permission Required',
+            'Please enable location permission in Settings to use this feature.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Open Settings', onPress: () => Linking.openSettings() },
+            ],
+          );
+          return;
+        }
+      }
+    }
     setGpsLoading(true);
     Geolocation.getCurrentPosition(
       async ({ coords }) => {
@@ -117,14 +137,16 @@ export default function LocationSearchScreen({ navigation }: Props) {
               <>
                 <Text allowFontScaling={false} style={styles.sectionTitle}>Popular Places</Text>
                 {POPULAR_PLACES.map(place => (
-                  <TouchableOpacity key={place} style={styles.row} activeOpacity={0.7} onPress={() => {
-                    setLoading(true);
+                  <TouchableOpacity key={place} style={styles.row} activeOpacity={0.7} disabled={!!popularLoading} onPress={() => {
+                    setPopularLoading(place);
                     searchLocations(place)
                       .then(res => { if (res.data[0]) handleSelect(res.data[0]); })
                       .catch(() => { })
-                      .finally(() => setLoading(false));
+                      .finally(() => setPopularLoading(null));
                   }}>
-                    <LocationIcon width={SIZE(16)} height={SIZE(16)} />
+                    {popularLoading === place
+                      ? <ActivityIndicator size={SIZE(16)} color={colors.primary} />
+                      : <LocationIcon width={SIZE(16)} height={SIZE(16)} />}
                     <View style={{ flex: 1 }}>
                       <Text allowFontScaling={false} style={styles.rowText}>{place}</Text>
                       <Text allowFontScaling={false} style={styles.rowSub}>Malappuram, Kerala</Text>

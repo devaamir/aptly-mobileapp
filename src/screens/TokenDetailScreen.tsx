@@ -96,9 +96,15 @@ export default function TokenDetailScreen({ navigation, route }: Props) {
         <AppointmentInfoCard
           hospital={appt?.medicalCenter?.name ?? ''}
           hospitalType={appt?.medicalCenter?.type ?? ''}
+          hospitalPicture={appt?.medicalCenter?.profilePicture}
           location={appt?.medicalCenter ? `${appt.medicalCenter.district}, ${appt.medicalCenter.state}` : ''}
+          phoneNumber={appt?.medicalCenter?.phoneNumber}
+          latitude={appt?.medicalCenter?.latitude}
+          longitude={appt?.medicalCenter?.longitude}
+          websiteUrl={appt?.medicalCenter?.websiteUrl}
           doctor={appt?.doctor?.name ?? ''}
           doctorSpecialty={appt?.doctor?.specialties?.[0]?.name ?? ''}
+          doctorPicture={appt?.doctor?.profilePicture}
           onCancelPress={() => setCancelVisible(true)}
           variant={isLive ? 'dark' : 'light'}
         />

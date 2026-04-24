@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Image, ScrollView, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform, RefreshControl } from 'react-native';
+import { View, Image, ScrollView, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform, RefreshControl, Linking } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
@@ -27,7 +27,7 @@ import PrimaryButton from '../components/PrimaryButton';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt, activeAppointments, hasNearbyClinics, hasLocation }: { onTokenPress: (appt: Appointment) => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null; activeAppointments: Appointment[]; hasNearbyClinics: boolean; hasLocation: boolean }) => {
+const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt, activeAppointments, hasNearbyClinics, hasLocation, trackData }: { onTokenPress: (appt: Appointment) => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null; activeAppointments: Appointment[]; hasNearbyClinics: boolean; hasLocation: boolean; trackData: import('../services/api').TrackData | null }) => {
   const { currentToken, prevToken, nextToken } = useTracking();
   const today = new Date().toISOString().split('T')[0];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
@@ -36,14 +36,16 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
   const renderBannerCard = (appt: Appointment) => {
     const apptIsLive = appt.appointmentDate === today && (() => {
       const [sh, sm] = (appt.schedule?.startTime ?? '').split(':').map(Number);
-      const [eh, em] = (appt.schedule?.stopTime ?? '').split(':').map(Number);
-      return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+      return nowMins >= sh * 60 + sm;
     })();
     const apptToken = appt.tokenNumber ?? 0;
     const apptConsultMins = appt.doctor?.estimateConsultationTime ?? 15;
+    const tokensAhead = apptIsLive ? Math.max(0, apptToken - (currentToken ?? 0)) : 0;
     const apptEstTime = apptIsLive
-      ? (() => { const est = new Date(Date.now() + Math.max(0, apptToken - 1) * apptConsultMins * 60000); const h = est.getHours(), m = est.getMinutes(); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; })()
+      ? (() => { const est = new Date(Date.now() + tokensAhead * apptConsultMins * 60000); const h = est.getHours(), m = est.getMinutes(); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; })()
       : appt.schedule ? to12h(appt.schedule.startTime) : null;
+
+
 
     return (
       <View
@@ -93,10 +95,10 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
               </View>
             </View>
             <View style={styles.hospitalActions}>
-              <TouchableOpacity style={[styles.actionBtn, !apptIsLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7}>
+              <TouchableOpacity style={[styles.actionBtn, !apptIsLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7} onPress={() => appt.medicalCenter?.phoneNumber && Linking.openURL(`tel:${appt.medicalCenter.phoneNumber}`)}>
                 {apptIsLive ? <PhoneIcon width={SIZE(22)} height={SIZE(22)} /> : <PhoneIconBlue width={SIZE(22)} height={SIZE(22)} />}
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtn, !apptIsLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7}>
+              <TouchableOpacity style={[styles.actionBtn, !apptIsLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7} onPress={() => appt.medicalCenter?.latitude && Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${appt.medicalCenter.latitude},${appt.medicalCenter.longitude}`)}>
                 {apptIsLive ? <MapIcon width={SIZE(22)} height={SIZE(22)} /> : <MapIconBlue width={SIZE(22)} height={SIZE(22)} />}
               </TouchableOpacity>
             </View>
@@ -113,13 +115,22 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
     );
   };
 
+  const isDone = (a: Appointment) => {
+    const live = trackData?.appointments.find(t => t.tokenNumber === a.tokenNumber);
+    const status = live?.tokenStatus ?? a.tokenStatus;
+    return status === 'completed' || status === 'done' || status === 'cancelled';
+  };
+
+  const visibleAppointments = activeAppointments.filter(a => !isDone(a));
+  const visibleSpotlight = spotlightAppt && !isDone(spotlightAppt) ? spotlightAppt : null;
+
   return (
     <>
-      {activeAppointments.length > 1
+      {visibleAppointments.length > 1
         ? <ScrollView horizontal showsHorizontalScrollIndicator={false} snapToInterval={SIZE(361 + 16)} decelerationRate="fast" contentContainerStyle={styles.bannerScroll}>
-          {activeAppointments.map(renderBannerCard)}
+          {visibleAppointments.map(renderBannerCard)}
         </ScrollView>
-        : spotlightAppt && renderBannerCard(spotlightAppt)
+        : visibleSpotlight && renderBannerCard(visibleSpotlight)
       }
       <View style={styles.cardsRow}>
         <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onspecialstPress}>
@@ -135,15 +146,15 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
         <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onDoctorsPress}>
           <Text allowFontScaling={false} style={styles.cardTitle}>All doctors</Text>
           <View style={styles.avatarRow}>
-            {doctors.slice(0, 3).map((d) => (
-              <View key={d.id} style={styles.avatarCircle}>
+            {doctors.slice(0, 3).map((d, i) => (
+              <View key={d.id} style={[styles.avatarCircle, totalDoctorCount > 3 && { marginLeft: i > 0 ? SIZE(-12) : 0 }]}>
                 {d.profilePicture ? (
                   <Image source={{ uri: d.profilePicture }} style={styles.avatarImg} />
                 ) : null}
               </View>
             ))}
             {totalDoctorCount > 3 && (
-              <Text allowFontScaling={false} style={styles.avatarCount}>{totalDoctorCount - 3}+</Text>
+              <Text allowFontScaling={false} style={styles.avatarCount}>+{totalDoctorCount - 3}</Text>
             )}
           </View>
         </TouchableOpacity>
@@ -196,7 +207,7 @@ function SkeletonScreen() {
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
   const { location, ready } = useLocation();
-  const { startTracking, stopTracking } = useTracking();
+  const { startTracking, stopTracking, trackData } = useTracking();
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -229,12 +240,11 @@ export default function HomeScreen() {
     setTotalDoctorCount(res.data.totalDoctorCount);
     const today = new Date().toISOString().split('T')[0];
     const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-    const active = (res.data.appointments ?? []).filter(a => a.tokenStatus === 'pending');
+    const active = (res.data.appointments ?? []).filter(a => a.tokenStatus === 'pending' || a.tokenStatus === 'ongoing');
     const live = active.find(a => {
       if (a.appointmentDate !== today) return false;
       const [sh, sm] = (a.schedule?.startTime ?? '').split(':').map(Number);
-      const [eh, em] = (a.schedule?.stopTime ?? '').split(':').map(Number);
-      return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+      return nowMins >= sh * 60 + sm;
     });
     const sorted = active.sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
     setActiveAppointments(live ? [live, ...sorted.filter(a => a.id !== live.id)] : sorted);
@@ -248,8 +258,7 @@ export default function HomeScreen() {
     const today = new Date().toISOString().split('T')[0];
     const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
     const [sh, sm] = (spotlightAppt.schedule?.startTime ?? '').split(':').map(Number);
-    const [eh, em] = (spotlightAppt.schedule?.stopTime ?? '').split(':').map(Number);
-    const isLive = spotlightAppt.appointmentDate === today && nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
+    const isLive = spotlightAppt.appointmentDate === today && nowMins >= sh * 60 + sm;
     if (isLive) startTracking(spotlightAppt.id);
     else stopTracking();
   }, [spotlightAppt]);
@@ -306,6 +315,7 @@ export default function HomeScreen() {
         <FlatList
           data={location ? clinics : []}
           keyExtractor={item => item.id}
+          extraData={trackData}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[colors.primary]} tintColor={colors.primary} />}
@@ -334,7 +344,7 @@ export default function HomeScreen() {
               ))}
             </View>
           }
-          ListHeaderComponent={<ListHeader onTokenPress={(appt) => navigation.navigate('TokenDetail', { appointment: appt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} activeAppointments={activeAppointments} hasNearbyClinics={clinics.length > 0} hasLocation={!!location} />}
+          ListHeaderComponent={<ListHeader onTokenPress={(appt) => navigation.navigate('TokenDetail', { appointment: appt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} activeAppointments={activeAppointments} hasNearbyClinics={clinics.length > 0} hasLocation={!!location} trackData={trackData} />}
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}
@@ -604,7 +614,8 @@ const styles = StyleSheet.create({
   },
   avatarRow: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    gap: SIZE(6),
   },
   avatarCircle: {
     width: SIZE(40),

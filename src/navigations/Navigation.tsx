@@ -21,9 +21,9 @@ import HospitalDetailScreen from '../screens/HospitalDetailScreen';
 import ClinicsScreen from '../screens/ClinicsScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import { Doctor, Appointment } from '../services/api';
-import { LocationProvider } from '../context/LocationContext';
 import { MetadataProvider } from '../context/MetadataContext';
 import { TrackingProvider } from '../context/TrackingContext';
+import { LocationProvider } from '../context/LocationContext';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;

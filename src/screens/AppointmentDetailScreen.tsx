@@ -161,9 +161,15 @@ export default function AppointmentDetailScreen() {
         <AppointmentInfoCard
           hospital={displayHospital}
           hospitalType={displayType}
+          hospitalPicture={appt?.medicalCenter?.profilePicture}
           location={displayLocation}
+          phoneNumber={appt?.medicalCenter?.phoneNumber}
+          latitude={appt?.medicalCenter?.latitude}
+          longitude={appt?.medicalCenter?.longitude}
+          websiteUrl={appt?.medicalCenter?.websiteUrl}
           doctor={displayDoctor}
           doctorSpecialty={displayType}
+          doctorPicture={appt?.doctor?.profilePicture}
           variant="light"
           onDoctorPress={() => appt && navigation.navigate('DoctorDetail', { doctorId: appt.doctor.id })}
         />

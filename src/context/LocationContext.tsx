@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import Geolocation from '@react-native-community/geolocation';
 import { reverseGeocode } from '../services/api';
+import { requestLocationPermission } from '../utils/requestLocationPermission';
 
 export interface AppLocation {
   mainText: string;       // e.g. "Panakkad"
@@ -23,25 +24,27 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    Geolocation.getCurrentPosition(
-      async ({ coords }) => {
-        const { latitude, longitude } = coords;
-        let mainText = 'Current Location';
-        let secondaryText = '';
-        try {
-          const res = await reverseGeocode(latitude, longitude);
-          mainText = res.data.name;
-          secondaryText = res.data.address;
-        } catch (error) {
-          console.log(error, '-------');
-          /* fallback to defaults */
-        }
-        setLocationState({ mainText, secondaryText, latitude, longitude, isGps: true });
-        setReady(true);
-      },
-      () => setReady(true),
-      { timeout: 8000, maximumAge: 0 },
-    );
+    (async () => {
+      await requestLocationPermission();
+      Geolocation.getCurrentPosition(
+        async ({ coords }) => {
+          const { latitude, longitude } = coords;
+          let mainText = 'Current Location';
+          let secondaryText = '';
+          try {
+            const res = await reverseGeocode(latitude, longitude);
+            mainText = res.data.name;
+            secondaryText = res.data.address;
+          } catch (error) {
+            console.log(error, '-------');
+          }
+          setLocationState({ mainText, secondaryText, latitude, longitude, isGps: true });
+          setReady(true);
+        },
+        () => setReady(true),
+        { timeout: 8000, maximumAge: 0 },
+      );
+    })();
   }, []);
 
   const setLocation = (loc: AppLocation) => setLocationState(loc);
