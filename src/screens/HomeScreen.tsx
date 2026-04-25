@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(72),
     color: colors.white,
-    lineHeight: SIZE(72),
+    lineHeight: Platform.OS === 'android' ? SIZE(68) : SIZE(80),
   },
   tokenEst: {
     fontFamily: 'Manrope-Regular',
