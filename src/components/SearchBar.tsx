@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: SIZE(14),
     backgroundColor: colors.white,
+    height: SIZE(48),
   },
   focused: {
     borderColor: colors.primary,
@@ -58,6 +59,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(16),
     color: colors.textPrimary,
+    includeFontPadding: false,
   },
   iconContainer: {
     paddingVertical: SIZE(8),

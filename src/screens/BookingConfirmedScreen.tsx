@@ -25,16 +25,14 @@ export default function BookingConfirmedScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
-      {Platform.OS === 'android' && (
-        <Video
-          source={require('../assets/images/background-video.mp4')}
-          style={StyleSheet.absoluteFill}
-          resizeMode="cover"
-          repeat
-          muted
-          disableFocus
-        />
-      )}
+      <Video
+        source={require('../assets/images/background-video.mp4')}
+        style={StyleSheet.absoluteFill}
+        resizeMode="cover"
+        repeat
+        muted
+        disableFocus
+      />
 
       <View style={styles.content}>
         <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>

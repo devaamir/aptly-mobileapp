@@ -59,6 +59,8 @@ export default function OtpScreen() {
       ]);
       setUser({ userId: user.id, patientId: patient?.id ?? '', name: user.name ?? '', phoneNumber: user.phoneNumber, email: user.emailAddress ?? '', accessToken, refreshToken, gender: patient?.gender ?? '', dateOfBirth: patient?.dateOfBirth ?? '' });
       await requestLocationPermission();
+      console.log('under location permission');
+
       navigation.reset({ index: 0, routes: [{ name: (user.name) ? ('Main' as never) : ('CreateProfile' as never) }] });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Verification failed');

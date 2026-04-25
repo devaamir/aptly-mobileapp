@@ -15,6 +15,8 @@ export async function requestLocationPermission(): Promise<void> {
   } else {
     await new Promise<void>(resolve => {
       Geolocation.requestAuthorization(resolve, resolve);
+      // Fallback in case callback is never called (permission already determined)
+      setTimeout(resolve, 500);
     });
   }
 }

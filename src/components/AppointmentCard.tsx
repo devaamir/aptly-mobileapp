@@ -17,6 +17,7 @@ type Props = {
   token: number;
   status: Status;
   avatar?: string;
+  clinicAvatar?: string;
 };
 
 const statusColors: Record<Status, { bg: string; dot: string }> = {
@@ -26,7 +27,7 @@ const statusColors: Record<Status, { bg: string; dot: string }> = {
   Cancelled: { bg: colors.cancelledBg, dot: colors.cancelledDot },
 };
 
-export default function AppointmentCard({ doctor, type, hospital, date, time, token, status, avatar }: Props) {
+export default function AppointmentCard({ doctor, type, hospital, date, time, token, status, avatar, clinicAvatar }: Props) {
   const { currentToken, prevToken, nextToken } = useTracking();
   const s = statusColors[status];
   return (
@@ -41,7 +42,7 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
       </View>
       <View style={styles.cardTop}>
         <View style={styles.avatar}>
-          {avatar ? <Image source={{ uri: avatar }} style={styles.avatarImg} /> : null}
+          {clinicAvatar ? <Image source={{ uri: clinicAvatar }} style={styles.avatarImg} /> : null}
         </View>
         <View style={styles.cardInfo}>
           <Text allowFontScaling={false} style={styles.doctorName}>{hospital}</Text>

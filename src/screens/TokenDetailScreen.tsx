@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -49,7 +49,7 @@ export default function TokenDetailScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={[styles.container, !isLive && { backgroundColor: colors.upcomingCardBg }]} edges={['top', 'bottom']}>
       <StatusBar barStyle={isLive ? 'light-content' : 'dark-content'} backgroundColor={isLive ? colors.primary : colors.upcomingCardBg} />
-      {isLive && Platform.OS === 'android' && (
+      {isLive && (
         <Video
           source={require('../assets/images/background-video.mp4')}
           style={StyleSheet.absoluteFill}
@@ -57,6 +57,7 @@ export default function TokenDetailScreen({ navigation, route }: Props) {
           repeat
           muted
           disableFocus
+          pointerEvents="none"
         />
       )}
 

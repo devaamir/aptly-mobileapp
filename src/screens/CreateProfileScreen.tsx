@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppDropdown from '../components/AppDropdown';
 import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
+import BottomModal from '../components/BottomModal';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import { requestLocationPermission } from '../utils/requestLocationPermission';
 import ArrowRightWhite from '../assets/icons/arrow-right-white.svg';
@@ -25,6 +26,13 @@ export default function CreateProfileScreen() {
   const [gender, setGender] = useState(isEdit ? (user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : '') : '');
   const [dob, setDob] = useState<Date | null>(isEdit && user?.dateOfBirth ? new Date(user.dateOfBirth) : null);
   const [loading, setLoading] = useState(false);
+  const [activeField, setActiveField] = useState<'name' | 'gender' | 'dob' | null>(null);
+  const [cancelVisible, setCancelVisible] = useState(false);
+
+  const handleBack = () => {
+    if (isEdit) { navigation.goBack(); return; }
+    setCancelVisible(true);
+  };
 
   const isValid = !!name && !!gender && !!dob;
 
@@ -55,7 +63,7 @@ export default function CreateProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+      <TouchableOpacity onPress={handleBack} style={styles.backButton}>
         <BackArrow width={SIZE(24)} height={SIZE(24)} />
       </TouchableOpacity>
 
@@ -66,6 +74,8 @@ export default function CreateProfileScreen() {
         value={name}
         onChangeText={setName}
         placeholder="Enter your name"
+        onFocus={() => setActiveField('name')}
+        onBlur={() => setActiveField(null)}
       />
       <View style={styles.row}>
         <View style={styles.rowItem}>
@@ -74,6 +84,9 @@ export default function CreateProfileScreen() {
             value={gender}
             onSelect={setGender}
             placeholder="Gender"
+            focused={activeField === 'gender'}
+            onFocus={() => setActiveField('gender')}
+            onBlur={() => setActiveField(null)}
           />
         </View>
         <View style={styles.rowItem}>
@@ -81,6 +94,9 @@ export default function CreateProfileScreen() {
             value={dob}
             onChange={setDob}
             placeholder="Date of birth"
+            focused={activeField === 'dob'}
+            onOpen={() => setActiveField('dob')}
+            onClose={() => setActiveField(null)}
           />
         </View>
       </View>
@@ -91,6 +107,23 @@ export default function CreateProfileScreen() {
         loading={loading}
         icon={!isValid ? <ArrowRight width={SIZE(18)} height={SIZE(18)} /> : <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />}
       />
+
+      <BottomModal visible={cancelVisible} onClose={() => setCancelVisible(false)} variant="center">
+        <Text allowFontScaling={false} style={styles.modalTitle}>Cancel Setup?</Text>
+        <Text allowFontScaling={false} style={styles.modalDesc}>Are you sure you want to go back? You'll need to start again with a new number.</Text>
+        <View style={styles.modalBtns}>
+          <TouchableOpacity style={[styles.modalBtn, styles.keepBtn]} onPress={() => setCancelVisible(false)} activeOpacity={0.8}>
+            <Text allowFontScaling={false} style={styles.keepText}>Stay</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.modalBtn, styles.yesBtn]} onPress={async () => {
+            setCancelVisible(false);
+            await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'phoneNumber', 'email', 'name', 'patientId', 'gender', 'dateOfBirth']);
+            navigation.reset({ index: 0, routes: [{ name: 'PhoneNumber' as never }] });
+          }} activeOpacity={0.8}>
+            <Text allowFontScaling={false} style={styles.yesText}>Yes, Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </BottomModal>
     </SafeAreaView>
   );
 }
@@ -127,5 +160,43 @@ const styles = StyleSheet.create({
   },
   rowItem: {
     flex: 1,
+  },
+  modalTitle: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(18),
+    color: colors.textPrimary,
+    marginBottom: SIZE(8),
+  },
+  modalDesc: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: SIZE(20),
+    marginBottom: SIZE(4),
+  },
+  modalBtns: {
+    flexDirection: 'row',
+    gap: SIZE(12),
+    marginTop: SIZE(8),
+    width: '100%',
+  },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: SIZE(14),
+    borderRadius: SIZE(12),
+    alignItems: 'center',
+  },
+  keepBtn: { backgroundColor: colors.primaryLight },
+  yesBtn: { backgroundColor: colors.danger },
+  keepText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.primaryAccent,
+  },
+  yesText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.white,
   },
 });

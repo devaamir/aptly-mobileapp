@@ -17,6 +17,7 @@ const TABS: Tab[] = ['Upcoming', 'Completed', 'Cancelled'];
 const statusMap: Record<string, 'Upcoming' | 'Completed' | 'Cancelled' | 'Live'> = {
   pending: 'Upcoming',
   active: 'Live',
+  ongoing: 'Live',
   completed: 'Completed',
   done: 'Completed',
   cancelled: 'Cancelled',
@@ -29,15 +30,34 @@ export default function AppointmentScreen() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  useFocusEffect(useCallback(() => {
-    setLoading(true);
-    getAppointments().then(res => setAppointments(res.data)).finally(() => setLoading(false));
-  }, []));
+  const fetchPage = (p: number, reset = false) => {
+    if (p === 1) reset ? setRefreshing(true) : setLoading(true);
+    else setLoadingMore(true);
+    getAppointments(p).then(res => {
+      const data = res.data;
+      setAppointments(prev => p === 1 ? data : [...prev, ...data]);
+      setHasMore(data.length === 20);
+      setPage(p);
+    }).finally(() => {
+      setLoading(false);
+      setRefreshing(false);
+      setLoadingMore(false);
+    });
+  };
 
+  useFocusEffect(useCallback(() => { fetchPage(1); }, []));
+
+  const today = new Date().toISOString().split('T')[0];
   const filtered = appointments.filter(a => {
     const mapped = statusMap[a.tokenStatus] ?? 'Upcoming';
-    return tab === 'Upcoming' ? (mapped === 'Upcoming' || mapped === 'Live') : mapped === tab;
+    if (tab === 'Upcoming') {
+      return (mapped === 'Upcoming' || mapped === 'Live') && a.appointmentDate >= today;
+    }
+    return mapped === tab;
   });
 
   return (
@@ -49,7 +69,7 @@ export default function AppointmentScreen() {
 
       <View style={styles.tabs}>
         {TABS.map(t => (
-          <TouchableOpacity key={t} style={styles.tab} onPress={() => setTab(t)} activeOpacity={0.8}>
+          <TouchableOpacity key={t} style={styles.tab} onPress={() => { setTab(t); }} activeOpacity={0.8}>
             <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>{t}</Text>
             {tab === t && <View style={styles.tabUnderline} />}
           </TouchableOpacity>
@@ -67,14 +87,14 @@ export default function AppointmentScreen() {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={() => {
-                setRefreshing(true);
-                getAppointments().then(res => setAppointments(res.data)).finally(() => setRefreshing(false));
-              }}
+              onRefresh={() => fetchPage(1, true)}
               colors={[colors.primary]}
               tintColor={colors.primary}
             />
           }
+          onEndReached={() => { if (hasMore && !loadingMore) fetchPage(page + 1); }}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={loadingMore ? <ActivityIndicator style={{ marginVertical: SIZE(16) }} color={colors.primary} /> : null}
           ListEmptyComponent={<Text allowFontScaling={false} style={styles.empty}>No {tab.toLowerCase()} appointments</Text>}
           renderItem={({ item }) => {
             const liveAppt = trackData?.appointments.find(a => a.id === item.id);
@@ -120,6 +140,7 @@ export default function AppointmentScreen() {
                   token={liveToken}
                   status={status}
                   avatar={item.doctor.profilePicture}
+                  clinicAvatar={item.medicalCenter.profilePicture}
                 />
               </TouchableOpacity>
             );

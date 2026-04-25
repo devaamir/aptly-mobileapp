@@ -8,10 +8,12 @@ type Props = TextInputProps & {
   onChangeText: (text: string) => void;
   placeholder?: string;
   prefix?: string;
+  focused?: boolean;
 };
 
-export default function AppInput({ value, onChangeText, placeholder, prefix, ...rest }: Props) {
-  const [focused, setFocused] = useState(false);
+export default function AppInput({ value, onChangeText, placeholder, prefix, focused: externalFocused, onFocus, onBlur, ...rest }: Props) {
+  const [internalFocused, setInternalFocused] = useState(false);
+  const focused = externalFocused !== undefined ? externalFocused : internalFocused;
 
   if (prefix) {
     return (
@@ -25,8 +27,8 @@ export default function AppInput({ value, onChangeText, placeholder, prefix, ...
           onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor={colors.textSecondary}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onFocus={(e) => { setInternalFocused(true); onFocus?.(e); }}
+          onBlur={(e) => { setInternalFocused(false); onBlur?.(e); }}
           {...rest}
         />
       </View>
@@ -40,8 +42,8 @@ export default function AppInput({ value, onChangeText, placeholder, prefix, ...
       onChangeText={onChangeText}
       placeholder={placeholder}
       placeholderTextColor={colors.textSecondary}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
+      onFocus={(e) => { setInternalFocused(true); onFocus?.(e); }}
+      onBlur={(e) => { setInternalFocused(false); onBlur?.(e); }}
       {...rest}
     />
   );

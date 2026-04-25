@@ -51,7 +51,7 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
       <View
         key={appt.id}
         style={[styles.bannerCard, !apptIsLive && { backgroundColor: colors.upcomingCardBg }, activeAppointments.length > 1 && styles.bannerCardMulti]}>
-        {apptIsLive && Platform.OS === 'android' && (
+        {apptIsLive && (
           <Video
             source={require('../assets/images/background-video.mp4')}
             style={StyleSheet.absoluteFill}
@@ -59,6 +59,7 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
             repeat
             muted
             disableFocus
+            pointerEvents="none"
           />
         )}
         <TouchableOpacity activeOpacity={0.7} onPress={() => onTokenPress(appt)}>
@@ -307,7 +308,9 @@ export default function HomeScreen() {
         {/* Search - stays fixed */}
         <View style={styles.searchWrapper}>
           <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Search')}>
-            <SearchBar placeholder='Search for "Skin Doctor"' editable={false} style={{ borderColor: colors.searchBorder }} />
+            <View pointerEvents="none">
+              <SearchBar placeholder='Search for "Skin Doctor"' editable={false} style={{ borderColor: colors.searchBorder }} />
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -466,7 +469,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(72),
     color: colors.white,
-    lineHeight: SIZE(68),
+    lineHeight: SIZE(72),
   },
   tokenEst: {
     fontFamily: 'Manrope-Regular',

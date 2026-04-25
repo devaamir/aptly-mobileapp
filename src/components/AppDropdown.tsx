@@ -10,10 +10,14 @@ type Props = {
   value: string;
   onSelect: (value: string) => void;
   placeholder?: string;
+  focused?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
-export default function AppDropdown({ options, value, onSelect, placeholder = 'Select' }: Props) {
-  const [focused, setFocused] = useState(false);
+export default function AppDropdown({ options, value, onSelect, placeholder = 'Select', focused: externalFocused, onFocus, onBlur }: Props) {
+  const [internalFocused, setInternalFocused] = useState(false);
+  const focused = externalFocused !== undefined ? externalFocused : internalFocused;
   const data = options.map(o => ({ label: o, value: o }));
 
   return (
@@ -31,9 +35,8 @@ export default function AppDropdown({ options, value, onSelect, placeholder = 'S
       value={value}
       onChange={item => onSelect(item.value)}
       renderRightIcon={() => <DownArrow width={SIZE(16)} height={SIZE(16)} />}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      onBlur={() => setFocused(false)}
+      onFocus={() => { setInternalFocused(true); onFocus?.(); }}
+      onBlur={() => { setInternalFocused(false); onBlur?.(); }}
     />
   );
 }
