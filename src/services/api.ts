@@ -37,8 +37,6 @@ const api = axios.create({
 
 api.interceptors.request.use(async config => {
   const token = await AsyncStorage.getItem('accessToken');
-  console.log("access token", token);
-
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -65,8 +63,6 @@ api.interceptors.response.use(
         await AsyncStorage.multiSet([['accessToken', accessToken], ['refreshToken', newRefresh]]);
         onTokenRefreshed?.(accessToken, newRefresh);
         original.headers.Authorization = `Bearer ${accessToken}`;
-        console.log("new access token", accessToken);
-
         return api(original);
       } catch {
         return Promise.reject(error?.response?.data || error);
