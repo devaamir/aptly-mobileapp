@@ -8,6 +8,7 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
+// import { auth } from '../config/firebase';
 import { sendOtp } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -28,6 +29,8 @@ export default function PhoneNumberScreen() {
   const handleContinue = async () => {
     try {
       setLoading(true);
+      // const confirmation = await auth().signInWithPhoneNumber(`+91${phone}`);
+      // navigation.navigate('Otp', { phone, confirmation });
       const res = await sendOtp(phone);
       navigation.navigate('Otp', { phone, code: res.data.code });
     } catch (err: any) {

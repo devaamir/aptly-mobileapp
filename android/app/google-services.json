@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "857737363787",
+    "project_id": "aptly-care",
+    "storage_bucket": "aptly-care.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:857737363787:android:1d9893b9f541ab3477e8ce",
+        "android_client_info": {
+          "package_name": "com.aptly.aptlycare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpwjYKEp36oUHx_f_KlNyJxH3LUK4gIb0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
