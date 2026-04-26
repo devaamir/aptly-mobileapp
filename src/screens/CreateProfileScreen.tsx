@@ -8,7 +8,7 @@ import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
 import BottomModal from '../components/BottomModal';
 import BackArrow from '../assets/icons/back-arrows.svg';
-import { requestLocationPermission } from '../utils/requestLocationPermission';
+import { useLocation } from '../context/LocationContext';
 import ArrowRightWhite from '../assets/icons/arrow-right-white.svg';
 import ArrowRight from '../assets/icons/arrow-right-grey.svg';
 import colors from '../themes/colors';
@@ -22,6 +22,7 @@ export default function CreateProfileScreen() {
   const route = useRoute();
   const isEdit = (route.name as string) === 'EditProfile';
   const { user, updateUser } = useAuth();
+  const { initLocation } = useLocation();
   const [name, setName] = useState(isEdit ? (user?.name ?? '') : '');
   const [gender, setGender] = useState(isEdit ? (user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : '') : '');
   const [dob, setDob] = useState<Date | null>(isEdit && user?.dateOfBirth ? new Date(user.dateOfBirth) : null);
@@ -52,7 +53,7 @@ export default function CreateProfileScreen() {
       await AsyncStorage.multiSet([['name', name], ['patientId', patientId], ['gender', genderLower], ['dateOfBirth', dateOfBirth]]);
       updateUser({ name, patientId, gender: genderLower, dateOfBirth });
       if (isEdit) navigation.goBack();
-      else { await requestLocationPermission(); navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] }); }
+      else { initLocation(); navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] }); }
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to save profile');
     } finally {

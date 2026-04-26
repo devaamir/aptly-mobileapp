@@ -30,7 +30,7 @@ export default function ProfileScreen() {
   const [patients, setPatients] = useState<Patient[]>([]);
 
   useFocusEffect(useCallback(() => {
-    getPatients().then(res => setPatients(res.data.filter(p => !!p.name))).catch(() => {});
+    getPatients().then(res => setPatients(res.data.filter(p => !!p.name))).catch(() => { });
   }, []));
 
   const handleAddMember = async () => {
@@ -75,7 +75,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Patients */}
-        <Text allowFontScaling={false} style={styles.sectionLabel}>My Patients</Text>
+        <Text allowFontScaling={false} style={styles.sectionLabel}>My Members</Text>
         {user && <PatientSelector
           patients={patients.map(p => ({
             id: p.id,
@@ -89,7 +89,7 @@ export default function ProfileScreen() {
         />}
 
         {/* Menu sections */}
-        {MENU_ITEMS.map(section => (
+        {/* {MENU_ITEMS.map(section => (
           <View key={section.section}>
             <Text allowFontScaling={false} style={styles.sectionLabel}>{section.section}</Text>
             <View style={styles.menuCard}>
@@ -104,7 +104,7 @@ export default function ProfileScreen() {
               ))}
             </View>
           </View>
-        ))}
+        ))} */}
 
         {/* Logout */}
         <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={() => setShowLogoutModal(true)}>
@@ -177,6 +177,7 @@ const styles = StyleSheet.create({
     borderRadius: SIZE(14),
     borderWidth: 1,
     borderColor: colors.cardBorder,
+    marginBottom: SIZE(16),
   },
   avatar: {
     width: SIZE(56),
@@ -212,7 +213,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(13),
     color: colors.textMuted,
-    marginBottom: SIZE(8),
+    marginTop: SIZE(8),
+    marginBottom: SIZE(4),
   },
   menuCard: {
     borderRadius: SIZE(12),

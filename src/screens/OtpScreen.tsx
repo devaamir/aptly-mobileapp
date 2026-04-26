@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PrimaryButton from '../components/PrimaryButton';
-import { requestLocationPermission } from '../utils/requestLocationPermission';
+import { useLocation } from '../context/LocationContext';
 import ArrowRightWhite from '../assets/icons/arrow-right-white.svg';
 import ArrowRight from '../assets/icons/arrow-right-grey.svg';
 import BackArrow from '../assets/icons/back-arrows.svg';
@@ -21,6 +21,7 @@ export default function OtpScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'Otp'>>();
   const { phone, code } = route.params;
   const { setUser } = useAuth();
+  const { initLocation } = useLocation();
 
   const prefilled = String(code).padStart(OTP_LENGTH, '0').split('').slice(0, OTP_LENGTH);
   const [otp, setOtp] = useState<string[]>(prefilled);
@@ -58,8 +59,7 @@ export default function OtpScreen() {
         ['dateOfBirth', patient?.dateOfBirth ?? ''],
       ]);
       setUser({ userId: user.id, patientId: patient?.id ?? '', name: user.name ?? '', phoneNumber: user.phoneNumber, email: user.emailAddress ?? '', accessToken, refreshToken, gender: patient?.gender ?? '', dateOfBirth: patient?.dateOfBirth ?? '' });
-      await requestLocationPermission();
-      console.log('under location permission');
+      initLocation();
 
       navigation.reset({ index: 0, routes: [{ name: (user.name) ? ('Main' as never) : ('CreateProfile' as never) }] });
     } catch (err: any) {

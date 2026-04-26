@@ -207,7 +207,7 @@ function SkeletonScreen() {
 
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
-  const { location, ready } = useLocation();
+  const { location, ready, loadingLocation } = useLocation();
   const { startTracking, stopTracking, trackData } = useTracking();
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -291,7 +291,7 @@ export default function HomeScreen() {
             <View style={{ maxWidth: SIZE(150) }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SIZE(4) }}>
                 <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>
-                  {location ? location.mainText : 'Select your location'}
+                  {loadingLocation ? 'Loading...' : location ? location.mainText : 'Select your location'}
                 </Text>
                 <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
               </View>

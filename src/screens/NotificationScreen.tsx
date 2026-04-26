@@ -10,13 +10,7 @@ import DangerIcon from '../assets/icons/danger-icon.svg';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
 
-const MOCK_NOTIFICATIONS = [
-  { id: '1', title: 'Appointment Confirmed', body: 'Your appointment with Dr. Arjun Nair is confirmed for tomorrow at 10:00 AM.', time: '2h ago', read: false },
-  { id: '2', title: 'Token Update', body: 'Your token number is 5. Estimated wait time is 20 minutes.', time: '3h ago', read: false },
-  { id: '3', title: 'Appointment Reminder', body: 'You have an appointment with Dr. Priya Menon today at 3:00 PM.', time: 'Yesterday', read: true },
-  { id: '4', title: 'Appointment Cancelled', body: 'Your appointment on April 12 has been cancelled. Please rebook.', time: '2 days ago', read: true },
-  { id: '5', title: 'New Doctor Available', body: 'Dr. Rahul Sharma is now available at Aster MIMS Calicut.', time: '3 days ago', read: true },
-];
+const MOCK_NOTIFICATIONS: any[] = [];
 
 export default function NotificationScreen({ navigation }: Props) {
   return (
@@ -34,6 +28,11 @@ export default function NotificationScreen({ navigation }: Props) {
         data={MOCK_NOTIFICATIONS}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text allowFontScaling={false} style={styles.emptyText}>No notifications yet</Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.item} activeOpacity={0.7}>
             <View style={styles.iconCircle}>
@@ -122,4 +121,14 @@ const styles = StyleSheet.create({
     lineHeight: SIZE(19),
   },
   separator: { height: 1, backgroundColor: colors.border, marginHorizontal: SIZE(20) },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: SIZE(100),
+  },
+  emptyText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(16),
+    color: colors.textSecondary,
+  },
 });
