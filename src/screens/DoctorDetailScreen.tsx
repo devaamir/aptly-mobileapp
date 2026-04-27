@@ -56,7 +56,7 @@ function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0
           <Text allowFontScaling={false} style={styles.hoursBtnText}>Working Hours</Text>
           <Text allowFontScaling={false} style={[styles.hoursBtnText, { color: colors.gold }]}>View Hours</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bookClinicBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', { doctor })}>
+        <TouchableOpacity style={styles.bookClinicBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', { doctor, clinicId: mc.id })}>
           <Text allowFontScaling={false} style={styles.bookClinicBtnText}>Book Appointment</Text>
         </TouchableOpacity>
       </View>
