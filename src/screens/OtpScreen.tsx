@@ -11,23 +11,23 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import { RootStackParamList } from '../navigations/Navigation';
-import { verifyOtp } from '../services/api';
+import { verifyOtp, verifyFirebaseToken } from '../services/api';
 
 import { useAuth } from '../context/AuthContext';
 
-// const OTP_LENGTH = 6;
-const OTP_LENGTH = 4;
+const OTP_LENGTH = 6;
+// const OTP_LENGTH = 4;
 
 export default function OtpScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'Otp'>>();
-  // const { phone, confirmation } = route.params;
-  const { phone, code } = route.params;
+  const { phone, confirmation } = route.params;
+  // const { phone, code } = route.params;
   const { setUser } = useAuth();
   const { initLocation } = useLocation();
 
-  // const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
-  const prefilled = String(code).padStart(OTP_LENGTH, '0').split('').slice(0, OTP_LENGTH);
-  const [otp, setOtp] = useState<string[]>(prefilled);
+  const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
+  // const prefilled = String(code).padStart(OTP_LENGTH, '0').split('').slice(0, OTP_LENGTH);
+  // const [otp, setOtp] = useState<string[]>(prefilled);
   const [loading, setLoading] = useState(false);
   const inputs = useRef<(TextInput | null)[]>([]);
   const navigation = useNavigation();
@@ -48,11 +48,10 @@ export default function OtpScreen() {
   const handleVerify = async () => {
     try {
       setLoading(true);
-      const res = await verifyOtp(phone, otp.join(''));
-      // const credential = await confirmation.confirm(otp.join(''));
-      // const firebaseToken = await credential.user.getIdToken();
+      const credential = await confirmation.confirm(otp.join(''));
+      const firebaseToken = await credential.user.getIdToken();
 
-      // Alert.alert('Success', 'OTP verified successfully');
+      const res = await verifyFirebaseToken(firebaseToken);
       const { accessToken, refreshToken, user, patient } = res.data;
       await AsyncStorage.multiSet([
         ['accessToken', accessToken],
@@ -64,7 +63,6 @@ export default function OtpScreen() {
         ['patientId', patient?.id ?? ''],
         ['gender', patient?.gender ?? ''],
         ['dateOfBirth', patient?.dateOfBirth ?? ''],
-        // ['firebaseToken', firebaseToken],
       ]);
       setUser({ userId: user.id, patientId: patient?.id ?? '', name: user.name ?? '', phoneNumber: user.phoneNumber, email: user.emailAddress ?? '', accessToken, refreshToken, gender: patient?.gender ?? '', dateOfBirth: patient?.dateOfBirth ?? '' });
       initLocation();
@@ -166,8 +164,8 @@ const styles = StyleSheet.create({
 
   },
   otpBox: {
-    // width: SIZE(46),
-    width: SIZE(66),
+    width: SIZE(46),
+    // width: SIZE(66),
     height: SIZE(53),
     borderBottomWidth: 2,
     borderBottomColor: colors.border,

@@ -37,6 +37,34 @@ export interface VerifyOtpResponse {
   };
 }
 
+export interface VerifyFirebaseTokenResponse {
+  success: boolean;
+  message: string;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    user: {
+      id: string;
+      name: string;
+      phoneNumber: string;
+      emailAddress: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    patient: {
+      id: string;
+      name: string;
+      referenceId: string;
+      phoneNumber: string;
+      gender: string;
+      dateOfBirth: string;
+      createdAt: string;
+      updatedAt: string;
+      deletedAt: string | null;
+    };
+  };
+}
+
 export interface CreatePatientResponse {
   success: boolean;
   message: string;

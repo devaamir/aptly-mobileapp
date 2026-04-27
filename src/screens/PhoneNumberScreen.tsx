@@ -8,8 +8,8 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
-// import { auth } from '../config/firebase';
-import { sendOtp } from '../services/api';
+import { auth } from '../config/firebase';
+// import { sendOtp } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,7 +19,7 @@ import ArrowRightWhite from '../assets/icons/arrow-right-white.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 
-type RootStackParamList = { PhoneNumber: undefined; Otp: undefined };
+type RootStackParamList = { PhoneNumber: undefined; Otp: { phone: string; confirmation: any } };
 
 export default function PhoneNumberScreen() {
   const [phone, setPhone] = useState('');
@@ -29,10 +29,10 @@ export default function PhoneNumberScreen() {
   const handleContinue = async () => {
     try {
       setLoading(true);
-      // const confirmation = await auth().signInWithPhoneNumber(`+91${phone}`);
-      // navigation.navigate('Otp', { phone, confirmation });
-      const res = await sendOtp(phone);
-      navigation.navigate('Otp', { phone, code: res.data.code });
+      const confirmation = await auth().signInWithPhoneNumber(`+91${phone}`);
+      navigation.navigate('Otp', { phone, confirmation });
+      // const res = await sendOtp(phone);
+      // navigation.navigate('Otp', { phone, code: res.data.code });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to send OTP');
     } finally {

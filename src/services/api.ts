@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   SendOtpResponse,
   VerifyOtpResponse,
+  VerifyFirebaseTokenResponse,
   CreatePatientResponse,
   Specialty,
   MedicalSystem,
@@ -18,6 +19,7 @@ import type {
 export type {
   SendOtpResponse,
   VerifyOtpResponse,
+  VerifyFirebaseTokenResponse,
   CreatePatientResponse,
   Specialty,
   MedicalSystem,
@@ -80,6 +82,9 @@ export const sendOtp = (phoneNumber: string): Promise<SendOtpResponse> =>
 
 export const verifyOtp = (phoneNumber: string, code: string): Promise<VerifyOtpResponse> =>
   api.post('/auth/verify-otp', { phoneNumber, code });
+
+export const verifyFirebaseToken = (idToken: string): Promise<VerifyFirebaseTokenResponse> =>
+  api.post('/auth/verify-firebase-token', { idToken });
 
 // Patients
 export const createPatient = (
