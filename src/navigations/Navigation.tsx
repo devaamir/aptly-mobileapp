@@ -5,6 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import PhoneNumberScreen from '../screens/PhoneNumberScreen';
 import OtpScreen from '../screens/OtpScreen';
 import CreateProfileScreen from '../screens/CreateProfileScreen';
+import FamilyMembersScreen from '../screens/FamilyMembersScreen';
+import AccountSettingsScreen from '../screens/AccountSettingsScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 import TokenDetailScreen from '../screens/TokenDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
@@ -30,6 +32,8 @@ export type RootStackParamList = {
   Otp: { phone: string; code: number; confirmation: any };
   CreateProfile: undefined;
   EditProfile: undefined;
+  FamilyMembers: undefined;
+  AccountSettings: undefined;
   Main: undefined;
   TokenDetail: { appointment: Appointment };
   Search: undefined;
@@ -76,6 +80,8 @@ export default function Navigation() {
         <Stack.Screen name="Otp" component={OtpScreen} />
         <Stack.Screen name="CreateProfile" component={CreateProfileScreen} />
         <Stack.Screen name="EditProfile" component={CreateProfileScreen} />
+        <Stack.Screen name="FamilyMembers" component={FamilyMembersScreen} />
+        <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} />
         <Stack.Screen name="Main" component={BottomTabNavigator} />
         <Stack.Screen
           name="TokenDetail"

@@ -7,6 +7,12 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import ArrowRight from '../assets/icons/arrow-right.svg';
+import ProfileIcon from '../assets/icons/profile-icon.svg';
+import GroupIcon from '../assets/icons/group-icon.svg';
+import LockIcon from '../assets/icons/lock-icon.svg';
+import IIcon from '../assets/icons/i-icon.svg';
+import SettingsIcon from '../assets/icons/settings-icon.svg';
+import LogoutIcon from '../assets/icons/logout-icon.svg';
 import PatientSelector from '../components/PatientSelector';
 import BottomModal from '../components/BottomModal';
 import AppInput from '../components/AppInput';
@@ -62,52 +68,55 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        {/* Avatar & name */}
-        <View style={styles.profileCard}>
-          <Image source={require('../assets/images/user-profile.png')} style={styles.avatar} />
-          <View style={styles.profileInfo}>
-            <Text allowFontScaling={false} style={styles.name}>{user?.name}</Text>
-            <Text allowFontScaling={false} style={styles.phone}>{user?.phoneNumber}</Text>
-          </View>
-          <TouchableOpacity style={styles.editBtn} activeOpacity={0.7} onPress={() => navigation.navigate('EditProfile' as never)}>
-            <Text allowFontScaling={false} style={styles.editText}>Edit</Text>
+        {/* Menu Cards Group 1 */}
+        <View style={styles.menuContainer}>
+          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => navigation.navigate('EditProfile' as never)}>
+            <View style={styles.menuLeft}>
+              <ProfileIcon width={SIZE(38)} height={SIZE(38)} />
+              <Text allowFontScaling={false} style={styles.menuText}>Your Profile</Text>
+            </View>
+            <ArrowRight width={SIZE(24)} height={SIZE(24)} />
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => navigation.navigate('FamilyMembers' as never)}>
+            <View style={styles.menuLeft}>
+              <GroupIcon width={SIZE(38)} height={SIZE(38)} />
+              <Text allowFontScaling={false} style={styles.menuText}>Family Members</Text>
+            </View>
+            <ArrowRight width={SIZE(24)} height={SIZE(24)} />
           </TouchableOpacity>
         </View>
 
-        {/* Patients */}
-        <Text allowFontScaling={false} style={styles.sectionLabel}>My Members</Text>
-        {user && <PatientSelector
-          patients={patients.map(p => ({
-            id: p.id,
-            name: p.name,
-            phone: p.phoneNumber,
-            age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 0,
-            gender: p.gender ?? '',
-          }))}
-          showRadio={false}
-          onAddMember={() => setShowAddMember(true)}
-        />}
-
-        {/* Menu sections */}
-        {/* {MENU_ITEMS.map(section => (
-          <View key={section.section}>
-            <Text allowFontScaling={false} style={styles.sectionLabel}>{section.section}</Text>
-            <View style={styles.menuCard}>
-              {section.items.map((item, i) => (
-                <View key={item}>
-                  <TouchableOpacity style={styles.menuRow} activeOpacity={0.7}>
-                    <Text allowFontScaling={false} style={styles.menuText}>{item}</Text>
-                    <ArrowRight width={SIZE(16)} height={SIZE(16)} />
-                  </TouchableOpacity>
-                  {i < section.items.length - 1 && <View style={styles.divider} />}
-                </View>
-              ))}
+        {/* Menu Cards Group 2 */}
+        <View style={styles.menuContainer}>
+          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7}>
+            <View style={styles.menuLeft}>
+              <LockIcon width={SIZE(38)} height={SIZE(38)} />
+              <Text allowFontScaling={false} style={styles.menuText}>Privacy Policy</Text>
             </View>
-          </View>
-        ))} */}
+            <ArrowRight width={SIZE(24)} height={SIZE(24)} />
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7}>
+            <View style={styles.menuLeft}>
+              <IIcon width={SIZE(38)} height={SIZE(38)} />
+              <Text allowFontScaling={false} style={styles.menuText}>Terms and Conditions</Text>
+            </View>
+            <ArrowRight width={SIZE(24)} height={SIZE(24)} />
+          </TouchableOpacity>
+          <View style={styles.divider} />
+          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => navigation.navigate('AccountSettings' as never)}>
+            <View style={styles.menuLeft}>
+              <SettingsIcon width={SIZE(38)} height={SIZE(38)} />
+              <Text allowFontScaling={false} style={styles.menuText}>Account Settings</Text>
+            </View>
+            <ArrowRight width={SIZE(24)} height={SIZE(24)} />
+          </TouchableOpacity>
+        </View>
 
         {/* Logout */}
         <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={() => setShowLogoutModal(true)}>
+          <LogoutIcon width={SIZE(20)} height={SIZE(20)} />
           <Text allowFontScaling={false} style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -216,11 +225,24 @@ const styles = StyleSheet.create({
     marginTop: SIZE(8),
     marginBottom: SIZE(4),
   },
-  menuCard: {
+  menuContainer: {
     borderRadius: SIZE(12),
     borderWidth: 1,
     borderColor: colors.cardBorder,
     overflow: 'hidden',
+    marginBottom: SIZE(16),
+  },
+  menuCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SIZE(16),
+    paddingVertical: SIZE(14),
+  },
+  menuLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(12),
   },
   menuRow: {
     flexDirection: 'row',
@@ -231,8 +253,8 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontFamily: 'Manrope-Medium',
-    fontSize: SIZE(14),
-    color: colors.textPrimary,
+    fontSize: SIZE(16),
+    color: '#000000',
   },
   divider: {
     height: 1,
@@ -240,17 +262,20 @@ const styles = StyleSheet.create({
     marginHorizontal: SIZE(16),
   },
   logoutBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: SIZE(8),
     paddingVertical: SIZE(14),
     borderRadius: SIZE(12),
-    borderWidth: 1,
-    borderColor: colors.dangerBorder,
-    backgroundColor: colors.dangerBg,
+    // borderWidth: 1,
+    // borderColor: colors.dangerBorder,
+    backgroundColor: colors.dangerBgLogout,
   },
   logoutText: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(14),
-    color: colors.danger,
+    color: colors.logoutdanger,
   },
   modalTitle: {
     fontFamily: 'Manrope-Bold',
