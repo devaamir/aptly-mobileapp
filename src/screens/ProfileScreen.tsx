@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -64,7 +64,7 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         {/* Avatar & name */}
         <View style={styles.profileCard}>
-          <View style={styles.avatar} />
+          <Image source={require('../assets/images/user-profile.png')} style={styles.avatar} />
           <View style={styles.profileInfo}>
             <Text allowFontScaling={false} style={styles.name}>{user?.name}</Text>
             <Text allowFontScaling={false} style={styles.phone}>{user?.phoneNumber}</Text>

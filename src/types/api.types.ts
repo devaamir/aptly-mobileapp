@@ -125,6 +125,7 @@ export interface Doctor {
   medicalCenters: MedicalCenter[];
   medicalSystem: MedicalSystem;
   qualifications: {id: string; name: string; createdAt: string; updatedAt: string}[];
+  nextSchedule?: Schedule;
 }
 
 export interface Clinic {

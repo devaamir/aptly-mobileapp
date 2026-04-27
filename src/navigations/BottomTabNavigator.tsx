@@ -1,4 +1,5 @@
 import React from 'react';
+import { Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import AppointmentScreen from '../screens/AppointmentScreen';
@@ -47,7 +48,12 @@ export default function BottomTabNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ focused }) => focused ? <ProfileActive width={ICON_SIZE} height={ICON_SIZE} /> : <ProfileInactive width={ICON_SIZE} height={ICON_SIZE} />,
+          tabBarIcon: ({ focused }) => (
+            <Image 
+              source={require('../assets/images/user-profile.png')} 
+              style={{ width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2, opacity: focused ? 1 : 0.5, borderWidth: focused ? 1 : 0, borderColor: colors.primary }} 
+            />
+          ),
         }}
       />
     </Tab.Navigator>

@@ -52,7 +52,7 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
       <View style={styles.dashedDivider} />
       <View style={styles.doctorRow}>
         <View style={styles.doctorAvatar}>
-          {avatar ? <Image source={{ uri: avatar }} style={styles.avatarImg} /> : null}
+          {avatar ? <Image source={{ uri: avatar }} style={styles.avatarImg} /> : <Image source={require('../assets/images/doctor-profile.png')} style={styles.avatarImg} />}
         </View>
         <Text allowFontScaling={false} style={styles.doctorName}>{doctor}</Text>
         <Text allowFontScaling={false} style={styles.doctorSep}>|</Text>
@@ -140,9 +140,9 @@ const styles = StyleSheet.create({
     padding: SIZE(14),
   },
   avatar: {
-    width: SIZE(36),
-    height: SIZE(36),
-    borderRadius: SIZE(18),
+    width: SIZE(64),
+    height: SIZE(64),
+    borderRadius: SIZE(6),
     backgroundColor: colors.backgroundLight,
     overflow: 'hidden',
   },
@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
     height: SIZE(24),
     borderRadius: SIZE(12),
     backgroundColor: colors.backgroundLight,
+    overflow: 'hidden',
   },
   doctorSep: {
     fontFamily: 'Manrope-Regular',

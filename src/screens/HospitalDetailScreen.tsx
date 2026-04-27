@@ -40,6 +40,9 @@ export default function HospitalDetailScreen() {
 
   const displayClinic = clinic ?? { name, about: '', phoneNumber: '', websiteUrl: '', doctors: [], specialties: [] };
 
+  console.log(displayClinic.doctors);
+
+
   const backBtnBottom = top + SIZE(8) + SIZE(36) + SIZE(8);
   const collapsedBannerHeight = backBtnBottom;
 
@@ -122,7 +125,7 @@ export default function HospitalDetailScreen() {
               clinicType={specialty}
               experience={doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''}
               image={doc.profilePicture}
-              status="Booking Opened"
+              nextSchedule={doc.nextSchedule}
               onPress={() => navigation.navigate('DoctorDetail', { doctorId: doc.id })}
               onBookPress={async () => {
                 const res = await getDoctor(doc.id);

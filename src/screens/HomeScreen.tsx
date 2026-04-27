@@ -149,9 +149,10 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
           <View style={styles.avatarRow}>
             {doctors.slice(0, 3).map((d, i) => (
               <View key={d.id} style={[styles.avatarCircle, totalDoctorCount > 3 && { marginLeft: i > 0 ? SIZE(-12) : 0 }]}>
-                {d.profilePicture ? (
-                  <Image source={{ uri: d.profilePicture }} style={styles.avatarImg} />
-                ) : null}
+                <Image 
+                  source={d.profilePicture ? { uri: d.profilePicture } : require('../assets/images/doctor-profile.png')} 
+                  style={styles.avatarImg} 
+                />
               </View>
             ))}
             {totalDoctorCount > 3 && (

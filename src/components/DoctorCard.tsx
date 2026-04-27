@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, ViewStyle, StyleProp }
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon.svg';
+import ArrowRight from '../assets/icons/arrow-right.svg';
+import type { Schedule } from '../types/api.types';
 
 type Props = {
   name: string;
@@ -13,27 +15,62 @@ type Props = {
   image?: string;
   location?: string;
   distance?: string;
-  status?: 'Booking Opened' | 'Not Started';
-  bookingTime?: string;
+  nextSchedule?: Schedule;
   onPress?: () => void;
   onBookPress?: () => void;
   style?: StyleProp<ViewStyle>;
 };
 
+const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+function formatTime(t: string) {
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const hour = h % 12 || 12;
+  return `${hour}:${m.toString().padStart(2, '0')} ${ampm}`;
+}
+
+function getScheduleInfo(schedule?: Schedule): { label: string; status: 'live' | 'booking_open' } {
+  if (!schedule) return { label: 'No session today', status: 'booking_open' };
+
+  const today = DAYS[new Date().getDay()];
+  const isToday = schedule.dayOfWeek.toLowerCase() === today;
+  const start = formatTime(schedule.startTime);
+  const end = formatTime(schedule.stopTime);
+
+  let status: 'live' | 'booking_open' = 'booking_open';
+  if (isToday) {
+    const now = new Date();
+    const [sh, sm] = schedule.startTime.split(':').map(Number);
+    const [eh, em] = schedule.stopTime.split(':').map(Number);
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    if (nowMins >= sh * 60 + sm && nowMins < eh * 60 + em) status = 'live';
+  }
+
+  if (isToday) {
+    return { label: `Session time: ${start} - ${end}`, status };
+  }
+
+  // Not today — show day + date
+  const dayName = schedule.dayOfWeek.charAt(0).toUpperCase() + schedule.dayOfWeek.slice(1);
+  // Find next occurrence date
+  const todayIdx = new Date().getDay();
+  const schedIdx = DAYS.indexOf(schedule.dayOfWeek.toLowerCase());
+  const diff = (schedIdx - todayIdx + 7) % 7 || 7;
+  const nextDate = new Date();
+  nextDate.setDate(nextDate.getDate() + diff);
+  const dateStr = nextDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
+  return { label: `${dayName}, ${dateStr} · ${start} - ${end}`, status };
+}
+
 const statusConfig = {
-  'Booking Opened': {
-    bg: colors.successLight,
-    text: colors.successText,
-    dot: colors.successDot,
-  },
-  'Not Started': {
-    bg: colors.warningLight,
-    text: colors.warningText,
-    dot: colors.warningDot,
-  },
+  live: { bg: colors.successLight, text: colors.successText, dot: colors.successDot, label: 'Live' },
+  booking_open: { bg: '#EFF6FF', text: '#2563EB', dot: '#2563EB', label: 'Booking Open' },
 };
 
-const DoctorCard = ({ name, type, hospital, clinicType, experience, image, location, distance, status = 'Booking Opened', bookingTime, onPress, onBookPress, style }: Props) => {
+const DoctorCard = ({ name, type, hospital, clinicType, experience, image, location, distance, nextSchedule, onPress, onBookPress, style }: Props) => {
+  const { label, status } = getScheduleInfo(nextSchedule);
   const s = statusConfig[status];
   return (
     <TouchableOpacity style={[styles.card, style]} activeOpacity={0.8} onPress={onPress}>
@@ -46,6 +83,7 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
             <Text allowFontScaling={false} style={styles.primaryText}>{name}</Text>
             <Text allowFontScaling={false} style={styles.secondaryText}>{type}</Text>
           </View>
+          <ArrowRight width={SIZE(18)} height={SIZE(18)} />
         </View>
         <View style={styles.cardBottom}>
           <Text allowFontScaling={false} style={styles.hospitalText}>{hospital}</Text>
@@ -69,10 +107,10 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
         </View>
       </View>
       <View style={styles.cardFooter}>
-        <Text allowFontScaling={false} style={styles.bookingTime}>{bookingTime ?? 'No sessions today'}</Text>
+        <Text allowFontScaling={false} style={styles.bookingTime}>{label}</Text>
         <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
           <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
-          <Text allowFontScaling={false} style={[styles.statusText, { color: s.text }]}>{status}</Text>
+          <Text allowFontScaling={false} style={[styles.statusText, { color: s.text }]}>{s.label}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -171,9 +209,9 @@ const styles = StyleSheet.create({
   },
   bookBtn: {
     backgroundColor: colors.primary,
-    paddingHorizontal: SIZE(16),
-    paddingVertical: SIZE(8),
-    borderRadius: SIZE(8),
+    paddingHorizontal: SIZE(20),
+    paddingVertical: SIZE(16),
+    borderRadius: SIZE(12),
   },
   bookBtnText: {
     fontFamily: 'Manrope-SemiBold',
@@ -193,7 +231,7 @@ const styles = StyleSheet.create({
   bookingTime: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
-    color: colors.textSecondary,
+    color: colors.textPrimary,
   },
   statusBadge: {
     flexDirection: 'row',
@@ -211,8 +249,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.successDot,
   },
   statusText: {
-    fontFamily: 'Manrope-Medium',
-    fontSize: SIZE(11),
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(12),
     color: colors.successText,
   },
 });
