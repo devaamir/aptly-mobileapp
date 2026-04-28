@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Alert, KeyboardAvoidingView, Platform, Image, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -89,7 +89,7 @@ export default function ProfileScreen() {
 
         {/* Menu Cards Group 2 */}
         <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => Linking.openURL('https://aptlycare.framer.website/privacy-policy')}>
             <View style={styles.menuLeft}>
               <LockIcon width={SIZE(38)} height={SIZE(38)} />
               <Text allowFontScaling={false} style={styles.menuText}>Privacy Policy</Text>
@@ -97,7 +97,7 @@ export default function ProfileScreen() {
             <ArrowRight width={SIZE(24)} height={SIZE(24)} />
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7}>
+          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => Linking.openURL('https://aptlycare.framer.website/terms-and-conditions')}>
             <View style={styles.menuLeft}>
               <IIcon width={SIZE(38)} height={SIZE(38)} />
               <Text allowFontScaling={false} style={styles.menuText}>Terms and Conditions</Text>

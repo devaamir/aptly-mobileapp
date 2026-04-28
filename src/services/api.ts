@@ -86,6 +86,9 @@ export const verifyOtp = (phoneNumber: string, code: string): Promise<VerifyOtpR
 export const verifyFirebaseToken = (idToken: string): Promise<VerifyFirebaseTokenResponse> =>
   api.post('/auth/verify-firebase-token', { idToken });
 
+export const deleteAccount = (): Promise<{ success: boolean; message: string }> =>
+  api.delete('/auth/account');
+
 // Patients
 export const createPatient = (
   name: string, gender: string, dateOfBirth: string,
