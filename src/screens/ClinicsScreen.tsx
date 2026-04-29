@@ -82,7 +82,7 @@ export default function ClinicsScreen({ navigation }: Props) {
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
-              location={`${item.district}, ${item.state}`}
+              location={item.address}
               image={item.profilePicture}
               distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
               style={{ marginHorizontal: 0 }}

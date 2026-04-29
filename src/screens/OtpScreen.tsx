@@ -98,6 +98,7 @@ export default function OtpScreen() {
             placeholder="0"
             placeholderTextColor={colors.border}
             maxLength={1}
+            keyboardType="number-pad"
             textAlign="center"
           />
         ))}

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { getspecialties, getMedicalSystems } from '../services/api';
 import type { Specialty, MedicalSystem } from '../services/api';
+import { useAuth } from './AuthContext';
 
 export type SearchSuggestion = { label: string; type: 'specialty' | 'medicalSystem'; id: string };
 
@@ -17,8 +18,10 @@ export const MetadataProvider = ({ children }: { children: React.ReactNode }) =>
   const [medicalSystems, setMedicalSystems] = useState<MedicalSystem[]>([]);
   const [randomSuggestions, setRandomSuggestions] = useState<SearchSuggestion[]>([]);
   const picked = useRef(false);
+  const { user } = useAuth();
 
   useEffect(() => {
+    if (!user?.accessToken) return;
     Promise.all([getspecialties(), getMedicalSystems()])
       .then(([specRes, sysRes]) => {
         setSpecialties(specRes.data);
@@ -34,7 +37,7 @@ export const MetadataProvider = ({ children }: { children: React.ReactNode }) =>
         }
       })
       .catch(() => { });
-  }, []);
+  }, [user?.accessToken]);
 
   return (
     <MetadataContext.Provider value={{ specialties, medicalSystems, randomSuggestions }}>

@@ -77,7 +77,7 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
       <View style={styles.topCard}>
         <View style={styles.cardTop}>
           <View style={styles.avatar}>
-            {image ? <Image source={{ uri: image }} style={styles.avatarImg} /> : null}
+            {image ? <Image source={{ uri: image }} style={styles.avatarImg} /> : <Image source={require('../assets/images/doctor-profile.png')} style={styles.avatarImg} />}
           </View>
           <View style={styles.cardTopInfo}>
             <Text allowFontScaling={false} style={styles.primaryText}>{name}</Text>
@@ -90,8 +90,11 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
           <Text allowFontScaling={false} style={styles.clinicTypeText}>{clinicType}</Text>
           {location ? (
             <View style={styles.locationRow}>
-              <LocationIcon width={SIZE(11)} height={SIZE(11)} />
-              <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location}{distance ? ` | ${distance}` : ''}</Text>
+              <View style={[styles.locationRow, { width: '80%' }]}>
+                <LocationIcon width={SIZE(11)} height={SIZE(11)} />
+                <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location}</Text>
+              </View>
+              <Text style={styles.distanceText}>{distance ? ` ${distance}` : ''}</Text>
             </View>
           ) : null}
         </View>
@@ -177,7 +180,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(11),
+    fontSize: SIZE(12),
     color: colors.textSubdued,
     flex: 1,
   },
@@ -253,6 +256,11 @@ const styles = StyleSheet.create({
     fontSize: SIZE(12),
     color: colors.successText,
   },
+  distanceText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(13),
+    color: colors.primary
+  }
 });
 
 export default DoctorCard;

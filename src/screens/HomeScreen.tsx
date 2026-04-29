@@ -339,7 +339,7 @@ export default function HomeScreen() {
                   key={item.id}
                   name={item.name}
                   subType={item.specialties[0]?.name ?? item.type}
-                  location={`${item.district}, ${item.state}`}
+                  location={item.address}
                   image={item.profilePicture}
                   distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
                   onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
@@ -353,7 +353,7 @@ export default function HomeScreen() {
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
-              location={`${item.district}, ${item.state}`}
+              location={item.address}
               image={item.profilePicture}
               distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
               onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
