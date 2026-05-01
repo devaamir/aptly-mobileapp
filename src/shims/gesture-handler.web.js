@@ -1,0 +1,20 @@
+import React from 'react';
+import { View, ScrollView, TouchableOpacity, TouchableHighlight, TouchableNativeFeedback, FlatList } from 'react-native';
+
+export const GestureHandlerRootView = ({ children, style }) => React.createElement(View, { style }, children);
+export const PanGestureHandler = ({ children }) => children;
+export const TapGestureHandler = ({ children }) => children;
+export const PinchGestureHandler = ({ children }) => children;
+export const LongPressGestureHandler = ({ children }) => children;
+export const NativeViewGestureHandler = ({ children }) => children;
+export const RectButton = TouchableOpacity;
+export const BorderlessButton = TouchableOpacity;
+export const BaseButton = TouchableOpacity;
+export const Swipeable = View;
+export const DrawerLayout = View;
+export { ScrollView as GestureHandlerScrollView };
+export { FlatList };
+export const State = {};
+export const Directions = {};
+export const gestureHandlerRootHOC = (Component) => Component;
+export const createNativeWrapper = (Component) => Component;

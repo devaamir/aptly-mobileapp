@@ -11,6 +11,7 @@ import GpsIcon from '../assets/icons/gps-icon.svg';
 import { searchLocations, reverseGeocode } from '../services/api';
 import { useLocation } from '../context/LocationContext';
 import Geolocation from '@react-native-community/geolocation';
+import { requestLocationPermission } from '../utils/requestLocationPermission';
 
 const POPULAR_PLACES = [
   'Manjeri',
@@ -44,7 +45,9 @@ export default function LocationSearchScreen({ navigation }: Props) {
   };
 
   const handleGps = async () => {
-    if (Platform.OS === 'android') {
+    if (Platform.OS === 'web') {
+      await requestLocationPermission();
+    } else if (Platform.OS === 'android') {
       const status = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
       if (!status) {
         const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);

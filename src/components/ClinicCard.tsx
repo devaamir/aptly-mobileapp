@@ -26,7 +26,9 @@ export default function ClinicCard({ name, subType, location, distance = 'NA', i
         <Text allowFontScaling={false} style={styles.name}>{name}</Text>
         <Text allowFontScaling={false} style={styles.subType}>{subType}</Text>
         <View style={styles.locationRow}>
-          <LocationIcon width={SIZE(12)} height={SIZE(12)} />
+          <View style={{ width: SIZE(12), height: SIZE(12) }}>
+            <LocationIcon width={SIZE(12)} height={SIZE(12)} />
+          </View>
           <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location}</Text>
           <Text allowFontScaling={false} style={styles.distanceText}>{distance}</Text>
         </View>
