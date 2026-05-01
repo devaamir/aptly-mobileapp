@@ -1,5 +1,7 @@
 import { initializeApp, getApps } from 'firebase/app';
 
+
+//firebase config
 const firebaseConfig = {
   apiKey: 'AIzaSyDZ8qOcGtjnbYD8THO2yuv85CaGqxklKpw',
   authDomain: 'aptly-care.firebaseapp.com',
@@ -12,4 +14,4 @@ const firebaseConfig = {
 
 if (!getApps().length) initializeApp(firebaseConfig);
 
-export default { app: () => {} };
+export default { app: () => { } };
