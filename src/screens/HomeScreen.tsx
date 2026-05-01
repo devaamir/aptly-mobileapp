@@ -149,9 +149,9 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
           <View style={styles.avatarRow}>
             {doctors.slice(0, 3).map((d, i) => (
               <View key={d.id} style={[styles.avatarCircle, totalDoctorCount > 3 && { marginLeft: i > 0 ? SIZE(-12) : 0 }]}>
-                <Image 
-                  source={d.profilePicture ? { uri: d.profilePicture } : require('../assets/images/doctor-profile.png')} 
-                  style={styles.avatarImg} 
+                <Image
+                  source={d.profilePicture ? { uri: d.profilePicture } : require('../assets/images/doctor-profile.png')}
+                  style={styles.avatarImg}
                 />
               </View>
             ))}
@@ -328,7 +328,7 @@ export default function HomeScreen() {
             <View>
               <View style={styles.emptyContainer}>
                 <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
-                <Text allowFontScaling={false} style={styles.emptyTitle}>No clinics available here</Text>
+                <Text allowFontScaling={false} style={styles.emptyTitle}>We're expanding here soon — stay tuned for clinics near you 😊</Text>
                 <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any clinics in this area right now. Try changing your location or adjusting filters.</Text>
                 <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
                   <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
@@ -677,7 +677,8 @@ const styles = StyleSheet.create({
     fontSize: SIZE(16),
     color: '#1C1E22',
     marginTop: SIZE(16),
-    marginBottom: SIZE(8)
+    marginBottom: SIZE(8),
+    textAlign: 'center',
   },
   emptyMessage: {
     fontFamily: 'Manrope-Regular',

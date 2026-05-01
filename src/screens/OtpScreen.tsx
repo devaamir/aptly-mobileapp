@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import { RootStackParamList } from '../navigations/Navigation';
 import { verifyOtp, verifyFirebaseToken } from '../services/api';
+import { auth } from '../config/firebase';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -20,17 +21,33 @@ const OTP_LENGTH = 6;
 
 export default function OtpScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'Otp'>>();
-  const { phone, confirmation } = route.params;
-  // const { phone, code } = route.params;
+  const { phone, confirmation: initialConfirmation } = route.params;
   const { setUser } = useAuth();
   const { initLocation } = useLocation();
 
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
-  // const prefilled = String(code).padStart(OTP_LENGTH, '0').split('').slice(0, OTP_LENGTH);
-  // const [otp, setOtp] = useState<string[]>(prefilled);
   const [loading, setLoading] = useState(false);
+  const [timer, setTimer] = useState(60);
+  const [confirmation, setConfirmation] = useState(initialConfirmation);
   const inputs = useRef<(TextInput | null)[]>([]);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (timer === 0) return;
+    const id = setTimeout(() => setTimer(t => t - 1), 1000);
+    return () => clearTimeout(id);
+  }, [timer]);
+
+  const handleResend = async () => {
+    try {
+      const newConfirmation = await auth().signInWithPhoneNumber(`+91${phone}`);
+      setConfirmation(newConfirmation);
+      setOtp(['', '', '', '', '', '']);
+      setTimer(60);
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Failed to resend OTP');
+    }
+  };
 
   const handleChange = (text: string, index: number) => {
     const newOtp = [...otp];
@@ -111,7 +128,15 @@ export default function OtpScreen() {
         loading={loading}
         icon={!isFilled ? <ArrowRight width={SIZE(18)} height={SIZE(18)} /> : <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />}
       />
-      <Text allowFontScaling={false} style={styles.resend}>Didn't receive code? <Text allowFontScaling={false} style={styles.resendLink}>Resend</Text></Text>
+      <Text allowFontScaling={false} style={styles.resend}>
+        Didn't receive code?{' '}
+        <Text
+          allowFontScaling={false}
+          style={[styles.resendLink, timer > 0 && styles.resendDisabled]}
+          onPress={timer === 0 ? handleResend : undefined}>
+          {timer > 0 ? `Resend in ${timer}s` : 'Resend'}
+        </Text>
+      </Text>
     </SafeAreaView>
   );
 }
@@ -153,6 +178,9 @@ const styles = StyleSheet.create({
   resendLink: {
     fontFamily: 'Manrope-SemiBold',
     color: colors.primary,
+  },
+  resendDisabled: {
+    color: colors.textSecondary,
   },
   phone: {
     fontFamily: 'Manrope-SemiBold',
