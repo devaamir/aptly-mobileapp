@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ViewStyle, Platform } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon.svg';
@@ -23,11 +23,11 @@ export default function ClinicCard({ name, subType, location, distance = 'NA', i
         style={styles.image}
       />
       <View style={styles.info}>
-        <Text allowFontScaling={false} style={styles.name}>{name}</Text>
+        <Text allowFontScaling={false} style={styles.name} numberOfLines={1}>{name}</Text>
         <Text allowFontScaling={false} style={styles.subType}>{subType}</Text>
         <View style={styles.locationRow}>
-          <View style={{ width: SIZE(12), height: SIZE(12) }}>
-            <LocationIcon width={SIZE(12)} height={SIZE(12)} />
+          <View>
+            <LocationIcon width={Platform.OS === 'web' ? SIZE(16) : SIZE(12)} height={Platform.OS === 'web' ? SIZE(16) : SIZE(12)} />
           </View>
           <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location}</Text>
           <Text allowFontScaling={false} style={styles.distanceText}>{distance}</Text>

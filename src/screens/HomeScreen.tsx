@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   bannerCard: {
     marginHorizontal: SIZE(18),
     marginBottom: SIZE(20),
-    height: 323,
+    ...(Platform.OS !== 'web' && { height: 323 }),
     borderRadius: SIZE(18),
     backgroundColor: colors.primary,
     padding: SIZE(10),

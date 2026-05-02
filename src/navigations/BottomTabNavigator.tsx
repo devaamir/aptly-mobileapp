@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image } from 'react-native';
+import { Image, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import AppointmentScreen from '../screens/AppointmentScreen';
@@ -25,7 +25,7 @@ export default function BottomTabNavigator() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: { fontFamily: 'Manrope-Medium', fontSize: SIZE(11) },
-        tabBarStyle: { borderTopColor: colors.border, backgroundColor: colors.white },
+        tabBarStyle: { borderTopColor: colors.border, backgroundColor: colors.white, ...(Platform.OS === 'web' && { height: 80, paddingBottom: 8 }) },
       }}>
       <Tab.Screen
         name="Home"
@@ -49,9 +49,9 @@ export default function BottomTabNavigator() {
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Image 
-              source={require('../assets/images/user-profile.png')} 
-              style={{ width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2, opacity: focused ? 1 : 0.5, borderWidth: focused ? 1 : 0, borderColor: colors.primary }} 
+            <Image
+              source={require('../assets/images/user-profile.png')}
+              style={{ width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2, opacity: focused ? 1 : 0.5, borderWidth: focused ? 1 : 0, borderColor: colors.primary }}
             />
           ),
         }}
