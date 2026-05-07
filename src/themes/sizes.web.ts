@@ -1,3 +1,5 @@
+declare const window: { innerWidth: number; innerHeight: number };
+
 const BASE_WIDTH = 390;
 const CONTAINER_WIDTH = Math.min(window.innerWidth, 450);
 const scale = CONTAINER_WIDTH / BASE_WIDTH;
