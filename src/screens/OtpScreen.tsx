@@ -1,5 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  StatusBar,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,24 +19,21 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import { RootStackParamList } from '../navigations/Navigation';
-import { verifyOtp, verifyFirebaseToken } from '../services/api';
-import { auth } from '../config/firebase';
+import { verifyOtp, sendOtp } from '../services/api';
 
 import { useAuth } from '../context/AuthContext';
 
-const OTP_LENGTH = 6;
-// const OTP_LENGTH = 4;
+const OTP_LENGTH = 4;
 
 export default function OtpScreen() {
   const route = useRoute<RouteProp<RootStackParamList, 'Otp'>>();
-  const { phone, confirmation: initialConfirmation } = route.params;
+  const { phone, code } = route.params;
   const { setUser } = useAuth();
   const { initLocation } = useLocation();
 
-  const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
+  const [otp, setOtp] = useState<string[]>(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(60);
-  const [confirmation, setConfirmation] = useState(initialConfirmation);
   const inputs = useRef<(TextInput | null)[]>([]);
   const navigation = useNavigation();
 
@@ -40,9 +45,8 @@ export default function OtpScreen() {
 
   const handleResend = async () => {
     try {
-      const newConfirmation = await auth().signInWithPhoneNumber(`+91${phone}`);
-      setConfirmation(newConfirmation);
-      setOtp(['', '', '', '', '', '']);
+      await sendOtp(`${phone}`);
+      setOtp(['', '', '', '']);
       setTimer(60);
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to resend OTP');
@@ -65,10 +69,7 @@ export default function OtpScreen() {
   const handleVerify = async () => {
     try {
       setLoading(true);
-      const credential = await confirmation.confirm(otp.join(''));
-      const firebaseToken = await credential.user.getIdToken();
-
-      const res = await verifyFirebaseToken(firebaseToken);
+      const res = await verifyOtp(`${phone}`, otp.join(''));
       const { accessToken, refreshToken, user, patient } = res.data;
       await AsyncStorage.multiSet([
         ['accessToken', accessToken],
@@ -81,10 +82,24 @@ export default function OtpScreen() {
         ['gender', patient?.gender ?? ''],
         ['dateOfBirth', patient?.dateOfBirth ?? ''],
       ]);
-      setUser({ userId: user.id, patientId: patient?.id ?? '', name: user.name ?? '', phoneNumber: user.phoneNumber, email: user.emailAddress ?? '', accessToken, refreshToken, gender: patient?.gender ?? '', dateOfBirth: patient?.dateOfBirth ?? '' });
+      setUser({
+        userId: user.id,
+        patientId: patient?.id ?? '',
+        name: user.name ?? '',
+        phoneNumber: user.phoneNumber,
+        email: user.emailAddress ?? '',
+        accessToken,
+        refreshToken,
+        gender: patient?.gender ?? '',
+        dateOfBirth: patient?.dateOfBirth ?? '',
+      });
       initLocation();
-
-      navigation.reset({ index: 0, routes: [{ name: (user.name) ? ('Main' as never) : ('CreateProfile' as never) }] });
+      navigation.reset({
+        index: 0,
+        routes: [
+          { name: user.name ? ('Main' as never) : ('CreateProfile' as never) },
+        ],
+      });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Verification failed');
     } finally {
@@ -97,15 +112,27 @@ export default function OtpScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
         <BackArrow width={SIZE(24)} height={SIZE(24)} />
       </TouchableOpacity>
-      <Text allowFontScaling={false} style={styles.title}>Verification Code</Text>
-      <Text allowFontScaling={false} style={styles.subtitle}>{"We've sent an sms with a verification code to "}<Text allowFontScaling={false} style={styles.phone}>+91 {phone}</Text>{" to proceed"}</Text>
+      <Text allowFontScaling={false} style={styles.title}>
+        Verification Code
+      </Text>
+      <Text allowFontScaling={false} style={styles.subtitle}>
+        {"We've sent an sms with a verification code to "}
+        <Text allowFontScaling={false} style={styles.phone}>
+          +91 {phone}
+        </Text>
+        {' to proceed'}
+      </Text>
 
       <View style={styles.otpRow}>
         {otp.map((digit, index) => (
-          <TextInput allowFontScaling={false}
+          <TextInput
+            allowFontScaling={false}
             key={index}
             ref={ref => (inputs.current[index] = ref)}
             style={[styles.otpBox, digit ? styles.otpBoxFilled : null]}
@@ -126,14 +153,21 @@ export default function OtpScreen() {
         onPress={handleVerify}
         disabled={!isFilled || loading}
         loading={loading}
-        icon={!isFilled ? <ArrowRight width={SIZE(18)} height={SIZE(18)} /> : <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />}
+        icon={
+          !isFilled ? (
+            <ArrowRight width={SIZE(18)} height={SIZE(18)} />
+          ) : (
+            <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />
+          )
+        }
       />
       <Text allowFontScaling={false} style={styles.resend}>
         Didn't receive code?{' '}
         <Text
           allowFontScaling={false}
           style={[styles.resendLink, timer > 0 && styles.resendDisabled]}
-          onPress={timer === 0 ? handleResend : undefined}>
+          onPress={timer === 0 ? handleResend : undefined}
+        >
           {timer > 0 ? `Resend in ${timer}s` : 'Resend'}
         </Text>
       </Text>
@@ -190,7 +224,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: SIZE(28),
-
   },
   otpBox: {
     width: SIZE(46),

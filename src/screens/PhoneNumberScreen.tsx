@@ -8,8 +8,7 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
-import { auth } from '../config/firebase';
-// import { sendOtp } from '../services/api';
+import { sendOtp } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,20 +18,22 @@ import ArrowRightWhite from '../assets/icons/arrow-right-white.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 
-type RootStackParamList = { PhoneNumber: undefined; Otp: { phone: string; confirmation: any } };
+type RootStackParamList = {
+  PhoneNumber: undefined;
+  Otp: { phone: string; code: number };
+};
 
 export default function PhoneNumberScreen() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleContinue = async () => {
     try {
       setLoading(true);
-      const confirmation = await auth().signInWithPhoneNumber(`+91${phone}`);
-      navigation.navigate('Otp', { phone, confirmation });
-      // const res = await sendOtp(phone);
-      // navigation.navigate('Otp', { phone, code: res.data.code });
+      const res = await sendOtp(`${phone}`);
+      navigation.navigate('Otp', { phone, code: res.data.code });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to send OTP');
     } finally {
@@ -43,15 +44,25 @@ export default function PhoneNumberScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
-      <Image source={require('../assets/images/aptly-logo.png')} style={styles.logo} />
-      <Text allowFontScaling={false} style={styles.title}>Welcome Back!</Text>
-      <Text allowFontScaling={false} style={styles.subtitle}>Access your account your phone number</Text>
+      <Image
+        source={require('../assets/images/aptly-logo.png')}
+        style={styles.logo}
+      />
+      <Text allowFontScaling={false} style={styles.title}>
+        Welcome Back!
+      </Text>
+      <Text allowFontScaling={false} style={styles.subtitle}>
+        Access your account your phone number
+      </Text>
 
       <View style={styles.inputRow}>
         <View style={styles.countryCode}>
-          <Text allowFontScaling={false} style={styles.flag}>+91</Text>
+          <Text allowFontScaling={false} style={styles.flag}>
+            +91
+          </Text>
         </View>
-        <TextInput allowFontScaling={false}
+        <TextInput
+          allowFontScaling={false}
           style={styles.input}
           placeholder="Enter phone number"
           placeholderTextColor={colors.textSecondary}
@@ -66,7 +77,13 @@ export default function PhoneNumberScreen() {
         label="Continue"
         onPress={handleContinue}
         disabled={!phone || loading}
-        icon={loading ? undefined : (!phone ? <ArrowRight width={18} height={18} /> : <ArrowRightWhite width={18} height={18} />)}
+        icon={
+          loading ? undefined : !phone ? (
+            <ArrowRight width={18} height={18} />
+          ) : (
+            <ArrowRightWhite width={18} height={18} />
+          )
+        }
         loading={loading}
       />
     </SafeAreaView>

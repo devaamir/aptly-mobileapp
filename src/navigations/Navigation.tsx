@@ -29,7 +29,7 @@ import { LocationProvider } from '../context/LocationContext';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
-  Otp: { phone: string; code: number; confirmation: any };
+  Otp: { phone: string; code: number };
   CreateProfile: undefined;
   EditProfile: undefined;
   FamilyMembers: undefined;

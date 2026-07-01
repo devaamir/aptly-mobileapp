@@ -33,7 +33,8 @@ export type {
 };
 
 const api = axios.create({
-  baseURL: 'https://aptly-server.onrender.com/api',
+  // baseURL: 'https://aptly-server.onrender.com/api', // dev
+  baseURL: 'https://api.aptly.care/api', // prod
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -44,8 +45,12 @@ api.interceptors.request.use(async config => {
 });
 
 // Called by AuthContext to keep tokens in sync after refresh
-let onTokenRefreshed: ((accessToken: string, refreshToken: string) => void) | null = null;
-export const setTokenRefreshCallback = (cb: typeof onTokenRefreshed) => { onTokenRefreshed = cb; };
+let onTokenRefreshed:
+  | ((accessToken: string, refreshToken: string) => void)
+  | null = null;
+export const setTokenRefreshCallback = (cb: typeof onTokenRefreshed) => {
+  onTokenRefreshed = cb;
+};
 
 api.interceptors.response.use(
   response => response.data,
@@ -55,14 +60,17 @@ api.interceptors.response.use(
       original._retry = true;
       try {
         const refreshToken = await AsyncStorage.getItem('refreshToken');
-        console.log("refresh token", refreshToken);
+        console.log('refresh token', refreshToken);
 
         const res = await axios.post(
           'https://aptly-server.onrender.com/api/auth/refresh-token',
           { refreshToken },
         );
         const { accessToken, refreshToken: newRefresh } = res.data.data;
-        await AsyncStorage.multiSet([['accessToken', accessToken], ['refreshToken', newRefresh]]);
+        await AsyncStorage.multiSet([
+          ['accessToken', accessToken],
+          ['refreshToken', newRefresh],
+        ]);
         onTokenRefreshed?.(accessToken, newRefresh);
         original.headers.Authorization = `Bearer ${accessToken}`;
         return api(original);
@@ -80,28 +88,43 @@ export default api;
 export const sendOtp = (phoneNumber: string): Promise<SendOtpResponse> =>
   api.post('/auth/send-otp', { phoneNumber });
 
-export const verifyOtp = (phoneNumber: string, code: string): Promise<VerifyOtpResponse> =>
+export const verifyOtp = (
+  phoneNumber: string,
+  code: string,
+): Promise<VerifyOtpResponse> =>
   api.post('/auth/verify-otp', { phoneNumber, code });
 
-export const verifyFirebaseToken = (idToken: string): Promise<VerifyFirebaseTokenResponse> =>
+export const verifyFirebaseToken = (
+  idToken: string,
+): Promise<VerifyFirebaseTokenResponse> =>
   api.post('/auth/verify-firebase-token', { idToken });
 
-export const deleteAccount = (): Promise<{ success: boolean; message: string }> =>
-  api.delete('/auth/account');
+export const deleteAccount = (): Promise<{
+  success: boolean;
+  message: string;
+}> => api.delete('/auth/account');
 
 // Patients
 export const createPatient = (
-  name: string, gender: string, dateOfBirth: string,
+  name: string,
+  gender: string,
+  dateOfBirth: string,
 ): Promise<CreatePatientResponse> =>
   api.put('/patients/me', { name, gender, dateOfBirth });
 
 export const addPatient = (
-  name: string, phoneNumber: string, gender: string, dateOfBirth: string,
+  name: string,
+  phoneNumber: string,
+  gender: string,
+  dateOfBirth: string,
 ): Promise<{ success: boolean; data: Patient }> =>
   api.post('/patients', { name, phoneNumber, gender, dateOfBirth });
 
 export const updatePatient = (
-  patientId: string, name: string, gender: string, dateOfBirth: string,
+  patientId: string,
+  name: string,
+  gender: string,
+  dateOfBirth: string,
 ): Promise<{ success: boolean; data: Patient }> =>
   api.patch(`/patients/${patientId}`, { name, gender, dateOfBirth });
 
@@ -109,14 +132,24 @@ export const getPatients = (): Promise<{ success: boolean; data: Patient[] }> =>
   api.get('/patients');
 
 // specialties
-export const getspecialties = (): Promise<{ success: boolean; data: Specialty[] }> =>
-  api.get('/metadata/specialties');
+export const getspecialties = (): Promise<{
+  success: boolean;
+  data: Specialty[];
+}> => api.get('/metadata/specialties');
 
-export const getDoctorSchedule = (id: string, date: string, medicalCenterId?: string): Promise<{ success: boolean; data: Schedule[] }> =>
-  api.get(`/doctors/${id}/schedule`, { params: { date, ...(medicalCenterId ? { medicalCenterId } : {}) } });
+export const getDoctorSchedule = (
+  id: string,
+  date: string,
+  medicalCenterId?: string,
+): Promise<{ success: boolean; data: Schedule[] }> =>
+  api.get(`/doctors/${id}/schedule`, {
+    params: { date, ...(medicalCenterId ? { medicalCenterId } : {}) },
+  });
 
-export const getMedicalSystems = (): Promise<{ success: boolean; data: MedicalSystem[] }> =>
-  api.get('/metadata/medical-systems');
+export const getMedicalSystems = (): Promise<{
+  success: boolean;
+  data: MedicalSystem[];
+}> => api.get('/metadata/medical-systems');
 
 // Doctors
 export const getDoctors = (
@@ -131,15 +164,21 @@ export const getDoctors = (
     medicalSystemId?: string;
   },
 ): Promise<{ success: boolean; data: Doctor[]; pagination: Pagination }> => {
-  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
   if (filters) {
-    Object.entries(filters).forEach(([k, v]) => v !== undefined && params.append(k, String(v)));
+    Object.entries(filters).forEach(
+      ([k, v]) => v !== undefined && params.append(k, String(v)),
+    );
   }
   return api.get(`/doctors?${params.toString()}`);
 };
 
-export const getDoctor = (id: string): Promise<{ success: boolean; data: Doctor }> =>
-  api.get(`/doctors/${id}`);
+export const getDoctor = (
+  id: string,
+): Promise<{ success: boolean; data: Doctor }> => api.get(`/doctors/${id}`);
 
 // Clinics
 export const getClinics = (
@@ -154,34 +193,67 @@ export const getClinics = (
     medicalSystemId?: string;
   },
 ): Promise<{ success: boolean; data: Clinic[]; pagination: Pagination }> => {
-  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
   if (filters) {
-    Object.entries(filters).forEach(([k, v]) => v !== undefined && params.append(k, String(v)));
+    Object.entries(filters).forEach(
+      ([k, v]) => v !== undefined && params.append(k, String(v)),
+    );
   }
   return api.get(`/clinics?${params.toString()}`);
 };
 
-export const getClinic = (id: string): Promise<{ success: boolean; data: Clinic }> =>
-  api.get(`/clinics/${id}`);
+export const getClinic = (
+  id: string,
+): Promise<{ success: boolean; data: Clinic }> => api.get(`/clinics/${id}`);
 
 // Home
-export const getHomeData = (latitude?: number, longitude?: number): Promise<{ success: boolean; data: HomeData }> =>
+export const getHomeData = (
+  latitude?: number,
+  longitude?: number,
+): Promise<{ success: boolean; data: HomeData }> =>
   api.get('/ui/home', { params: { latitude, longitude } });
 
-export const searchLocations = (q: string): Promise<{ success: boolean; data: { description: string; placeId: string; latitude: number; longitude: number; mainText: string; secondaryText: string; types: string[] }[] }> =>
-  api.get(`/ui/locations?q=${encodeURIComponent(q)}`);
+export const searchLocations = (
+  q: string,
+): Promise<{
+  success: boolean;
+  data: {
+    description: string;
+    placeId: string;
+    latitude: number;
+    longitude: number;
+    mainText: string;
+    secondaryText: string;
+    types: string[];
+  }[];
+}> => api.get(`/ui/locations?q=${encodeURIComponent(q)}`);
 
-export const reverseGeocode = (latitude: number, longitude: number): Promise<{ success: boolean; data: { address: string; name: string; placeId: string; types: string[] } }> =>
-  api.get(`/ui/reverse-geocode`, { params: { latitude, longitude } });
+export const reverseGeocode = (
+  latitude: number,
+  longitude: number,
+): Promise<{
+  success: boolean;
+  data: { address: string; name: string; placeId: string; types: string[] };
+}> => api.get(`/ui/reverse-geocode`, { params: { latitude, longitude } });
 
-export const searchAll = (q: string): Promise<{ success: boolean; data: (Doctor | Clinic)[] }> =>
+export const searchAll = (
+  q: string,
+): Promise<{ success: boolean; data: (Doctor | Clinic)[] }> =>
   api.get(`/ui/search?q=${encodeURIComponent(q)}`);
 
 // Appointments
-export const getAppointments = (page = 1, limit = 20): Promise<{ success: boolean; data: Appointment[] }> =>
+export const getAppointments = (
+  page = 1,
+  limit = 20,
+): Promise<{ success: boolean; data: Appointment[] }> =>
   api.get(`/appointments?page=${page}&limit=${limit}`);
 
-export const getAppointment = (id: string): Promise<{ success: boolean; data: Appointment }> =>
+export const getAppointment = (
+  id: string,
+): Promise<{ success: boolean; data: Appointment }> =>
   api.get(`/appointments/${id}`);
 
 export const createAppointment = (
@@ -201,10 +273,23 @@ export type TrackData = {
     tokenStatus: string;
     createdAt: string;
     updatedAt: string;
-    patient: { name: string; phoneNumber: string; gender: string; dateOfBirth: string };
+    patient: {
+      name: string;
+      phoneNumber: string;
+      gender: string;
+      dateOfBirth: string;
+    };
     doctor: { estimateConsultationTime: number };
   }[];
-  activePauses: { id: string; date: string; startTime: string; stopTime: string; status: string; createdAt: string; updatedAt: string }[];
+  activePauses: {
+    id: string;
+    date: string;
+    startTime: string;
+    stopTime: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
 };
 
 export function trackAppointment(
@@ -216,12 +301,17 @@ export function trackAppointment(
 
   AsyncStorage.getItem('accessToken').then(token => {
     const EventSource = require('react-native-sse').default;
-    es = new EventSource(`https://aptly-server.onrender.com/api/appointments/${id}/track`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    es = new EventSource(
+      `https://aptly-server.onrender.com/api/appointments/${id}/track`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
     es.addEventListener('message', (e: any) => {
       console.log('[SSE] message:', e.data);
-      try { onData(JSON.parse(e.data)); } catch { }
+      try {
+        onData(JSON.parse(e.data));
+      } catch {}
     });
     es.addEventListener('error', (e: any) => {
       console.log('[SSE] error:', e);
@@ -229,5 +319,7 @@ export function trackAppointment(
     });
   });
 
-  return () => { es?.close(); };
+  return () => {
+    es?.close();
+  };
 }
