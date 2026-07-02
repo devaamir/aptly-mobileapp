@@ -375,46 +375,62 @@ export default function HomeScreen() {
         />
 
         {/* PWA Install Instructions Modal */}
-        {showInstallModal && (
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowInstallModal(false)}>
-            <TouchableOpacity activeOpacity={1} style={styles.installModal} onPress={() => {}}>
-              <View style={styles.installModalHeader}>
-                <Text allowFontScaling={false} style={styles.installModalTitle}>Install Aptly</Text>
-                <TouchableOpacity onPress={() => setShowInstallModal(false)} style={styles.installModalClose}>
-                  <Text allowFontScaling={false} style={styles.installModalCloseText}>✕</Text>
+        {showInstallModal && (() => {
+          const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+          const isSafari = /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS/i.test(ua);
+          const isFirefox = /Firefox|FxiOS/i.test(ua);
+          const isChromeiOS = /CriOS/i.test(ua);
+
+          type Step = { icon: string; text: React.ReactNode };
+          const steps: Step[] = isSafari ? [
+            { icon: '1', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap the <Text style={styles.installStepBold}>Share</Text> button <Text style={styles.installStepBold}>⎙</Text> at the bottom of Safari</Text> },
+            { icon: '2', text: <Text allowFontScaling={false} style={styles.installStepText}>Scroll down and tap <Text style={styles.installStepBold}>"Add to Home Screen"</Text></Text> },
+            { icon: '3', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>Add</Text> in the top-right corner</Text> },
+          ] : isFirefox ? [
+            { icon: '1', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap the <Text style={styles.installStepBold}>⋮ menu</Text> at the top-right</Text> },
+            { icon: '2', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>"Install"</Text> or <Text style={styles.installStepBold}>"Add to Home Screen"</Text></Text> },
+            { icon: '3', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>Add</Text> to confirm</Text> },
+          ] : isChromeiOS ? [
+            { icon: '1', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap the <Text style={styles.installStepBold}>Share</Text> button <Text style={styles.installStepBold}>⎙</Text> at the bottom</Text> },
+            { icon: '2', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>"Add to Home Screen"</Text></Text> },
+            { icon: '3', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>Add</Text> to confirm</Text> },
+          ] : [
+            // Chrome / Edge on Android or desktop
+            { icon: '1', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap the <Text style={styles.installStepBold}>⋮ menu</Text> at the top-right of Chrome</Text> },
+            { icon: '2', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>"Add to Home Screen"</Text> or <Text style={styles.installStepBold}>"Install App"</Text></Text> },
+            { icon: '3', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>Install</Text> to confirm</Text> },
+          ];
+
+          return (
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setShowInstallModal(false)}>
+              <TouchableOpacity activeOpacity={1} style={styles.installModal} onPress={() => {}}>
+                <View style={styles.installModalHeader}>
+                  <Text allowFontScaling={false} style={styles.installModalTitle}>Install Aptly</Text>
+                  <TouchableOpacity onPress={() => setShowInstallModal(false)} style={styles.installModalClose}>
+                    <Text allowFontScaling={false} style={styles.installModalCloseText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text allowFontScaling={false} style={styles.installModalDesc}>
+                  Add Aptly to your home screen for quick access — it works just like a native app.
+                </Text>
+                {steps.map((step, i) => (
+                  <View key={i} style={styles.installStep}>
+                    <View style={styles.installStepNum}>
+                      <Text allowFontScaling={false} style={styles.installStepNumText}>{step.icon}</Text>
+                    </View>
+                    {step.text}
+                  </View>
+                ))}
+                <TouchableOpacity style={styles.installModalBtn} activeOpacity={0.8} onPress={() => setShowInstallModal(false)}>
+                  <Text allowFontScaling={false} style={styles.installModalBtnText}>Got it</Text>
                 </TouchableOpacity>
-              </View>
-              <Text allowFontScaling={false} style={styles.installModalDesc}>
-                Add Aptly to your home screen for quick access — it works like a native app.
-              </Text>
-              {/* Chrome / Android */}
-              <View style={styles.installStep}>
-                <View style={styles.installStepNum}><Text allowFontScaling={false} style={styles.installStepNumText}>1</Text></View>
-                <Text allowFontScaling={false} style={styles.installStepText}>
-                  Tap the <Text style={styles.installStepBold}>⋮ menu</Text> (top-right in Chrome) or the <Text style={styles.installStepBold}>Share</Text> button (Safari)
-                </Text>
-              </View>
-              <View style={styles.installStep}>
-                <View style={styles.installStepNum}><Text allowFontScaling={false} style={styles.installStepNumText}>2</Text></View>
-                <Text allowFontScaling={false} style={styles.installStepText}>
-                  Tap <Text style={styles.installStepBold}>"Add to Home Screen"</Text> or <Text style={styles.installStepBold}>"Install App"</Text>
-                </Text>
-              </View>
-              <View style={styles.installStep}>
-                <View style={styles.installStepNum}><Text allowFontScaling={false} style={styles.installStepNumText}>3</Text></View>
-                <Text allowFontScaling={false} style={styles.installStepText}>
-                  Tap <Text style={styles.installStepBold}>Add</Text> to confirm
-                </Text>
-              </View>
-              <TouchableOpacity style={styles.installModalBtn} activeOpacity={0.8} onPress={() => setShowInstallModal(false)}>
-                <Text allowFontScaling={false} style={styles.installModalBtnText}>Got it</Text>
               </TouchableOpacity>
             </TouchableOpacity>
-          </TouchableOpacity>
-        )}
+          );
+        })()}
       </SafeAreaView>
     );
   }
