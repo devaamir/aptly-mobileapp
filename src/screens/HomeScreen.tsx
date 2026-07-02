@@ -219,7 +219,8 @@ export default function HomeScreen() {
   const [activeAppointments, setActiveAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { canInstall, install } = usePWAInstall();
+  const { canInstall, isInstalled, install } = usePWAInstall();
+  const [showInstallModal, setShowInstallModal] = useState(false);
   const [fallbackClinics, setFallbackClinics] = useState<Clinic[]>([]);
 
   const fetchData = (isRefresh = false) => {
@@ -304,8 +305,11 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
           <View style={styles.headerRight}>
-            {Platform.OS === 'web' && (
-              <TouchableOpacity style={styles.installBtn} activeOpacity={0.7} onPress={install}>
+            {Platform.OS === 'web' && !isInstalled && (
+              <TouchableOpacity
+                style={styles.installBtn}
+                activeOpacity={0.7}
+                onPress={() => canInstall ? install() : setShowInstallModal(true)}>
                 <Text allowFontScaling={false} style={styles.installBtnText}>Install App</Text>
               </TouchableOpacity>
             )}
@@ -369,6 +373,48 @@ export default function HomeScreen() {
             />
           )}
         />
+
+        {/* PWA Install Instructions Modal */}
+        {showInstallModal && (
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowInstallModal(false)}>
+            <TouchableOpacity activeOpacity={1} style={styles.installModal} onPress={() => {}}>
+              <View style={styles.installModalHeader}>
+                <Text allowFontScaling={false} style={styles.installModalTitle}>Install Aptly</Text>
+                <TouchableOpacity onPress={() => setShowInstallModal(false)} style={styles.installModalClose}>
+                  <Text allowFontScaling={false} style={styles.installModalCloseText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <Text allowFontScaling={false} style={styles.installModalDesc}>
+                Add Aptly to your home screen for quick access — it works like a native app.
+              </Text>
+              {/* Chrome / Android */}
+              <View style={styles.installStep}>
+                <View style={styles.installStepNum}><Text allowFontScaling={false} style={styles.installStepNumText}>1</Text></View>
+                <Text allowFontScaling={false} style={styles.installStepText}>
+                  Tap the <Text style={styles.installStepBold}>⋮ menu</Text> (top-right in Chrome) or the <Text style={styles.installStepBold}>Share</Text> button (Safari)
+                </Text>
+              </View>
+              <View style={styles.installStep}>
+                <View style={styles.installStepNum}><Text allowFontScaling={false} style={styles.installStepNumText}>2</Text></View>
+                <Text allowFontScaling={false} style={styles.installStepText}>
+                  Tap <Text style={styles.installStepBold}>"Add to Home Screen"</Text> or <Text style={styles.installStepBold}>"Install App"</Text>
+                </Text>
+              </View>
+              <View style={styles.installStep}>
+                <View style={styles.installStepNum}><Text allowFontScaling={false} style={styles.installStepNumText}>3</Text></View>
+                <Text allowFontScaling={false} style={styles.installStepText}>
+                  Tap <Text style={styles.installStepBold}>Add</Text> to confirm
+                </Text>
+              </View>
+              <TouchableOpacity style={styles.installModalBtn} activeOpacity={0.8} onPress={() => setShowInstallModal(false)}>
+                <Text allowFontScaling={false} style={styles.installModalBtnText}>Got it</Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        )}
       </SafeAreaView>
     );
   }
@@ -439,6 +485,95 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(12),
     color: colors.primary,
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.overlay,
+    justifyContent: 'flex-end',
+    zIndex: 999,
+  },
+  installModal: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: SIZE(20),
+    borderTopRightRadius: SIZE(20),
+    padding: SIZE(24),
+    paddingBottom: SIZE(36),
+    gap: SIZE(14),
+  },
+  installModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  installModalTitle: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(18),
+    color: colors.textPrimary,
+  },
+  installModalClose: {
+    width: SIZE(32),
+    height: SIZE(32),
+    borderRadius: SIZE(16),
+    backgroundColor: colors.backgroundMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  installModalCloseText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: colors.textSubdued,
+  },
+  installModalDesc: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: colors.textSecondary,
+    lineHeight: SIZE(20),
+  },
+  installStep: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SIZE(12),
+  },
+  installStepNum: {
+    width: SIZE(24),
+    height: SIZE(24),
+    borderRadius: SIZE(12),
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: SIZE(1),
+  },
+  installStepNumText: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(12),
+    color: colors.primary,
+  },
+  installStepText: {
+    flex: 1,
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(14),
+    color: colors.textPrimary,
+    lineHeight: SIZE(22),
+  },
+  installStepBold: {
+    fontFamily: 'Manrope-SemiBold',
+    color: colors.textPrimary,
+  },
+  installModalBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: SIZE(12),
+    paddingVertical: SIZE(14),
+    alignItems: 'center',
+    marginTop: SIZE(4),
+  },
+  installModalBtnText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(15),
+    color: colors.white,
   },
   searchWrapper: {
     paddingHorizontal: SIZE(18),
