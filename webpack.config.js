@@ -88,7 +88,15 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({ template: './public/index.html' }),
-    new CopyWebpackPlugin({ patterns: [{ from: 'public/fonts', to: 'fonts' }] }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'public/fonts', to: 'fonts' },
+        { from: 'public/manifest.json', to: 'manifest.json' },
+        { from: 'public/sw.js', to: 'sw.js' },
+        { from: 'public/icon-192.png', to: 'icon-192.png' },
+        { from: 'public/icon-512.png', to: 'icon-512.png' },
+      ],
+    }),
   ],
   devServer: {
     port: 3000,
