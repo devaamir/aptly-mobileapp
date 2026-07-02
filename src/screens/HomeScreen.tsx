@@ -304,7 +304,7 @@ export default function HomeScreen() {
             </View>
           </TouchableOpacity>
           <View style={styles.headerRight}>
-            {canInstall && (
+            {Platform.OS === 'web' && (
               <TouchableOpacity style={styles.installBtn} activeOpacity={0.7} onPress={install}>
                 <Text allowFontScaling={false} style={styles.installBtnText}>Install App</Text>
               </TouchableOpacity>
