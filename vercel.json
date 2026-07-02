@@ -2,5 +2,5 @@
   "buildCommand": "yarn web:build",
   "outputDirectory": "web-build",
   "installCommand": "yarn install",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/((?!manifest.json|sw.js|icon-192.png|icon-512.png|fonts/).*)", "destination": "/index.html" }]
 }
