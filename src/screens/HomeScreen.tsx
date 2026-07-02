@@ -24,6 +24,7 @@ import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
 import { getHomeData, getClinics, Specialty, Doctor, Clinic, Appointment } from '../services/api';
 import PrimaryButton from '../components/PrimaryButton';
+import { usePWAInstall } from '../utils/usePWAInstall';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -218,6 +219,7 @@ export default function HomeScreen() {
   const [activeAppointments, setActiveAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { canInstall, install } = usePWAInstall();
   const [fallbackClinics, setFallbackClinics] = useState<Clinic[]>([]);
 
   const fetchData = (isRefresh = false) => {
@@ -301,9 +303,16 @@ export default function HomeScreen() {
               ) : null}
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.notifBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Notifications')}>
-            <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            {canInstall && (
+              <TouchableOpacity style={styles.installBtn} activeOpacity={0.7} onPress={install}>
+                <Text allowFontScaling={false} style={styles.installBtnText}>Install App</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.notifBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Notifications')}>
+              <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Search - stays fixed */}
@@ -411,6 +420,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(8),
+  },
+  installBtn: {
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  installBtnText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(12),
+    color: colors.primary,
   },
   searchWrapper: {
     paddingHorizontal: SIZE(18),
