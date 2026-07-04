@@ -32,9 +32,12 @@ export type {
   Patient,
 };
 
+// const baseURL = 'https://aptly-server.onrender.com/api'; // dev
+const baseURL = 'https://api.aptly.care/api'; // prod
+
 const api = axios.create({
   // baseURL: 'https://aptly-server.onrender.com/api', // dev
-  baseURL: 'https://api.aptly.care/api', // prod
+  baseURL: baseURL, // prod
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -62,10 +65,9 @@ api.interceptors.response.use(
         const refreshToken = await AsyncStorage.getItem('refreshToken');
         console.log('refresh token', refreshToken);
 
-        const res = await axios.post(
-          'https://aptly-server.onrender.com/api/auth/refresh-token',
-          { refreshToken },
-        );
+        const res = await axios.post(`${baseURL}/auth/refresh-token`, {
+          refreshToken,
+        });
         const { accessToken, refreshToken: newRefresh } = res.data.data;
         await AsyncStorage.multiSet([
           ['accessToken', accessToken],
