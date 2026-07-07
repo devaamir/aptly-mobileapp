@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, RefreshControl } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -26,43 +35,81 @@ export default function ClinicsScreen({ navigation }: Props) {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
+  const [appliedFilters, setAppliedFilters] = useState<
+    Record<string, string[]>
+  >({ specialties: [], availability: [], type: [] });
   const [distance, setDistance] = useState(25);
 
   const fetchClinics = (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true); else setLoading(true);
-    const specialtyId = allSpecialties.find(s => appliedFilters.specialties?.includes(s.name))?.id;
-    const medicalSystemId = medicalSystems.find(s => appliedFilters.type?.includes(s.name))?.id;
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+    const specialtyId = allSpecialties.find(s =>
+      appliedFilters.specialties?.includes(s.name),
+    )?.id;
+    const medicalSystemId = medicalSystems.find(s =>
+      appliedFilters.type?.includes(s.name),
+    )?.id;
     getClinics(1, 20, {
-      ...(location ? { latitude: location.latitude, longitude: location.longitude, radius: distance } : {}),
+      ...(location
+        ? {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            radius: distance,
+          }
+        : {}),
       ...(specialtyId ? { specialtyId } : {}),
       ...(medicalSystemId ? { medicalSystemId } : {}),
     })
       .then(res => setClinics(res.data))
-      .catch(() => { })
-      .finally(() => { setLoading(false); setRefreshing(false); });
+      .catch(() => {})
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   };
 
-  useEffect(() => { fetchClinics(); }, [location, distance, appliedFilters]);
+  useEffect(() => {
+    fetchClinics();
+  }, [location, distance, appliedFilters]);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+          activeOpacity={0.7}
+        >
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.title}>Nearby Clinics</Text>
-        <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Search')}>
+        <Text allowFontScaling={false} style={styles.title}>
+          Nearby Clinics
+        </Text>
+        <TouchableOpacity
+          style={styles.backBtn}
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('Search')}
+        >
           <SearchIcon width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.locationBox} activeOpacity={0.8} onPress={() => navigation.navigate('LocationSearch')}>
+      <TouchableOpacity
+        style={styles.locationBox}
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate('LocationSearch')}
+      >
         <View style={styles.locationIconContainer}>
           <LocationIcon width={SIZE(20)} height={SIZE(20)} />
         </View>
-        <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location ? location.mainText : 'Select location'}</Text>
+        <Text
+          allowFontScaling={false}
+          style={styles.locationText}
+          numberOfLines={1}
+        >
+          {location ? location.mainText : 'Select location'}
+        </Text>
         <DistancePicker value={distance} onChange={setDistance} />
       </TouchableOpacity>
       <View style={styles.filterRow}>
@@ -70,32 +117,65 @@ export default function ClinicsScreen({ navigation }: Props) {
       </View>
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
+        <ActivityIndicator
+          style={{ marginTop: SIZE(40) }}
+          color={colors.primary}
+        />
       ) : (
         <FlatList
           data={clinics}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchClinics(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchClinics(true)} colors={[colors.primary]} tintColor={colors.primary} />}
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
               location={item.address}
               image={item.profilePicture}
-              distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
+              distance={
+                location
+                  ? getDistance(
+                      location.latitude,
+                      location.longitude,
+                      item.latitude,
+                      item.longitude,
+                    )
+                  : undefined
+              }
               style={{ marginHorizontal: 0 }}
-              onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
+              onPress={() =>
+                navigation.navigate('HospitalDetail', {
+                  id: item.id,
+                  name: item.name,
+                  specialty: item.specialties[0]?.name ?? '',
+                  location: item.address,
+                })
+              }
             />
           )}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
-              <Text allowFontScaling={false} style={styles.emptyTitle}>No clinics available here</Text>
-              <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any clinics in this area right now. Try changing your location or adjusting filters.</Text>
-              <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
-                <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
+              <Text allowFontScaling={false} style={styles.emptyTitle}>
+                No clinics available here
+              </Text>
+              <Text allowFontScaling={false} style={styles.emptyMessage}>
+                We couldn't find any clinics in this area right now. Try
+                changing your location or adjusting filters.
+              </Text>
+              <View
+                style={{
+                  width: '100%',
+                  paddingHorizontal: SIZE(16),
+                  marginTop: SIZE(8),
+                }}
+              >
+                <PrimaryButton
+                  label="Use another location"
+                  onPress={() => navigation.navigate('LocationSearch')}
+                />
               </View>
             </View>
           }
@@ -115,8 +195,16 @@ const styles = StyleSheet.create({
     paddingVertical: SIZE(12),
   },
   backBtn: { width: SIZE(32) },
-  title: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(18), color: colors.textPrimary },
-  listContent: { paddingBottom: SIZE(24), gap: SIZE(12), paddingHorizontal: SIZE(20) },
+  title: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(18),
+    color: colors.textPrimary,
+  },
+  listContent: {
+    paddingBottom: SIZE(24),
+    gap: SIZE(12),
+    paddingHorizontal: SIZE(20),
+  },
   locationBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -145,7 +233,23 @@ const styles = StyleSheet.create({
     marginLeft: SIZE(10),
   },
   filterRow: { paddingHorizontal: SIZE(18), marginBottom: SIZE(8) },
-  emptyContainer: { alignItems: 'center', paddingHorizontal: SIZE(32), paddingVertical: SIZE(32), gap: SIZE(10) },
-  emptyTitle: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(16), color: '#1C1E22', marginTop: SIZE(8) },
-  emptyMessage: { fontFamily: 'Manrope-Regular', fontSize: SIZE(11), color: '#636A79', textAlign: 'center', lineHeight: SIZE(20) },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingHorizontal: SIZE(32),
+    paddingVertical: SIZE(32),
+    gap: SIZE(10),
+  },
+  emptyTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(16),
+    color: '#1C1E22',
+    marginTop: SIZE(8),
+  },
+  emptyMessage: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: '#636A79',
+    textAlign: 'center',
+    lineHeight: SIZE(20),
+  },
 });

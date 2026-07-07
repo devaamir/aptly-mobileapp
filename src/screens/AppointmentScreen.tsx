@@ -1,5 +1,14 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, RefreshControl } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,7 +23,10 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Tab = 'Upcoming' | 'Completed' | 'Cancelled';
 const TABS: Tab[] = ['Upcoming', 'Completed', 'Cancelled'];
 
-const statusMap: Record<string, 'Upcoming' | 'Completed' | 'Cancelled' | 'Live'> = {
+const statusMap: Record<
+  string,
+  'Upcoming' | 'Completed' | 'Cancelled' | 'Live'
+> = {
   pending: 'Upcoming',
   active: 'Live',
   ongoing: 'Live',
@@ -37,25 +49,34 @@ export default function AppointmentScreen() {
   const fetchPage = (p: number, reset = false) => {
     if (p === 1) reset ? setRefreshing(true) : setLoading(true);
     else setLoadingMore(true);
-    getAppointments(p).then(res => {
-      const data = res.data;
-      setAppointments(prev => p === 1 ? data : [...prev, ...data]);
-      setHasMore(data.length === 20);
-      setPage(p);
-    }).finally(() => {
-      setLoading(false);
-      setRefreshing(false);
-      setLoadingMore(false);
-    });
+    getAppointments(p)
+      .then(res => {
+        const data = res.data;
+        setAppointments(prev => (p === 1 ? data : [...prev, ...data]));
+        setHasMore(data.length === 20);
+        setPage(p);
+      })
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+        setLoadingMore(false);
+      });
   };
 
-  useFocusEffect(useCallback(() => { fetchPage(1); }, []));
+  useFocusEffect(
+    useCallback(() => {
+      fetchPage(1);
+    }, []),
+  );
 
   const today = new Date().toISOString().split('T')[0];
   const filtered = appointments.filter(a => {
     const mapped = statusMap[a.tokenStatus] ?? 'Upcoming';
     if (tab === 'Upcoming') {
-      return (mapped === 'Upcoming' || mapped === 'Live') && a.appointmentDate >= today;
+      return (
+        (mapped === 'Upcoming' || mapped === 'Live') &&
+        a.appointmentDate >= today
+      );
     }
     return mapped === tab;
   });
@@ -64,73 +85,134 @@ export default function AppointmentScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <Text allowFontScaling={false} style={styles.title}>Appointments</Text>
+        <Text allowFontScaling={false} style={styles.title}>
+          Appointments
+        </Text>
       </View>
 
       <View style={styles.tabs}>
         {TABS.map(t => (
-          <TouchableOpacity key={t} style={styles.tab} onPress={() => { setTab(t); }} activeOpacity={0.8}>
-            <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>{t}</Text>
+          <TouchableOpacity
+            key={t}
+            style={styles.tab}
+            onPress={() => {
+              setTab(t);
+            }}
+            activeOpacity={0.8}
+          >
+            <Text
+              allowFontScaling={false}
+              style={[styles.tabText, tab === t && styles.tabTextActive]}
+            >
+              {t}
+            </Text>
             {tab === t && <View style={styles.tabUnderline} />}
           </TouchableOpacity>
         ))}
       </View>
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
+        <ActivityIndicator
+          style={{ marginTop: SIZE(40) }}
+          color={colors.primary}
+        />
       ) : (
         <FlatList
           data={filtered}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => fetchPage(1, true)}
-              colors={[colors.primary]}
-              tintColor={colors.primary}
-            />
-          }
-          onEndReached={() => { if (hasMore && !loadingMore) fetchPage(page + 1); }}
+          // refreshControl={
+          //   <RefreshControl
+          //     refreshing={refreshing}
+          //     onRefresh={() => fetchPage(1, true)}
+          //     colors={[colors.primary]}
+          //     tintColor={colors.primary}
+          //   />
+          // }
+          onEndReached={() => {
+            if (hasMore && !loadingMore) fetchPage(page + 1);
+          }}
           onEndReachedThreshold={0.3}
-          ListFooterComponent={loadingMore ? <ActivityIndicator style={{ marginVertical: SIZE(16) }} color={colors.primary} /> : null}
-          ListEmptyComponent={<Text allowFontScaling={false} style={styles.empty}>No {tab.toLowerCase()} appointments</Text>}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator
+                style={{ marginVertical: SIZE(16) }}
+                color={colors.primary}
+              />
+            ) : null
+          }
+          ListEmptyComponent={
+            <Text allowFontScaling={false} style={styles.empty}>
+              No {tab.toLowerCase()} appointments
+            </Text>
+          }
           renderItem={({ item }) => {
-            const liveAppt = trackData?.appointments.find(a => a.id === item.id);
+            const liveAppt = trackData?.appointments.find(
+              a => a.id === item.id,
+            );
             const isLive = () => {
               const today = new Date().toISOString().split('T')[0];
-              if (item.appointmentDate !== today || item.tokenStatus !== 'pending') return false;
-              const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-              const [sh, sm] = (item.schedule?.startTime ?? '').split(':').map(Number);
-              const [eh, em] = (item.schedule?.stopTime ?? '').split(':').map(Number);
+              if (
+                item.appointmentDate !== today ||
+                item.tokenStatus !== 'pending'
+              )
+                return false;
+              const nowMins =
+                new Date().getHours() * 60 + new Date().getMinutes();
+              const [sh, sm] = (item.schedule?.startTime ?? '')
+                .split(':')
+                .map(Number);
+              const [eh, em] = (item.schedule?.stopTime ?? '')
+                .split(':')
+                .map(Number);
               return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
             };
-            const status = isLive() ? 'Live' : (statusMap[item.tokenStatus] ?? 'Upcoming');
+            const status = isLive()
+              ? 'Live'
+              : statusMap[item.tokenStatus] ?? 'Upcoming';
             const liveToken = liveAppt?.tokenNumber ?? item.tokenNumber;
             const formatDate = (d: string) => {
               const dt = new Date(d);
-              return `${String(dt.getDate()).padStart(2, '0')} ${dt.toLocaleDateString('en-US', { month: 'short' })} ${dt.getFullYear()}`;
+              return `${String(dt.getDate()).padStart(
+                2,
+                '0',
+              )} ${dt.toLocaleDateString('en-US', {
+                month: 'short',
+              })} ${dt.getFullYear()}`;
             };
             const formatTime = (t: string) => {
               const [h, m] = t.split(':').map(Number);
-              return m === 0 ? `${h % 12 || 12}${h >= 12 ? 'pm' : 'am'}` : `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`;
+              return m === 0
+                ? `${h % 12 || 12}${h >= 12 ? 'pm' : 'am'}`
+                : `${h % 12 || 12}:${String(m).padStart(2, '0')}${
+                    h >= 12 ? 'pm' : 'am'
+                  }`;
             };
-            const start = item.schedule?.startTime ? formatTime(item.schedule.startTime) : '';
-            const stop = item.schedule?.stopTime ? formatTime(item.schedule.stopTime) : '';
+            const start = item.schedule?.startTime
+              ? formatTime(item.schedule.startTime)
+              : '';
+            const stop = item.schedule?.stopTime
+              ? formatTime(item.schedule.stopTime)
+              : '';
             const time = start && stop ? `${start} - ${stop}` : '';
             const date = formatDate(item.appointmentDate);
             return (
-              <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate('AppointmentDetail', {
-                id: item.id,
-                doctor: item.doctor.name,
-                type: item.doctor.specialties[0]?.name ?? '',
-                hospital: item.medicalCenter.name,
-                date,
-                time,
-                token: liveToken,
-                status,
-              })}>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() =>
+                  navigation.navigate('AppointmentDetail', {
+                    id: item.id,
+                    doctor: item.doctor.name,
+                    type: item.doctor.specialties[0]?.name ?? '',
+                    hospital: item.medicalCenter.name,
+                    date,
+                    time,
+                    token: liveToken,
+                    status,
+                  })
+                }
+              >
                 <AppointmentCard
                   doctor={item.doctor.name}
                   type={item.doctor.specialties[0]?.name ?? ''}

@@ -19,7 +19,7 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import { RootStackParamList } from '../navigations/Navigation';
-import { verifyOtp, sendOtp } from '../services/api';
+import { verifyOtp, sendOtp, IS_DEV } from '../services/api';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -43,11 +43,21 @@ export default function OtpScreen() {
     return () => clearTimeout(id);
   }, [timer]);
 
+  useEffect(() => {
+    if (IS_DEV && code) {
+      setOtp(String(code).split(''));
+    }
+  }, [code]);
+
   const handleResend = async () => {
     try {
-      await sendOtp(`${phone}`);
-      setOtp(['', '', '', '']);
+      const res = await sendOtp(`${phone}`);
       setTimer(60);
+      if (IS_DEV && res.data?.code) {
+        setOtp(String(res.data.code).split(''));
+      } else {
+        setOtp(['', '', '', '']);
+      }
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to resend OTP');
     }

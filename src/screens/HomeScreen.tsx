@@ -1,5 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Image, ScrollView, TouchableOpacity, StyleSheet, Text, FlatList, Animated, StatusBar, Platform, RefreshControl, Linking } from 'react-native';
+import {
+  View,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Text,
+  FlatList,
+  Animated,
+  StatusBar,
+  Platform,
+  RefreshControl,
+  Linking,
+} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
@@ -22,36 +35,94 @@ import MapIcon from '../assets/icons/map-icon.svg';
 import MapIconBlue from '../assets/icons/map-icon-blue.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
-import { getHomeData, getClinics, Specialty, Doctor, Clinic, Appointment } from '../services/api';
+import {
+  getHomeData,
+  getClinics,
+  Specialty,
+  Doctor,
+  Clinic,
+  Appointment,
+} from '../services/api';
 import PrimaryButton from '../components/PrimaryButton';
 import { usePWAInstall } from '../utils/usePWAInstall';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
-const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsPress, specialties, doctors, totalDoctorCount, spotlightAppt, activeAppointments, hasNearbyClinics, hasLocation, trackData }: { onTokenPress: (appt: Appointment) => void; onspecialstPress: () => void; onDoctorsPress: () => void; onClinicsPress: () => void; specialties: Specialty[]; doctors: Doctor[]; totalDoctorCount: number; spotlightAppt: Appointment | null; activeAppointments: Appointment[]; hasNearbyClinics: boolean; hasLocation: boolean; trackData: import('../services/api').TrackData | null }) => {
+const ListHeader = ({
+  onTokenPress,
+  onspecialstPress,
+  onDoctorsPress,
+  onClinicsPress,
+  specialties,
+  doctors,
+  totalDoctorCount,
+  spotlightAppt,
+  activeAppointments,
+  hasNearbyClinics,
+  hasLocation,
+  trackData,
+}: {
+  onTokenPress: (appt: Appointment) => void;
+  onspecialstPress: () => void;
+  onDoctorsPress: () => void;
+  onClinicsPress: () => void;
+  specialties: Specialty[];
+  doctors: Doctor[];
+  totalDoctorCount: number;
+  spotlightAppt: Appointment | null;
+  activeAppointments: Appointment[];
+  hasNearbyClinics: boolean;
+  hasLocation: boolean;
+  trackData: import('../services/api').TrackData | null;
+}) => {
   const { currentToken, prevToken, nextToken } = useTracking();
   const today = new Date().toISOString().split('T')[0];
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-  const to12h = (t: string) => { const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; };
+  const to12h = (t: string) => {
+    const [h, m] = t.split(':').map(Number);
+    return `${h % 12 || 12}:${String(m).padStart(2, '0')}${
+      h >= 12 ? 'pm' : 'am'
+    }`;
+  };
 
   const renderBannerCard = (appt: Appointment) => {
-    const apptIsLive = appt.appointmentDate === today && (() => {
-      const [sh, sm] = (appt.schedule?.startTime ?? '').split(':').map(Number);
-      return nowMins >= sh * 60 + sm;
-    })();
+    const apptIsLive =
+      appt.appointmentDate === today &&
+      (() => {
+        const [sh, sm] = (appt.schedule?.startTime ?? '')
+          .split(':')
+          .map(Number);
+        return nowMins >= sh * 60 + sm;
+      })();
     const apptToken = appt.tokenNumber ?? 0;
     const apptConsultMins = appt.doctor?.estimateConsultationTime ?? 15;
-    const tokensAhead = apptIsLive ? Math.max(0, apptToken - (currentToken ?? 0)) : 0;
+    const tokensAhead = apptIsLive
+      ? Math.max(0, apptToken - (currentToken ?? 0))
+      : 0;
     const apptEstTime = apptIsLive
-      ? (() => { const est = new Date(Date.now() + tokensAhead * apptConsultMins * 60000); const h = est.getHours(), m = est.getMinutes(); return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`; })()
-      : appt.schedule ? to12h(appt.schedule.startTime) : null;
-
-
+      ? (() => {
+          const est = new Date(
+            Date.now() + tokensAhead * apptConsultMins * 60000,
+          );
+          const h = est.getHours(),
+            m = est.getMinutes();
+          return `${h % 12 || 12}:${String(m).padStart(2, '0')}${
+            h >= 12 ? 'pm' : 'am'
+          }`;
+        })()
+      : appt.schedule
+      ? to12h(appt.schedule.startTime)
+      : null;
 
     return (
       <View
         key={appt.id}
-        style={[styles.bannerCard, !apptIsLive && { backgroundColor: colors.upcomingCardBg }, activeAppointments.length > 1 && styles.bannerCardMulti]}>
+        style={[
+          styles.bannerCard,
+          !apptIsLive && { backgroundColor: colors.upcomingCardBg },
+          activeAppointments.length > 1 && styles.bannerCardMulti,
+        ]}
+      >
         {apptIsLive && (
           <Video
             source={require('../assets/images/background-video.mp4')}
@@ -63,54 +134,206 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
             pointerEvents="none"
           />
         )}
-        <TouchableOpacity activeOpacity={0.7} onPress={() => onTokenPress(appt)}>
-          <View style={[styles.livebadge, !apptIsLive && { backgroundColor: colors.badgeBg }]}>
-            <View style={[styles.greenDot, !apptIsLive && { backgroundColor: colors.primaryAccent }]} />
-            <Text allowFontScaling={false} style={[styles.liveText, !apptIsLive && { color: colors.textPrimary }]}>{apptIsLive ? 'Live' : 'Upcoming'}</Text>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => onTokenPress(appt)}
+        >
+          <View
+            style={[
+              styles.livebadge,
+              !apptIsLive && { backgroundColor: colors.badgeBg },
+            ]}
+          >
+            <View
+              style={[
+                styles.greenDot,
+                !apptIsLive && { backgroundColor: colors.primaryAccent },
+              ]}
+            />
+            <Text
+              allowFontScaling={false}
+              style={[
+                styles.liveText,
+                !apptIsLive && { color: colors.textPrimary },
+              ]}
+            >
+              {apptIsLive ? 'Live' : 'Upcoming'}
+            </Text>
           </View>
           <View style={styles.tokenCenter}>
-            <Text allowFontScaling={false} style={[styles.tokenLabel, !apptIsLive && { color: colors.textPrimary, marginTop: SIZE(20) }]}>Your Token</Text>
-            <Text allowFontScaling={false} style={[styles.tokenNumber, !apptIsLive && { color: colors.black }]}>{apptToken || '--'}</Text>
-            {apptEstTime && <Text allowFontScaling={false} style={[styles.tokenEst, !apptIsLive && { color: colors.textSecondary }]}>{apptIsLive ? `Estimated ${apptEstTime}` : 'Scheduled for'}</Text>}
+            <Text
+              allowFontScaling={false}
+              style={[
+                styles.tokenLabel,
+                !apptIsLive && {
+                  color: colors.textPrimary,
+                  marginTop: SIZE(20),
+                },
+              ]}
+            >
+              Your Token
+            </Text>
+            <Text
+              allowFontScaling={false}
+              style={[
+                styles.tokenNumber,
+                !apptIsLive && { color: colors.black },
+              ]}
+            >
+              {apptToken || '--'}
+            </Text>
+            {apptEstTime && (
+              <Text
+                allowFontScaling={false}
+                style={[
+                  styles.tokenEst,
+                  !apptIsLive && { color: colors.textSecondary },
+                ]}
+              >
+                {apptIsLive ? `Estimated ${apptEstTime}` : 'Scheduled for'}
+              </Text>
+            )}
             {!apptIsLive && appt.appointmentDate && (
               <Text allowFontScaling={false} style={styles.scheduledDate}>
-                {new Date(appt.appointmentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                {appt.schedule ? `, ${to12h(appt.schedule.startTime)} - ${to12h(appt.schedule.stopTime)}` : ''}
+                {new Date(appt.appointmentDate).toLocaleDateString('en-US', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+                {appt.schedule
+                  ? `, ${to12h(appt.schedule.startTime)} - ${to12h(
+                      appt.schedule.stopTime,
+                    )}`
+                  : ''}
               </Text>
             )}
             {apptIsLive && (
               <View style={styles.tokenRow}>
-                <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>{prevToken ?? ''}</Text></View>
-                <View style={styles.tokenCurrent}><Text allowFontScaling={false} style={styles.tokenCurrentNum}>{currentToken ?? ''}</Text></View>
-                <View style={styles.tokenSide}><Text allowFontScaling={false} style={styles.tokenSideNum}>{nextToken ?? ''}</Text></View>
+                <View style={styles.tokenSide}>
+                  <Text allowFontScaling={false} style={styles.tokenSideNum}>
+                    {prevToken ?? ''}
+                  </Text>
+                </View>
+                <View style={styles.tokenCurrent}>
+                  <Text allowFontScaling={false} style={styles.tokenCurrentNum}>
+                    {currentToken ?? ''}
+                  </Text>
+                </View>
+                <View style={styles.tokenSide}>
+                  <Text allowFontScaling={false} style={styles.tokenSideNum}>
+                    {nextToken ?? ''}
+                  </Text>
+                </View>
               </View>
             )}
           </View>
         </TouchableOpacity>
-        <View style={[styles.hospitalStrip, !apptIsLive && { backgroundColor: colors.white }]}>
+        <View
+          style={[
+            styles.hospitalStrip,
+            !apptIsLive && { backgroundColor: colors.white },
+          ]}
+        >
           <View style={styles.hospitalTop}>
             <View style={styles.hospitalLeft}>
-              <Image source={{ uri: appt.medicalCenter?.profilePicture }} style={styles.hospitalAvatar} />
+              <Image
+                source={{ uri: appt.medicalCenter?.profilePicture }}
+                style={styles.hospitalAvatar}
+              />
               <View>
-                <Text allowFontScaling={false} style={[styles.hospitalName, !apptIsLive && { color: colors.textPrimary }]} numberOfLines={1}>{appt.medicalCenter?.name ?? 'No appointment'}</Text>
-                <Text allowFontScaling={false} style={[styles.hospitalType, !apptIsLive && { color: colors.textSecondary }]}>{appt.medicalCenter?.type ?? ''}</Text>
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.hospitalName,
+                    !apptIsLive && { color: colors.textPrimary },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {appt.medicalCenter?.name ?? 'No appointment'}
+                </Text>
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.hospitalType,
+                    !apptIsLive && { color: colors.textSecondary },
+                  ]}
+                >
+                  {appt.medicalCenter?.type ?? ''}
+                </Text>
               </View>
             </View>
             <View style={styles.hospitalActions}>
-              <TouchableOpacity style={[styles.actionBtn, !apptIsLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7} onPress={() => appt.medicalCenter?.phoneNumber && Linking.openURL(`tel:${appt.medicalCenter.phoneNumber}`)}>
-                {apptIsLive ? <PhoneIcon width={SIZE(22)} height={SIZE(22)} /> : <PhoneIconBlue width={SIZE(22)} height={SIZE(22)} />}
+              <TouchableOpacity
+                style={[
+                  styles.actionBtn,
+                  !apptIsLive && { backgroundColor: colors.backgroundSubtle },
+                ]}
+                activeOpacity={0.7}
+                onPress={() =>
+                  appt.medicalCenter?.phoneNumber &&
+                  Linking.openURL(`tel:${appt.medicalCenter.phoneNumber}`)
+                }
+              >
+                {apptIsLive ? (
+                  <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
+                ) : (
+                  <PhoneIconBlue width={SIZE(22)} height={SIZE(22)} />
+                )}
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtn, !apptIsLive && { backgroundColor: colors.backgroundSubtle }]} activeOpacity={0.7} onPress={() => appt.medicalCenter?.latitude && Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${appt.medicalCenter.latitude},${appt.medicalCenter.longitude}`)}>
-                {apptIsLive ? <MapIcon width={SIZE(22)} height={SIZE(22)} /> : <MapIconBlue width={SIZE(22)} height={SIZE(22)} />}
+              <TouchableOpacity
+                style={[
+                  styles.actionBtn,
+                  !apptIsLive && { backgroundColor: colors.backgroundSubtle },
+                ]}
+                activeOpacity={0.7}
+                onPress={() =>
+                  appt.medicalCenter?.latitude &&
+                  Linking.openURL(
+                    `https://www.google.com/maps/dir/?api=1&destination=${appt.medicalCenter.latitude},${appt.medicalCenter.longitude}`,
+                  )
+                }
+              >
+                {apptIsLive ? (
+                  <MapIcon width={SIZE(22)} height={SIZE(22)} />
+                ) : (
+                  <MapIconBlue width={SIZE(22)} height={SIZE(22)} />
+                )}
               </TouchableOpacity>
             </View>
           </View>
           <View style={styles.hospitalBottom}>
-            <Text allowFontScaling={false} style={[styles.doctorName, !apptIsLive && { color: colors.textPrimary }]}>{appt.doctor?.name ?? ''}</Text>
-            {appt.doctor?.specialties?.[0]?.name && <>
-              <Text allowFontScaling={false} style={[styles.hospitalSep, !apptIsLive && { color: colors.textSecondary }]}> | </Text>
-              <Text allowFontScaling={false} style={[styles.doctorSpecialty, !apptIsLive && { color: colors.textSecondary }]}>{appt.doctor.specialties[0].name}</Text>
-            </>}
+            <Text
+              allowFontScaling={false}
+              style={[
+                styles.doctorName,
+                !apptIsLive && { color: colors.textPrimary },
+              ]}
+            >
+              {appt.doctor?.name ?? ''}
+            </Text>
+            {appt.doctor?.specialties?.[0]?.name && (
+              <>
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.hospitalSep,
+                    !apptIsLive && { color: colors.textSecondary },
+                  ]}
+                >
+                  {' '}
+                  |{' '}
+                </Text>
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.doctorSpecialty,
+                    !apptIsLive && { color: colors.textSecondary },
+                  ]}
+                >
+                  {appt.doctor.specialties[0].name}
+                </Text>
+              </>
+            )}
           </View>
         </View>
       </View>
@@ -118,25 +341,43 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
   };
 
   const isDone = (a: Appointment) => {
-    const live = trackData?.appointments.find(t => t.tokenNumber === a.tokenNumber);
+    const live = trackData?.appointments.find(
+      t => t.tokenNumber === a.tokenNumber,
+    );
     const status = live?.tokenStatus ?? a.tokenStatus;
-    return status === 'completed' || status === 'done' || status === 'cancelled';
+    return (
+      status === 'completed' || status === 'done' || status === 'cancelled'
+    );
   };
 
   const visibleAppointments = activeAppointments.filter(a => !isDone(a));
-  const visibleSpotlight = spotlightAppt && !isDone(spotlightAppt) ? spotlightAppt : null;
+  const visibleSpotlight =
+    spotlightAppt && !isDone(spotlightAppt) ? spotlightAppt : null;
 
   return (
     <>
-      {visibleAppointments.length > 1
-        ? <ScrollView horizontal showsHorizontalScrollIndicator={false} snapToInterval={SIZE(361 + 16)} decelerationRate="fast" contentContainerStyle={styles.bannerScroll}>
+      {visibleAppointments.length > 1 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={SIZE(361 + 16)}
+          decelerationRate="fast"
+          contentContainerStyle={styles.bannerScroll}
+        >
           {visibleAppointments.map(renderBannerCard)}
         </ScrollView>
-        : visibleSpotlight && renderBannerCard(visibleSpotlight)
-      }
+      ) : (
+        visibleSpotlight && renderBannerCard(visibleSpotlight)
+      )}
       <View style={styles.cardsRow}>
-        <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onspecialstPress}>
-          <Text allowFontScaling={false} style={styles.cardTitle}>All specialst</Text>
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.7}
+          onPress={onspecialstPress}
+        >
+          <Text allowFontScaling={false} style={styles.cardTitle}>
+            All specialst
+          </Text>
           <View style={styles.iconsRow}>
             {specialties.slice(0, 3).map(s => (
               <View key={s.id} style={styles.iconBox}>
@@ -145,29 +386,55 @@ const ListHeader = ({ onTokenPress, onspecialstPress, onDoctorsPress, onClinicsP
             ))}
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onDoctorsPress}>
-          <Text allowFontScaling={false} style={styles.cardTitle}>All doctors</Text>
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.7}
+          onPress={onDoctorsPress}
+        >
+          <Text allowFontScaling={false} style={styles.cardTitle}>
+            All doctors
+          </Text>
           <View style={styles.avatarRow}>
             {doctors.slice(0, 3).map((d, i) => (
-              <View key={d.id} style={[styles.avatarCircle, totalDoctorCount > 3 && { marginLeft: i > 0 ? SIZE(-12) : 0 }]}>
+              <View
+                key={d.id}
+                style={[
+                  styles.avatarCircle,
+                  totalDoctorCount > 3 && { marginLeft: i > 0 ? SIZE(-12) : 0 },
+                ]}
+              >
                 <Image
-                  source={d.profilePicture ? { uri: d.profilePicture } : require('../assets/images/doctor-profile.png')}
+                  source={
+                    d.profilePicture
+                      ? { uri: d.profilePicture }
+                      : require('../assets/images/doctor-profile.png')
+                  }
                   style={styles.avatarImg}
                 />
               </View>
             ))}
             {totalDoctorCount > 3 && (
-              <Text allowFontScaling={false} style={styles.avatarCount}>+{totalDoctorCount - 3}</Text>
+              <Text allowFontScaling={false} style={styles.avatarCount}>
+                +{totalDoctorCount - 3}
+              </Text>
             )}
           </View>
         </TouchableOpacity>
       </View>
-      {hasLocation && <View style={styles.sectionHeader}>
-        <Text allowFontScaling={false} style={styles.sectionTitle}>Near by Clinics</Text>
-        {hasNearbyClinics && <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
-          <Text allowFontScaling={false} style={styles.viewAll}>See all</Text>
-        </TouchableOpacity>}
-      </View>}
+      {hasLocation && (
+        <View style={styles.sectionHeader}>
+          <Text allowFontScaling={false} style={styles.sectionTitle}>
+            Near by Clinics
+          </Text>
+          {hasNearbyClinics && (
+            <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
+              <Text allowFontScaling={false} style={styles.viewAll}>
+                See all
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
     </>
   );
 };
@@ -178,16 +445,36 @@ function SkeletonScreen() {
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(shimmer, { toValue: 1, duration: 900, useNativeDriver: true }),
-        Animated.timing(shimmer, { toValue: 0, duration: 900, useNativeDriver: true }),
-      ])
+        Animated.timing(shimmer, {
+          toValue: 1,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmer, {
+          toValue: 0,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+      ]),
     ).start();
   }, []);
 
-  const opacity = shimmer.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] });
+  const opacity = shimmer.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.4, 1],
+  });
 
   const S = ({ style }: { style: any }) => (
-    <Animated.View style={[style, { opacity, backgroundColor: colors.backgroundMuted, borderRadius: SIZE(10) }]} />
+    <Animated.View
+      style={[
+        style,
+        {
+          opacity,
+          backgroundColor: colors.backgroundMuted,
+          borderRadius: SIZE(10),
+        },
+      ]}
+    />
   );
 
   return (
@@ -216,7 +503,9 @@ export default function HomeScreen() {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [totalDoctorCount, setTotalDoctorCount] = useState(0);
   const [spotlightAppt, setSpotlightAppt] = useState<Appointment | null>(null);
-  const [activeAppointments, setActiveAppointments] = useState<Appointment[]>([]);
+  const [activeAppointments, setActiveAppointments] = useState<Appointment[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { canInstall, isInstalled, install } = usePWAInstall();
@@ -224,16 +513,25 @@ export default function HomeScreen() {
   const [fallbackClinics, setFallbackClinics] = useState<Clinic[]>([]);
 
   const fetchData = (isRefresh = false) => {
-    if (isRefresh) { setRefreshing(true); setLoading(true); }
+    if (isRefresh) {
+      setRefreshing(true);
+      setLoading(true);
+    }
     Promise.all([
       getHomeData(location?.latitude, location?.longitude),
       getClinics(1, 20),
-    ]).then(([homeRes, clinicsRes]) => {
-      console.log(clinicsRes.data);
+    ])
+      .then(([homeRes, clinicsRes]) => {
+        console.log(clinicsRes.data);
 
-      handleHomeData(homeRes);
-      setFallbackClinics(clinicsRes.data);
-    }).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); });
+        handleHomeData(homeRes);
+        setFallbackClinics(clinicsRes.data);
+      })
+      .catch(() => {})
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   };
 
   const handleHomeData = (res: { success: boolean; data: any }) => {
@@ -245,42 +543,70 @@ export default function HomeScreen() {
     setTotalDoctorCount(res.data.totalDoctorCount);
     const today = new Date().toISOString().split('T')[0];
     const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-    const active = (res.data.appointments ?? []).filter(a => a.tokenStatus === 'pending' || a.tokenStatus === 'ongoing');
+    const active = (res.data.appointments ?? []).filter(
+      a => a.tokenStatus === 'pending' || a.tokenStatus === 'ongoing',
+    );
     const live = active.find(a => {
       if (a.appointmentDate !== today) return false;
       const [sh, sm] = (a.schedule?.startTime ?? '').split(':').map(Number);
       return nowMins >= sh * 60 + sm;
     });
-    const sorted = active.sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
-    setActiveAppointments(live ? [live, ...sorted.filter(a => a.id !== live.id)] : sorted);
+    const sorted = active.sort(
+      (a, b) =>
+        new Date(a.appointmentDate).getTime() -
+        new Date(b.appointmentDate).getTime(),
+    );
+    setActiveAppointments(
+      live ? [live, ...sorted.filter(a => a.id !== live.id)] : sorted,
+    );
     setSpotlightAppt(live ?? sorted[0] ?? null);
   };
 
-  useEffect(() => { if (ready) fetchData(); }, [ready, location?.latitude, location?.longitude]);
+  useEffect(() => {
+    if (ready) fetchData();
+  }, [ready, location?.latitude, location?.longitude]);
 
   useEffect(() => {
-    if (!spotlightAppt) { stopTracking(); return; }
+    if (!spotlightAppt) {
+      stopTracking();
+      return;
+    }
     const today = new Date().toISOString().split('T')[0];
     const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-    const [sh, sm] = (spotlightAppt.schedule?.startTime ?? '').split(':').map(Number);
-    const isLive = spotlightAppt.appointmentDate === today && nowMins >= sh * 60 + sm;
+    const [sh, sm] = (spotlightAppt.schedule?.startTime ?? '')
+      .split(':')
+      .map(Number);
+    const isLive =
+      spotlightAppt.appointmentDate === today && nowMins >= sh * 60 + sm;
     if (isLive) startTracking(spotlightAppt.id);
     else stopTracking();
   }, [spotlightAppt]);
   const locationRef = useRef(location);
-  useEffect(() => { locationRef.current = location; }, [location]);
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
 
-  useEffect(() => navigation.addListener('focus', () => {
-    if (!ready) return;
-    const loc = locationRef.current;
-    Promise.all([
-      getHomeData(loc?.latitude, loc?.longitude),
-      getClinics(1, 20),
-    ]).then(([homeRes, clinicsRes]) => {
-      handleHomeData(homeRes);
-      setFallbackClinics(clinicsRes.data);
-    }).catch(() => { }).finally(() => { setLoading(false); setRefreshing(false); });
-  }), [navigation, ready]);
+  useEffect(
+    () =>
+      navigation.addListener('focus', () => {
+        if (!ready) return;
+        const loc = locationRef.current;
+        Promise.all([
+          getHomeData(loc?.latitude, loc?.longitude),
+          getClinics(1, 20),
+        ])
+          .then(([homeRes, clinicsRes]) => {
+            handleHomeData(homeRes);
+            setFallbackClinics(clinicsRes.data);
+          })
+          .catch(() => {})
+          .finally(() => {
+            setLoading(false);
+            setRefreshing(false);
+          });
+      }),
+    [navigation, ready],
+  );
 
   if (loading) {
     return <SkeletonScreen />;
@@ -290,17 +616,45 @@ export default function HomeScreen() {
         <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.locationBtn} activeOpacity={0.7} onPress={() => navigation.navigate('LocationSearch')}>
-            <LocationIcon width={SIZE(19)} height={SIZE(19)} style={styles.locationIcon} />
+          <TouchableOpacity
+            style={styles.locationBtn}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('LocationSearch')}
+          >
+            <LocationIcon
+              width={SIZE(19)}
+              height={SIZE(19)}
+              style={styles.locationIcon}
+            />
             <View style={{ maxWidth: SIZE(150) }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SIZE(4) }}>
-                <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>
-                  {loadingLocation ? 'Loading...' : location ? location.mainText : 'Select your location'}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: SIZE(4),
+                }}
+              >
+                <Text
+                  allowFontScaling={false}
+                  style={styles.locationText}
+                  numberOfLines={1}
+                >
+                  {loadingLocation
+                    ? 'Loading...'
+                    : location
+                    ? location.mainText
+                    : 'Select your location'}
                 </Text>
                 <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
               </View>
               {location?.secondaryText ? (
-                <Text allowFontScaling={false} style={styles.locationSub} numberOfLines={1}>{location.secondaryText}</Text>
+                <Text
+                  allowFontScaling={false}
+                  style={styles.locationSub}
+                  numberOfLines={1}
+                >
+                  {location.secondaryText}
+                </Text>
               ) : null}
             </View>
           </TouchableOpacity>
@@ -309,11 +663,20 @@ export default function HomeScreen() {
               <TouchableOpacity
                 style={styles.installBtn}
                 activeOpacity={0.7}
-                onPress={() => canInstall ? install() : setShowInstallModal(true)}>
-                <Text allowFontScaling={false} style={styles.installBtnText}>Install App</Text>
+                onPress={() =>
+                  canInstall ? install() : setShowInstallModal(true)
+                }
+              >
+                <Text allowFontScaling={false} style={styles.installBtnText}>
+                  Install App
+                </Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity style={styles.notifBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Notifications')}>
+            <TouchableOpacity
+              style={styles.notifBtn}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('Notifications')}
+            >
               <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
             </TouchableOpacity>
           </View>
@@ -321,9 +684,16 @@ export default function HomeScreen() {
 
         {/* Search - stays fixed */}
         <View style={styles.searchWrapper}>
-          <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('Search')}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('Search')}
+          >
             <View pointerEvents="none">
-              <SearchBar placeholder='Search for "Skin Doctor"' editable={false} style={{ borderColor: colors.searchBorder }} />
+              <SearchBar
+                placeholder='Search for "Skin Doctor"'
+                editable={false}
+                style={{ borderColor: colors.searchBorder }}
+              />
             </View>
           </TouchableOpacity>
         </View>
@@ -335,16 +705,30 @@ export default function HomeScreen() {
           extraData={trackData}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[colors.primary]} tintColor={colors.primary} />}
           ListFooterComponent={null}
           ListEmptyComponent={
             <View>
               <View style={styles.emptyContainer}>
                 <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
-                <Text allowFontScaling={false} style={styles.emptyTitle}>We're expanding here soon — stay tuned for clinics near you 😊</Text>
-                <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any clinics in this area right now. Try changing your location or adjusting filters.</Text>
-                <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
-                  <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
+                <Text allowFontScaling={false} style={styles.emptyTitle}>
+                  We're expanding here soon — stay tuned for clinics near you 😊
+                </Text>
+                <Text allowFontScaling={false} style={styles.emptyMessage}>
+                  We couldn't find any clinics in this area right now. Try
+                  changing your location or adjusting filters.
+                </Text>
+                <View
+                  style={{
+                    width: '100%',
+                    paddingHorizontal: SIZE(16),
+                    marginTop: SIZE(8),
+                  }}
+                >
+                  <PrimaryButton
+                    label="Use another location"
+                    onPress={() => navigation.navigate('LocationSearch')}
+                  />
                 </View>
               </View>
               {fallbackClinics.map(item => (
@@ -354,83 +738,328 @@ export default function HomeScreen() {
                   subType={item.specialties[0]?.name ?? item.type}
                   location={item.address}
                   image={item.profilePicture}
-                  distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
-                  onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
+                  distance={
+                    location
+                      ? getDistance(
+                          location.latitude,
+                          location.longitude,
+                          item.latitude,
+                          item.longitude,
+                        )
+                      : undefined
+                  }
+                  onPress={() =>
+                    navigation.navigate('HospitalDetail', {
+                      id: item.id,
+                      name: item.name,
+                      specialty: item.specialties[0]?.name ?? '',
+                      location: item.address,
+                    })
+                  }
                   style={styles.clinicCard}
                 />
               ))}
             </View>
           }
-          ListHeaderComponent={<ListHeader onTokenPress={(appt) => navigation.navigate('TokenDetail', { appointment: appt })} onspecialstPress={() => navigation.navigate('specialst')} onDoctorsPress={() => navigation.navigate('Doctors')} onClinicsPress={() => navigation.navigate('Clinics')} specialties={specialties} doctors={doctors} totalDoctorCount={totalDoctorCount} spotlightAppt={spotlightAppt} activeAppointments={activeAppointments} hasNearbyClinics={clinics.length > 0} hasLocation={!!location} trackData={trackData} />}
+          ListHeaderComponent={
+            <ListHeader
+              onTokenPress={appt =>
+                navigation.navigate('TokenDetail', { appointment: appt })
+              }
+              onspecialstPress={() => navigation.navigate('specialst')}
+              onDoctorsPress={() => navigation.navigate('Doctors')}
+              onClinicsPress={() => navigation.navigate('Clinics')}
+              specialties={specialties}
+              doctors={doctors}
+              totalDoctorCount={totalDoctorCount}
+              spotlightAppt={spotlightAppt}
+              activeAppointments={activeAppointments}
+              hasNearbyClinics={clinics.length > 0}
+              hasLocation={!!location}
+              trackData={trackData}
+            />
+          }
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
               location={item.address}
               image={item.profilePicture}
-              distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
-              onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
+              distance={
+                location
+                  ? getDistance(
+                      location.latitude,
+                      location.longitude,
+                      item.latitude,
+                      item.longitude,
+                    )
+                  : undefined
+              }
+              onPress={() =>
+                navigation.navigate('HospitalDetail', {
+                  id: item.id,
+                  name: item.name,
+                  specialty: item.specialties[0]?.name ?? '',
+                  location: item.address,
+                })
+              }
             />
           )}
         />
 
         {/* PWA Install Instructions Modal */}
-        {showInstallModal && (() => {
-          const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-          const isSafari = /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS/i.test(ua);
-          const isFirefox = /Firefox|FxiOS/i.test(ua);
-          const isChromeiOS = /CriOS/i.test(ua);
+        {showInstallModal &&
+          (() => {
+            const ua =
+              typeof navigator !== 'undefined' ? navigator.userAgent : '';
+            const isSafari =
+              /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS/i.test(ua);
+            const isFirefox = /Firefox|FxiOS/i.test(ua);
+            const isChromeiOS = /CriOS/i.test(ua);
 
-          type Step = { icon: string; text: React.ReactNode };
-          const steps: Step[] = isSafari ? [
-            { icon: '1', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap the <Text style={styles.installStepBold}>Share</Text> button <Text style={styles.installStepBold}>⎙</Text> at the bottom of Safari</Text> },
-            { icon: '2', text: <Text allowFontScaling={false} style={styles.installStepText}>Scroll down and tap <Text style={styles.installStepBold}>"Add to Home Screen"</Text></Text> },
-            { icon: '3', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>Add</Text> in the top-right corner</Text> },
-          ] : isFirefox ? [
-            { icon: '1', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap the <Text style={styles.installStepBold}>⋮ menu</Text> at the top-right</Text> },
-            { icon: '2', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>"Install"</Text> or <Text style={styles.installStepBold}>"Add to Home Screen"</Text></Text> },
-            { icon: '3', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>Add</Text> to confirm</Text> },
-          ] : isChromeiOS ? [
-            { icon: '1', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap the <Text style={styles.installStepBold}>Share</Text> button <Text style={styles.installStepBold}>⎙</Text> at the bottom</Text> },
-            { icon: '2', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>"Add to Home Screen"</Text></Text> },
-            { icon: '3', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>Add</Text> to confirm</Text> },
-          ] : [
-            // Chrome / Edge on Android or desktop
-            { icon: '1', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap the <Text style={styles.installStepBold}>⋮ menu</Text> at the top-right of Chrome</Text> },
-            { icon: '2', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>"Add to Home Screen"</Text> or <Text style={styles.installStepBold}>"Install App"</Text></Text> },
-            { icon: '3', text: <Text allowFontScaling={false} style={styles.installStepText}>Tap <Text style={styles.installStepBold}>Install</Text> to confirm</Text> },
-          ];
+            type Step = { icon: string; text: React.ReactNode };
+            const steps: Step[] = isSafari
+              ? [
+                  {
+                    icon: '1',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap the{' '}
+                        <Text style={styles.installStepBold}>Share</Text> button{' '}
+                        <Text style={styles.installStepBold}>⎙</Text> at the
+                        bottom of Safari
+                      </Text>
+                    ),
+                  },
+                  {
+                    icon: '2',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Scroll down and tap{' '}
+                        <Text style={styles.installStepBold}>
+                          "Add to Home Screen"
+                        </Text>
+                      </Text>
+                    ),
+                  },
+                  {
+                    icon: '3',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap <Text style={styles.installStepBold}>Add</Text> in
+                        the top-right corner
+                      </Text>
+                    ),
+                  },
+                ]
+              : isFirefox
+              ? [
+                  {
+                    icon: '1',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap the{' '}
+                        <Text style={styles.installStepBold}>⋮ menu</Text> at
+                        the top-right
+                      </Text>
+                    ),
+                  },
+                  {
+                    icon: '2',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap{' '}
+                        <Text style={styles.installStepBold}>"Install"</Text> or{' '}
+                        <Text style={styles.installStepBold}>
+                          "Add to Home Screen"
+                        </Text>
+                      </Text>
+                    ),
+                  },
+                  {
+                    icon: '3',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap <Text style={styles.installStepBold}>Add</Text> to
+                        confirm
+                      </Text>
+                    ),
+                  },
+                ]
+              : isChromeiOS
+              ? [
+                  {
+                    icon: '1',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap the{' '}
+                        <Text style={styles.installStepBold}>Share</Text> button{' '}
+                        <Text style={styles.installStepBold}>⎙</Text> at the
+                        bottom
+                      </Text>
+                    ),
+                  },
+                  {
+                    icon: '2',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap{' '}
+                        <Text style={styles.installStepBold}>
+                          "Add to Home Screen"
+                        </Text>
+                      </Text>
+                    ),
+                  },
+                  {
+                    icon: '3',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap <Text style={styles.installStepBold}>Add</Text> to
+                        confirm
+                      </Text>
+                    ),
+                  },
+                ]
+              : [
+                  // Chrome / Edge on Android or desktop
+                  {
+                    icon: '1',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap the{' '}
+                        <Text style={styles.installStepBold}>⋮ menu</Text> at
+                        the top-right of Chrome
+                      </Text>
+                    ),
+                  },
+                  {
+                    icon: '2',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap{' '}
+                        <Text style={styles.installStepBold}>
+                          "Add to Home Screen"
+                        </Text>{' '}
+                        or{' '}
+                        <Text style={styles.installStepBold}>
+                          "Install App"
+                        </Text>
+                      </Text>
+                    ),
+                  },
+                  {
+                    icon: '3',
+                    text: (
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installStepText}
+                      >
+                        Tap <Text style={styles.installStepBold}>Install</Text>{' '}
+                        to confirm
+                      </Text>
+                    ),
+                  },
+                ];
 
-          return (
-            <TouchableOpacity
-              style={styles.modalOverlay}
-              activeOpacity={1}
-              onPress={() => setShowInstallModal(false)}>
-              <TouchableOpacity activeOpacity={1} style={styles.installModal} onPress={() => {}}>
-                <View style={styles.installModalHeader}>
-                  <Text allowFontScaling={false} style={styles.installModalTitle}>Install Aptly</Text>
-                  <TouchableOpacity onPress={() => setShowInstallModal(false)} style={styles.installModalClose}>
-                    <Text allowFontScaling={false} style={styles.installModalCloseText}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-                <Text allowFontScaling={false} style={styles.installModalDesc}>
-                  Add Aptly to your home screen for quick access — it works just like a native app.
-                </Text>
-                {steps.map((step, i) => (
-                  <View key={i} style={styles.installStep}>
-                    <View style={styles.installStepNum}>
-                      <Text allowFontScaling={false} style={styles.installStepNumText}>{step.icon}</Text>
-                    </View>
-                    {step.text}
+            return (
+              <TouchableOpacity
+                style={styles.modalOverlay}
+                activeOpacity={1}
+                onPress={() => setShowInstallModal(false)}
+              >
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={styles.installModal}
+                  onPress={() => {}}
+                >
+                  <View style={styles.installModalHeader}>
+                    <Text
+                      allowFontScaling={false}
+                      style={styles.installModalTitle}
+                    >
+                      Install Aptly
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setShowInstallModal(false)}
+                      style={styles.installModalClose}
+                    >
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installModalCloseText}
+                      >
+                        ✕
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                ))}
-                <TouchableOpacity style={styles.installModalBtn} activeOpacity={0.8} onPress={() => setShowInstallModal(false)}>
-                  <Text allowFontScaling={false} style={styles.installModalBtnText}>Got it</Text>
+                  <Text
+                    allowFontScaling={false}
+                    style={styles.installModalDesc}
+                  >
+                    Add Aptly to your home screen for quick access — it works
+                    just like a native app.
+                  </Text>
+                  {steps.map((step, i) => (
+                    <View key={i} style={styles.installStep}>
+                      <View style={styles.installStepNum}>
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepNumText}
+                        >
+                          {step.icon}
+                        </Text>
+                      </View>
+                      {step.text}
+                    </View>
+                  ))}
+                  <TouchableOpacity
+                    style={styles.installModalBtn}
+                    activeOpacity={0.8}
+                    onPress={() => setShowInstallModal(false)}
+                  >
+                    <Text
+                      allowFontScaling={false}
+                      style={styles.installModalBtnText}
+                    >
+                      Got it
+                    </Text>
+                  </TouchableOpacity>
                 </TouchableOpacity>
               </TouchableOpacity>
-            </TouchableOpacity>
-          );
-        })()}
+            );
+          })()}
       </SafeAreaView>
     );
   }
@@ -439,7 +1068,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white
+    backgroundColor: colors.white,
   },
   header: {
     flexDirection: 'row',
@@ -452,7 +1081,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 94,
     height: SIZE(32),
-    resizeMode: 'contain'
+    resizeMode: 'contain',
   },
   locationBtn: {
     flexDirection: 'row',
@@ -593,7 +1222,7 @@ const styles = StyleSheet.create({
   },
   searchWrapper: {
     paddingHorizontal: SIZE(18),
-    marginBottom: SIZE(20)
+    marginBottom: SIZE(20),
   },
   bannerCard: {
     marginHorizontal: SIZE(18),
@@ -779,7 +1408,7 @@ const styles = StyleSheet.create({
   },
   iconsRow: {
     flexDirection: 'row',
-    gap: SIZE(8)
+    gap: SIZE(8),
   },
   iconBox: {
     width: SIZE(40),
@@ -848,7 +1477,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(32),
     paddingVertical: SIZE(32),
     width: '80%',
-    alignSelf: 'center'
+    alignSelf: 'center',
     // gap: SIZE(10),
   },
   emptyTitle: {
@@ -866,7 +1495,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: SIZE(15),
     maxWidth: SIZE(260),
-    marginBottom: SIZE(8)
+    marginBottom: SIZE(8),
   },
 
   clinicCard: {
@@ -880,7 +1509,6 @@ const styles = StyleSheet.create({
     gap: SIZE(12),
     alignItems: 'center',
     marginBottom: SIZE(6),
-
   },
   clinicImage: {
     width: 92,
@@ -892,7 +1520,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     alignSelf: 'stretch',
-    paddingVertical: SIZE(7)
+    paddingVertical: SIZE(7),
   },
   clinicName: {
     fontFamily: 'Manrope-SemiBold',
@@ -908,7 +1536,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(4),
-    marginTop: SIZE(2)
+    marginTop: SIZE(2),
   },
   arrowContainer: {
     alignItems: 'center',

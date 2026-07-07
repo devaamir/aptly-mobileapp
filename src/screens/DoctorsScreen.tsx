@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, RefreshControl } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -19,7 +28,15 @@ import { getDistance } from '../utils/getDistance';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Doctors'>;
 
-const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const DAYS = [
+  'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+];
 
 function getBookingStatus(doctor: Doctor): 'Booking Opened' | 'Not Started' {
   const today = DAYS[new Date().getDay()];
@@ -53,7 +70,9 @@ function getBookingTime(doctor: Doctor): string {
     return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
   });
   if (!current) return 'No active session';
-  return `Booking available at ${to12h(current.startTime)} - ${to12h(current.stopTime)}`;
+  return `Booking available at ${to12h(current.startTime)} - ${to12h(
+    current.stopTime,
+  )}`;
 }
 
 export default function DoctorsScreen({ navigation }: Props) {
@@ -61,40 +80,79 @@ export default function DoctorsScreen({ navigation }: Props) {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
+  const [appliedFilters, setAppliedFilters] = useState<
+    Record<string, string[]>
+  >({ specialties: [], availability: [], type: [] });
   const [distance, setDistance] = useState(25);
 
   const fetchDoctors = (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true); else setLoading(true);
-    getDoctors(1, 20, userLocation ? { latitude: userLocation.latitude, longitude: userLocation.longitude, radius: distance } : undefined)
-      .then(res => Promise.all(res.data.map(d => getDoctor(d.id).then(r => r.data))))
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+    getDoctors(
+      1,
+      20,
+      userLocation
+        ? {
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+            radius: distance,
+          }
+        : undefined,
+    )
+      .then(res =>
+        Promise.all(res.data.map(d => getDoctor(d.id).then(r => r.data))),
+      )
       .then(setDoctors)
-      .catch(() => { })
-      .finally(() => { setLoading(false); setRefreshing(false); });
+      .catch(() => {})
+      .finally(() => {
+        setLoading(false);
+        setRefreshing(false);
+      });
   };
 
-  useEffect(() => { fetchDoctors(); }, [userLocation, distance]);
-
+  useEffect(() => {
+    fetchDoctors();
+  }, [userLocation, distance]);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+          activeOpacity={0.7}
+        >
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.title}>Doctors</Text>
-        <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Search')}>
+        <Text allowFontScaling={false} style={styles.title}>
+          Doctors
+        </Text>
+        <TouchableOpacity
+          style={styles.backBtn}
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('Search')}
+        >
           <SearchIcon width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
       </View>
 
       {/* Location & Filter */}
-      <TouchableOpacity style={styles.locationBox} activeOpacity={0.8} onPress={() => navigation.navigate('LocationSearch')}>
+      <TouchableOpacity
+        style={styles.locationBox}
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate('LocationSearch')}
+      >
         <View style={styles.locationIconContainer}>
           <LocationIcon width={SIZE(20)} height={SIZE(20)} />
         </View>
-        <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{userLocation ? userLocation.mainText : 'Select location'}</Text>
+        <Text
+          allowFontScaling={false}
+          style={styles.locationText}
+          numberOfLines={1}
+        >
+          {userLocation ? userLocation.mainText : 'Select location'}
+        </Text>
         <DistancePicker value={distance} onChange={setDistance} />
       </TouchableOpacity>
       <View style={styles.filterRow}>
@@ -102,19 +160,24 @@ export default function DoctorsScreen({ navigation }: Props) {
       </View>
 
       {loading ? (
-        <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
+        <ActivityIndicator
+          style={{ marginTop: SIZE(40) }}
+          color={colors.primary}
+        />
       ) : (
         <FlatList
           data={doctors}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchDoctors(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchDoctors(true)} colors={[colors.primary]} tintColor={colors.primary} />}
           renderItem={({ item }) => {
             const specialty = item.specialties[0]?.name ?? '';
             const hospital = item.medicalCenters[0]?.name ?? '';
             const clinicType = item.medicalCenters[0]?.type ?? '';
-            const location = item.medicalCenters[0] ? `${item.medicalCenters[0].address}` : '';
+            const location = item.medicalCenters[0]
+              ? `${item.medicalCenters[0].address}`
+              : '';
             return (
               <DoctorCard
                 name={item.name}
@@ -122,23 +185,51 @@ export default function DoctorsScreen({ navigation }: Props) {
                 hospital={hospital}
                 clinicType={clinicType}
                 location={location}
-                distance={(() => { const mc = item.medicalCenters[0]; return (userLocation && mc) ? getDistance(userLocation.latitude, userLocation.longitude, mc.latitude, mc.longitude) : undefined; })()}
+                distance={(() => {
+                  const mc = item.medicalCenters[0];
+                  return userLocation && mc
+                    ? getDistance(
+                        userLocation.latitude,
+                        userLocation.longitude,
+                        mc.latitude,
+                        mc.longitude,
+                      )
+                    : undefined;
+                })()}
                 experience={`${item.yearsOfExperience} yrs exp`}
                 image={item.profilePicture}
                 status={getBookingStatus(item)}
                 bookingTime={getBookingTime(item)}
-                onPress={() => navigation.navigate('DoctorDetail', { doctorId: item.id })}
-                onBookPress={() => navigation.navigate('BookAppointment', { doctor: item })}
+                onPress={() =>
+                  navigation.navigate('DoctorDetail', { doctorId: item.id })
+                }
+                onBookPress={() =>
+                  navigation.navigate('BookAppointment', { doctor: item })
+                }
               />
             );
           }}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
-              <Text allowFontScaling={false} style={styles.emptyTitle}>No doctors available here</Text>
-              <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any doctors in this area right now. Try changing your location or adjusting filters.</Text>
-              <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
-                <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
+              <Text allowFontScaling={false} style={styles.emptyTitle}>
+                No doctors available here
+              </Text>
+              <Text allowFontScaling={false} style={styles.emptyMessage}>
+                We couldn't find any doctors in this area right now. Try
+                changing your location or adjusting filters.
+              </Text>
+              <View
+                style={{
+                  width: '100%',
+                  paddingHorizontal: SIZE(16),
+                  marginTop: SIZE(8),
+                }}
+              >
+                <PrimaryButton
+                  label="Use another location"
+                  onPress={() => navigation.navigate('LocationSearch')}
+                />
               </View>
             </View>
           }
@@ -163,8 +254,12 @@ const styles = StyleSheet.create({
     fontSize: SIZE(18),
     color: colors.textPrimary,
   },
-  searchWrapper: { paddingHorizontal: SIZE(18), marginBottom: SIZE(20), },
-  listContent: { paddingBottom: SIZE(24), gap: SIZE(12), paddingHorizontal: SIZE(20) },
+  searchWrapper: { paddingHorizontal: SIZE(18), marginBottom: SIZE(20) },
+  listContent: {
+    paddingBottom: SIZE(24),
+    gap: SIZE(12),
+    paddingHorizontal: SIZE(20),
+  },
   locationBox: {
     flexDirection: 'row',
     alignItems: 'center',

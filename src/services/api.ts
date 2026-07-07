@@ -32,8 +32,9 @@ export type {
   Patient,
 };
 
-// const baseURL = 'https://aptly-server.onrender.com/api'; // dev
-const baseURL = 'https://api.aptly.care/api'; // prod
+const baseURL = 'https://aptly-server.onrender.com/api'; // dev
+// const baseURL = 'https://api.aptly.care/api'; // prod
+export const IS_DEV = baseURL.includes('onrender.com');
 
 const api = axios.create({
   // baseURL: 'https://aptly-server.onrender.com/api', // dev
