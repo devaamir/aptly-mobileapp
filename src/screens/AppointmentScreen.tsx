@@ -122,14 +122,7 @@ export default function AppointmentScreen() {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
-          // refreshControl={
-          //   <RefreshControl
-          //     refreshing={refreshing}
-          //     onRefresh={() => fetchPage(1, true)}
-          //     colors={[colors.primary]}
-          //     tintColor={colors.primary}
-          //   />
-          // }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchPage(1, true)} colors={[colors.primary]} tintColor={colors.primary} />}
           onEndReached={() => {
             if (hasMore && !loadingMore) fetchPage(page + 1);
           }}

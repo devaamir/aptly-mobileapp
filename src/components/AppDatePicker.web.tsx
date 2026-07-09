@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import DownArrow from '../assets/icons/down-arrow-grey.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
@@ -14,8 +14,6 @@ type Props = {
 };
 
 export default function AppDatePicker({ value, onChange, placeholder = 'Select', focused }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
   const formatted = value
     ? value.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
     : null;
@@ -25,24 +23,20 @@ export default function AppDatePicker({ value, onChange, placeholder = 'Select',
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={[styles.selector, focused && styles.selectorFocused]}
-        onPress={() => inputRef.current?.showPicker?.() || inputRef.current?.click()}
-        activeOpacity={0.7}>
+      <View style={[styles.selector, focused && styles.selectorFocused]}>
         <Text allowFontScaling={false} style={[styles.selectorText, !formatted && styles.placeholder]}>
           {formatted || placeholder}
         </Text>
         <DownArrow width={SIZE(16)} height={SIZE(16)} />
-      </TouchableOpacity>
-      {/* @ts-ignore */}
-      <input
-        ref={inputRef}
-        type="date"
-        max={maxDate}
-        value={inputValue}
-        onChange={e => { if (e.target.value) onChange(new Date(e.target.value)); }}
-        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0 }}
-      />
+        {/* @ts-ignore */}
+        <input
+          type="date"
+          max={maxDate}
+          value={inputValue}
+          onChange={e => { if (e.target.value) onChange(new Date(e.target.value)); }}
+          style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+        />
+      </View>
     </View>
   );
 }

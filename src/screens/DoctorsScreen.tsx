@@ -170,7 +170,7 @@ export default function DoctorsScreen({ navigation }: Props) {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchDoctors(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchDoctors(true)} colors={[colors.primary]} tintColor={colors.primary} />}
           renderItem={({ item }) => {
             const specialty = item.specialties[0]?.name ?? '';
             const hospital = item.medicalCenters[0]?.name ?? '';

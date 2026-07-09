@@ -127,7 +127,7 @@ export default function ClinicsScreen({ navigation }: Props) {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchClinics(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchClinics(true)} colors={[colors.primary]} tintColor={colors.primary} />}
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}

@@ -705,7 +705,7 @@ export default function HomeScreen() {
           extraData={trackData}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[colors.primary]} tintColor={colors.primary} />}
           ListFooterComponent={null}
           ListEmptyComponent={
             <View>
