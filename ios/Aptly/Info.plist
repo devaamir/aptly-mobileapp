@@ -45,7 +45,7 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Aptly uses your location to find doctors and clinics near you, show distances, and sort results by proximity. Your location is only used while you are using the app and is never shared with third parties.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

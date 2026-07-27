@@ -6,8 +6,9 @@ export async function requestLocationPermission(): Promise<void> {
     await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {
-        title: 'Location Permission',
-        message: 'Aptly needs your location to show nearby doctors and clinics.',
+        title: 'Allow Location Access',
+        message:
+          'Aptly uses your location to find doctors and clinics near you, show distances, and sort results by proximity.\n\nYour location is only used while you are using the app and is never shared with third parties.',
         buttonPositive: 'Allow',
         buttonNegative: 'Deny',
       },
