@@ -86,6 +86,13 @@ const ListHeader = ({
   };
 
   const renderBannerCard = (appt: Appointment) => {
+    console.log('appt', appt);
+
+    const sseToken = trackData?.appointments.find(
+      a => a.tokenNumber === appt.tokenNumber,
+    );
+    const isSkipped = sseToken?.tokenStatus === 'skipped';
+
     const apptIsLive =
       appt.appointmentDate === today &&
       (() => {
@@ -134,6 +141,14 @@ const ListHeader = ({
             pointerEvents="none"
           />
         )}
+        {isSkipped && (
+          <Image
+            source={require('../assets/images/skipped-token-card.png')}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+            pointerEvents="none"
+          />
+        )}
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => onTokenPress(appt)}
@@ -157,7 +172,7 @@ const ListHeader = ({
                 !apptIsLive && { color: colors.textPrimary },
               ]}
             >
-              {apptIsLive ? 'Live' : 'Upcoming'}
+              {isSkipped ? 'Skipped' : apptIsLive ? 'Live' : 'Upcoming'}
             </Text>
           </View>
           <View style={styles.tokenCenter}>
@@ -254,11 +269,11 @@ const ListHeader = ({
                 <Text
                   allowFontScaling={false}
                   style={[
-                    styles.hospitalType,
+                    styles.doctorName,
                     !apptIsLive && { color: colors.textSecondary },
                   ]}
                 >
-                  {appt.medicalCenter?.type ?? ''}
+                  {appt.doctor?.name ?? ''}
                 </Text>
               </View>
             </View>
@@ -302,7 +317,7 @@ const ListHeader = ({
             </View>
           </View>
           <View style={styles.hospitalBottom}>
-            <Text
+            {/* <Text
               allowFontScaling={false}
               style={[
                 styles.doctorName,
@@ -310,8 +325,8 @@ const ListHeader = ({
               ]}
             >
               {appt.doctor?.name ?? ''}
-            </Text>
-            {appt.doctor?.specialties?.[0]?.name && (
+            </Text> */}
+            {/* {appt.doctor?.specialties?.[0]?.name && (
               <>
                 <Text
                   allowFontScaling={false}
@@ -333,7 +348,17 @@ const ListHeader = ({
                   {appt.doctor.specialties[0].name}
                 </Text>
               </>
-            )}
+            )} */}
+            <Text
+              allowFontScaling={false}
+              style={[
+                styles.patientName,
+                !apptIsLive && { color: colors.textSecondary },
+              ]}
+            >
+              {'Patient: '}
+              {appt.patient?.name ?? ''}
+            </Text>
           </View>
         </View>
       </View>
@@ -705,7 +730,14 @@ export default function HomeScreen() {
           extraData={trackData}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => fetchData(true)}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
           ListFooterComponent={null}
           ListEmptyComponent={
             <View>
@@ -1346,7 +1378,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     width: SIZE(150),
   },
-  hospitalType: {
+  doctorName: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
     color: colors.white70,
@@ -1372,7 +1404,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   doctorName: {
-    fontFamily: 'Manrope-SemiBold',
+    fontFamily: 'Manrope-Medium',
     fontSize: SIZE(12),
     color: colors.white,
   },
@@ -1385,6 +1417,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
     color: colors.white80,
+  },
+  patientName: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(11),
+    color: colors.white,
   },
   cardsRow: {
     flexDirection: 'row',
