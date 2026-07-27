@@ -36,6 +36,11 @@ export type {
 const baseURL = 'https://api.aptly.care/api'; // prod
 export const IS_DEV = baseURL.includes('onrender.com');
 
+// Phone numbers that receive OTP auto-fill even in production (bypassed numbers)
+const BYPASS_PHONES = ['7736221905']; // add your test numbers here
+export const isBypassPhone = (phone: string) =>
+  IS_DEV || BYPASS_PHONES.includes(phone.replace(/\D/g, ''));
+
 const api = axios.create({
   // baseURL: 'https://aptly-server.onrender.com/api', // dev
   baseURL: baseURL, // prod
@@ -344,12 +349,9 @@ export function trackAppointment(
 
   AsyncStorage.getItem('accessToken').then(token => {
     const EventSource = require('react-native-sse').default;
-    es = new EventSource(
-      `https://aptly-server.onrender.com/api/appointments/${id}/track`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
+    es = new EventSource(`${baseURL}/appointments/${id}/track`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     es.addEventListener('message', (e: any) => {
       console.log('[SSE] message:', e.data);
       try {

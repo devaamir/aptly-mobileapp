@@ -19,7 +19,7 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import { RootStackParamList } from '../navigations/Navigation';
-import { verifyOtp, sendOtp, IS_DEV } from '../services/api';
+import { verifyOtp, sendOtp, isBypassPhone } from '../services/api';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -44,7 +44,7 @@ export default function OtpScreen() {
   }, [timer]);
 
   useEffect(() => {
-    if (IS_DEV && code) {
+    if (isBypassPhone(phone) && code) {
       setOtp(String(code).split(''));
     }
   }, [code]);
@@ -53,7 +53,7 @@ export default function OtpScreen() {
     try {
       const res = await sendOtp(`${phone}`);
       setTimer(60);
-      if (IS_DEV && res.data?.code) {
+      if (isBypassPhone(phone) && res.data?.code) {
         setOtp(String(res.data.code).split(''));
       } else {
         setOtp(['', '', '', '']);
