@@ -32,8 +32,8 @@ export type {
   Patient,
 };
 
-const baseURL = 'https://aptly-server.onrender.com/api'; // dev
-// const baseURL = 'https://api.aptly.care/api'; // prod
+// const baseURL = 'https://aptly-server.onrender.com/api'; // dev
+const baseURL = 'https://api.aptly.care/api'; // prod
 export const IS_DEV = baseURL.includes('onrender.com');
 
 const api = axios.create({
@@ -56,31 +56,71 @@ export const setTokenRefreshCallback = (cb: typeof onTokenRefreshed) => {
   onTokenRefreshed = cb;
 };
 
+// Queue for requests that arrive while a token refresh is in progress
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (err: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve(token!);
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   response => response.data,
   async error => {
     const original = error.config;
+
     if (error?.response?.status === 401 && !original._retry) {
+      // Another refresh is already in flight — queue this request
+      if (isRefreshing) {
+        return new Promise<string>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          original.headers.Authorization = `Bearer ${token}`;
+          return api(original);
+        });
+      }
+
       original._retry = true;
+      isRefreshing = true;
+
       try {
         const refreshToken = await AsyncStorage.getItem('refreshToken');
-        console.log('refresh token', refreshToken);
+
+        // No refresh token stored — bail out immediately
+        if (!refreshToken) {
+          processQueue(error, null);
+          return Promise.reject(error?.response?.data || error);
+        }
 
         const res = await axios.post(`${baseURL}/auth/refresh-token`, {
           refreshToken,
         });
         const { accessToken, refreshToken: newRefresh } = res.data.data;
+
         await AsyncStorage.multiSet([
           ['accessToken', accessToken],
           ['refreshToken', newRefresh],
         ]);
         onTokenRefreshed?.(accessToken, newRefresh);
+        processQueue(null, accessToken);
+
         original.headers.Authorization = `Bearer ${accessToken}`;
         return api(original);
-      } catch {
-        return Promise.reject(error?.response?.data || error);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
+
     return Promise.reject(error?.response?.data || error);
   },
 );
