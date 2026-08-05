@@ -19,6 +19,7 @@ import AppInput from '../components/AppInput';
 import AppDropdown from '../components/AppDropdown';
 import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
+import LoginModal from '../components/LoginModal';
 import { createPatient, addPatient, getPatients, Patient } from '../services/api';
 
 const MENU_ITEMS: { section: string; items: string[] }[] = [];
@@ -27,6 +28,7 @@ export default function ProfileScreen() {
   const { user, setUser } = useAuth();
   const navigation = useNavigation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
@@ -70,21 +72,25 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         {/* Menu Cards Group 1 */}
         <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => navigation.navigate('EditProfile' as never)}>
+          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => user ? navigation.navigate('EditProfile' as never) : setShowLoginModal(true)}>
             <View style={styles.menuLeft}>
               <ProfileIcon width={SIZE(38)} height={SIZE(38)} />
-              <Text allowFontScaling={false} style={styles.menuText}>Your Profile</Text>
+              <Text allowFontScaling={false} style={styles.menuText}>{user ? 'Your Profile' : 'Guest User'}</Text>
             </View>
             <ArrowRight width={SIZE(24)} height={SIZE(24)} />
           </TouchableOpacity>
-          <View style={styles.divider} />
-          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => navigation.navigate('FamilyMembers' as never)}>
-            <View style={styles.menuLeft}>
-              <GroupIcon width={SIZE(38)} height={SIZE(38)} />
-              <Text allowFontScaling={false} style={styles.menuText}>Family Members</Text>
-            </View>
-            <ArrowRight width={SIZE(24)} height={SIZE(24)} />
-          </TouchableOpacity>
+          {user && (
+            <>
+              <View style={styles.divider} />
+              <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => navigation.navigate('FamilyMembers' as never)}>
+                <View style={styles.menuLeft}>
+                  <GroupIcon width={SIZE(38)} height={SIZE(38)} />
+                  <Text allowFontScaling={false} style={styles.menuText}>Family Members</Text>
+                </View>
+                <ArrowRight width={SIZE(24)} height={SIZE(24)} />
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         {/* Menu Cards Group 2 */}
@@ -114,10 +120,9 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Logout */}
-        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={() => setShowLogoutModal(true)}>
-          <LogoutIcon width={SIZE(20)} height={SIZE(20)} />
-          <Text allowFontScaling={false} style={styles.logoutText}>Log Out</Text>
+        {/* Login */}
+        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={() => navigation.navigate('PhoneNumber' as never)}>
+          <Text allowFontScaling={false} style={styles.logoutText}>Login</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -157,6 +162,8 @@ export default function ProfileScreen() {
           />
         </KeyboardAvoidingView>
       </BottomModal>
+
+      <LoginModal visible={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </SafeAreaView>
   );
 }
@@ -268,14 +275,12 @@ const styles = StyleSheet.create({
     gap: SIZE(8),
     paddingVertical: SIZE(14),
     borderRadius: SIZE(12),
-    // borderWidth: 1,
-    // borderColor: colors.dangerBorder,
-    backgroundColor: colors.dangerBgLogout,
+    backgroundColor: colors.primary,
   },
   logoutText: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(14),
-    color: colors.logoutdanger,
+    color: colors.white,
   },
   modalTitle: {
     fontFamily: 'Manrope-Bold',

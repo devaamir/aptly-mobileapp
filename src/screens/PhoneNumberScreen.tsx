@@ -7,11 +7,13 @@ import {
   Image,
   StatusBar,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { sendOtp } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useLocation } from '../context/LocationContext';
 import PrimaryButton from '../components/PrimaryButton';
 import ArrowRight from '../assets/icons/arrow-right-grey.svg';
 import ArrowRightWhite from '../assets/icons/arrow-right-white.svg';
@@ -21,6 +23,7 @@ import { SIZE } from '../themes/sizes';
 type RootStackParamList = {
   PhoneNumber: undefined;
   Otp: { phone: string; code: number };
+  Main: undefined;
 };
 
 export default function PhoneNumberScreen() {
@@ -28,6 +31,7 @@ export default function PhoneNumberScreen() {
   const [loading, setLoading] = useState(false);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { initLocation } = useLocation();
 
   const handleContinue = async () => {
     try {
@@ -44,6 +48,16 @@ export default function PhoneNumberScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
+      <TouchableOpacity
+        style={styles.skipButton}
+        onPress={() => {
+          initLocation();
+          navigation.navigate('Main');
+        }}>
+        <Text allowFontScaling={false} style={styles.skipText}>
+          Skip
+        </Text>
+      </TouchableOpacity>
       <Image
         source={require('../assets/images/aptly-logo.png')}
         style={styles.logo}
@@ -95,6 +109,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
     paddingHorizontal: SIZE(25),
+  },
+  skipButton: {
+    alignSelf: 'flex-end',
+    paddingVertical: SIZE(8),
+  },
+  skipText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.textSecondary,
   },
   logo: {
     width: 100,

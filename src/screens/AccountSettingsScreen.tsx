@@ -8,15 +8,21 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import DeleteIcon from '../assets/icons/delete-icon.svg';
 import BottomModal from '../components/BottomModal';
+import PrimaryButton from '../components/PrimaryButton';
 import { deleteAccount } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function AccountSettingsScreen() {
   const navigation = useNavigation();
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showGuestModal, setShowGuestModal] = useState(false);
 
   const handleDeleteAccount = () => {
+    if (!user) {
+      setShowGuestModal(true);
+      return;
+    }
     setShowDeleteModal(true);
   };
 
@@ -81,6 +87,25 @@ export default function AccountSettingsScreen() {
             <Text style={styles.confirmText}>Delete Account</Text>
           </TouchableOpacity>
         </View>
+      </BottomModal>
+
+      <BottomModal visible={showGuestModal} onClose={() => setShowGuestModal(false)}>
+        <Text style={styles.modalTitle}>🤔 Hmm...</Text>
+        <Text style={styles.modalDesc}>
+          First you need to create an account to delete one. Bit of a catch-22, isn't it?
+        </Text>
+        <View style={styles.fullWidth}>
+          <PrimaryButton
+            label="Login"
+            onPress={() => {
+              setShowGuestModal(false);
+              navigation.navigate('PhoneNumber' as never);
+            }}
+          />
+        </View>
+        <TouchableOpacity style={styles.guestCancelBtn} activeOpacity={0.7} onPress={() => setShowGuestModal(false)}>
+          <Text style={styles.guestCancelText}>Cancel</Text>
+        </TouchableOpacity>
       </BottomModal>
     </SafeAreaView>
   );
@@ -172,6 +197,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(16),
     color: colors.textPrimary,
+  },
+  guestCancelBtn: {
+    paddingVertical: SIZE(8),
+    alignItems: 'center',
+  },
+  guestCancelText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(14),
+    color: colors.textMuted,
+  },
+  fullWidth: {
+    width: '100%',
   },
   confirmBtn: {
     flex: 1,

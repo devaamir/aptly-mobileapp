@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ViewStyle, StyleProp } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import type { Schedule } from '../types/api.types';
+import { useAuth } from '../context/AuthContext';
+import LoginModal from './LoginModal';
 
 type Props = {
   name: string;
@@ -72,51 +74,66 @@ const statusConfig = {
 const DoctorCard = ({ name, type, hospital, clinicType, experience, image, location, distance, nextSchedule, onPress, onBookPress, style }: Props) => {
   const { label, status } = getScheduleInfo(nextSchedule);
   const s = statusConfig[status];
+  const { user } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const handleBookPress = () => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+    onBookPress?.();
+  };
+
   return (
-    <TouchableOpacity style={[styles.card, style]} activeOpacity={0.8} onPress={onPress}>
-      <View style={styles.topCard}>
-        <View style={styles.cardTop}>
-          <View style={styles.avatar}>
-            {image ? <Image source={{ uri: image }} style={styles.avatarImg} /> : <Image source={require('../assets/images/doctor-profile.png')} style={styles.avatarImg} />}
-          </View>
-          <View style={styles.cardTopInfo}>
-            <Text allowFontScaling={false} style={styles.primaryText}>{name}</Text>
-            <Text allowFontScaling={false} style={styles.secondaryText}>{type}</Text>
-          </View>
-          <ArrowRight width={SIZE(18)} height={SIZE(18)} />
-        </View>
-        <View style={styles.cardBottom}>
-          <Text allowFontScaling={false} style={styles.hospitalText}>{hospital}</Text>
-          <Text allowFontScaling={false} style={styles.clinicTypeText}>{clinicType}</Text>
-          {location ? (
-            <View style={styles.locationRow}>
-              <View style={[styles.locationRow, { width: '80%' }]}>
-                <LocationIcon width={SIZE(11)} height={SIZE(11)} />
-                <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location}</Text>
-              </View>
-              <Text style={styles.distanceText}>{distance ? ` ${distance}` : ''}</Text>
+    <>
+      <TouchableOpacity style={[styles.card, style]} activeOpacity={0.8} onPress={onPress}>
+        <View style={styles.topCard}>
+          <View style={styles.cardTop}>
+            <View style={styles.avatar}>
+              {image ? <Image source={{ uri: image }} style={styles.avatarImg} /> : <Image source={require('../assets/images/doctor-profile.png')} style={styles.avatarImg} />}
             </View>
-          ) : null}
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.cardCenter}>
-          <View>
-            <Text allowFontScaling={false} style={styles.expYears}>{experience.replace(' exp', '')}</Text>
-            <Text allowFontScaling={false} style={styles.expLabel}>Experience</Text>
+            <View style={styles.cardTopInfo}>
+              <Text allowFontScaling={false} style={styles.primaryText}>{name}</Text>
+              <Text allowFontScaling={false} style={styles.secondaryText}>{type}</Text>
+            </View>
+            <ArrowRight width={SIZE(18)} height={SIZE(18)} />
           </View>
-          <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={onBookPress}>
-            <Text allowFontScaling={false} style={styles.bookBtnText}>Book Appointment</Text>
-          </TouchableOpacity>
+          <View style={styles.cardBottom}>
+            <Text allowFontScaling={false} style={styles.hospitalText}>{hospital}</Text>
+            <Text allowFontScaling={false} style={styles.clinicTypeText}>{clinicType}</Text>
+            {location ? (
+              <View style={styles.locationRow}>
+                <View style={[styles.locationRow, { width: '80%' }]}>
+                  <LocationIcon width={SIZE(11)} height={SIZE(11)} />
+                  <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location}</Text>
+                </View>
+                <Text style={styles.distanceText}>{distance ? ` ${distance}` : ''}</Text>
+              </View>
+            ) : null}
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.cardCenter}>
+            <View>
+              <Text allowFontScaling={false} style={styles.expYears}>{experience.replace(' exp', '')}</Text>
+              <Text allowFontScaling={false} style={styles.expLabel}>Experience</Text>
+            </View>
+            <TouchableOpacity style={styles.bookBtn} activeOpacity={0.8} onPress={handleBookPress}>
+              <Text allowFontScaling={false} style={styles.bookBtnText}>Book Appointment</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <View style={styles.cardFooter}>
-        <Text allowFontScaling={false} style={styles.bookingTime}>{label}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
-          <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
-          <Text allowFontScaling={false} style={[styles.statusText, { color: s.text }]}>{s.label}</Text>
+        <View style={styles.cardFooter}>
+          <Text allowFontScaling={false} style={styles.bookingTime}>{label}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
+            <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
+            <Text allowFontScaling={false} style={[styles.statusText, { color: s.text }]}>{s.label}</Text>
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+
+      <LoginModal visible={showLoginModal} onClose={() => setShowLoginModal(false)} />
+    </>
   );
 };
 

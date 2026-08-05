@@ -9,7 +9,9 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import { getDoctor, Doctor } from '../services/api';
 import BottomModal from '../components/BottomModal';
+import LoginModal from '../components/LoginModal';
 import LocationIcon from '../assets/icons/location-icon.svg';
+import { useAuth } from '../context/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DoctorDetail'>;
 
@@ -29,6 +31,8 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 
 function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0]; navigation: any; doctor: Doctor }) {
   const [showHours, setShowHours] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user } = useAuth();
   const grouped = (mc.schedules ?? []).reduce<Record<string, typeof mc.schedules>>((acc, s) => {
     (acc[s!.dayOfWeek] = acc[s!.dayOfWeek] || []).push(s);
     return acc;
@@ -56,7 +60,10 @@ function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0
           <Text allowFontScaling={false} style={styles.hoursBtnText}>Working Hours</Text>
           <Text allowFontScaling={false} style={[styles.hoursBtnText, { color: colors.gold }]}>View Hours</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bookClinicBtn} activeOpacity={0.8} onPress={() => navigation.navigate('BookAppointment', { doctor, clinicId: mc.id })}>
+        <TouchableOpacity style={styles.bookClinicBtn} activeOpacity={0.8} onPress={() => {
+          if (!user) { setShowLoginModal(true); return; }
+          navigation.navigate('BookAppointment', { doctor, clinicId: mc.id });
+        }}>
           <Text allowFontScaling={false} style={styles.bookClinicBtnText}>Book Appointment</Text>
         </TouchableOpacity>
       </View>
@@ -79,6 +86,7 @@ function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0
           )}
         </View>
       </BottomModal>
+      <LoginModal visible={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </View>
   );
 }
