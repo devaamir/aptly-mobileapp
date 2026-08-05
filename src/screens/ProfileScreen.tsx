@@ -1,5 +1,17 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Alert, KeyboardAvoidingView, Platform, Image, Linking } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
+  Linking,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,7 +32,12 @@ import AppDropdown from '../components/AppDropdown';
 import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
 import LoginModal from '../components/LoginModal';
-import { createPatient, addPatient, getPatients, Patient } from '../services/api';
+import {
+  createPatient,
+  addPatient,
+  getPatients,
+  Patient,
+} from '../services/api';
 
 const MENU_ITEMS: { section: string; items: string[] }[] = [];
 
@@ -37,19 +54,31 @@ export default function ProfileScreen() {
   const [addingMember, setAddingMember] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
 
-  useFocusEffect(useCallback(() => {
-    getPatients().then(res => setPatients(res.data.filter(p => !!p.name))).catch(() => { });
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      getPatients()
+        .then(res => setPatients(res.data.filter(p => !!p.name)))
+        .catch(() => {});
+    }, []),
+  );
 
   const handleAddMember = async () => {
     if (!memberName || !memberPhone || !memberGender || !memberDob) return;
     try {
       setAddingMember(true);
-      await addPatient(memberName, memberPhone, memberGender.toLowerCase(), memberDob.toISOString().split('T')[0]);
+      await addPatient(
+        memberName,
+        memberPhone,
+        memberGender.toLowerCase(),
+        memberDob.toISOString().split('T')[0],
+      );
       const res = await getPatients();
       setPatients(res.data.filter(p => !!p.name));
       setShowAddMember(false);
-      setMemberName(''); setMemberPhone(''); setMemberGender(''); setMemberDob(null);
+      setMemberName('');
+      setMemberPhone('');
+      setMemberGender('');
+      setMemberDob(null);
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to add member');
     } finally {
@@ -58,7 +87,15 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = async () => {
-    await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'patientId', 'name', 'phoneNumber', 'email']);
+    await AsyncStorage.multiRemove([
+      'accessToken',
+      'refreshToken',
+      'userId',
+      'patientId',
+      'name',
+      'phoneNumber',
+      'email',
+    ]);
     setUser(null);
     navigation.reset({ index: 0, routes: [{ name: 'PhoneNumber' as never }] });
   };
@@ -66,26 +103,47 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <Text allowFontScaling={false} style={styles.title}>Profile</Text>
+        <Text allowFontScaling={false} style={styles.title}>
+          Profile
+        </Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
         {/* Menu Cards Group 1 */}
         <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => user ? navigation.navigate('EditProfile' as never) : setShowLoginModal(true)}>
+          <TouchableOpacity
+            style={styles.menuCard}
+            activeOpacity={0.7}
+            onPress={() =>
+              user
+                ? navigation.navigate('EditProfile' as never)
+                : setShowLoginModal(true)
+            }
+          >
             <View style={styles.menuLeft}>
               <ProfileIcon width={SIZE(38)} height={SIZE(38)} />
-              <Text allowFontScaling={false} style={styles.menuText}>{user ? 'Your Profile' : 'Guest User'}</Text>
+              <Text allowFontScaling={false} style={styles.menuText}>
+                {user ? 'Your Profile' : 'Guest User'}
+              </Text>
             </View>
             <ArrowRight width={SIZE(24)} height={SIZE(24)} />
           </TouchableOpacity>
           {user && (
             <>
               <View style={styles.divider} />
-              <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => navigation.navigate('FamilyMembers' as never)}>
+              <TouchableOpacity
+                style={styles.menuCard}
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('FamilyMembers' as never)}
+              >
                 <View style={styles.menuLeft}>
                   <GroupIcon width={SIZE(38)} height={SIZE(38)} />
-                  <Text allowFontScaling={false} style={styles.menuText}>Family Members</Text>
+                  <Text allowFontScaling={false} style={styles.menuText}>
+                    Family Members
+                  </Text>
                 </View>
                 <ArrowRight width={SIZE(24)} height={SIZE(24)} />
               </TouchableOpacity>
@@ -95,75 +153,175 @@ export default function ProfileScreen() {
 
         {/* Menu Cards Group 2 */}
         <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => Linking.openURL('https://aptlycare.framer.website/privacy-policy')}>
+          <TouchableOpacity
+            style={styles.menuCard}
+            activeOpacity={0.7}
+            onPress={() =>
+              Linking.openURL('https://aptlycare.framer.website/privacy-policy')
+            }
+          >
             <View style={styles.menuLeft}>
               <LockIcon width={SIZE(38)} height={SIZE(38)} />
-              <Text allowFontScaling={false} style={styles.menuText}>Privacy Policy</Text>
+              <Text allowFontScaling={false} style={styles.menuText}>
+                Privacy Policy
+              </Text>
             </View>
             <ArrowRight width={SIZE(24)} height={SIZE(24)} />
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => Linking.openURL('https://aptlycare.framer.website/terms-and-conditions')}>
+          <TouchableOpacity
+            style={styles.menuCard}
+            activeOpacity={0.7}
+            onPress={() =>
+              Linking.openURL(
+                'https://aptlycare.framer.website/terms-and-conditions',
+              )
+            }
+          >
             <View style={styles.menuLeft}>
               <IIcon width={SIZE(38)} height={SIZE(38)} />
-              <Text allowFontScaling={false} style={styles.menuText}>Terms and Conditions</Text>
+              <Text allowFontScaling={false} style={styles.menuText}>
+                Terms and Conditions
+              </Text>
             </View>
             <ArrowRight width={SIZE(24)} height={SIZE(24)} />
           </TouchableOpacity>
           <View style={styles.divider} />
-          <TouchableOpacity style={styles.menuCard} activeOpacity={0.7} onPress={() => navigation.navigate('AccountSettings' as never)}>
+          <TouchableOpacity
+            style={styles.menuCard}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('AccountSettings' as never)}
+          >
             <View style={styles.menuLeft}>
               <SettingsIcon width={SIZE(38)} height={SIZE(38)} />
-              <Text allowFontScaling={false} style={styles.menuText}>Account Settings</Text>
+              <Text allowFontScaling={false} style={styles.menuText}>
+                Account Settings
+              </Text>
             </View>
             <ArrowRight width={SIZE(24)} height={SIZE(24)} />
           </TouchableOpacity>
         </View>
 
-        {/* Login */}
-        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.7} onPress={() => navigation.navigate('PhoneNumber' as never)}>
-          <Text allowFontScaling={false} style={styles.logoutText}>Login</Text>
+        {/* Login / Logout */}
+        <TouchableOpacity
+          style={[
+            styles.logoutBtn,
+            user ? styles.logoutBtnActive : styles.loginBtnActive,
+          ]}
+          activeOpacity={0.7}
+          onPress={() =>
+            user
+              ? setShowLogoutModal(true)
+              : navigation.navigate('PhoneNumber' as never)
+          }
+        >
+          {user && <LogoutIcon width={SIZE(18)} height={SIZE(18)} />}
+          <Text
+            allowFontScaling={false}
+            style={[
+              styles.logoutText,
+              user ? styles.logoutTextActive : styles.loginTextActive,
+            ]}
+          >
+            {user ? 'Logout' : 'Login'}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
 
-      <BottomModal visible={showLogoutModal} onClose={() => setShowLogoutModal(false)}>
-        <Text allowFontScaling={false} style={styles.modalTitle}>Log Out</Text>
-        <Text allowFontScaling={false} style={styles.modalDesc}>Are you sure you want to log out?</Text>
+      <BottomModal
+        visible={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+      >
+        <Text allowFontScaling={false} style={styles.modalTitle}>
+          Log Out
+        </Text>
+        <Text allowFontScaling={false} style={styles.modalDesc}>
+          Are you sure you want to log out?
+        </Text>
         <View style={styles.modalActions}>
-          <TouchableOpacity style={styles.cancelBtn} activeOpacity={0.7} onPress={() => setShowLogoutModal(false)}>
-            <Text allowFontScaling={false} style={styles.cancelText}>Cancel</Text>
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            activeOpacity={0.7}
+            onPress={() => setShowLogoutModal(false)}
+          >
+            <Text allowFontScaling={false} style={styles.cancelText}>
+              Cancel
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.confirmBtn} activeOpacity={0.7} onPress={handleLogout}>
-            <Text allowFontScaling={false} style={styles.confirmText}>Log Out</Text>
+          <TouchableOpacity
+            style={styles.confirmBtn}
+            activeOpacity={0.7}
+            onPress={handleLogout}
+          >
+            <Text allowFontScaling={false} style={styles.confirmText}>
+              Log Out
+            </Text>
           </TouchableOpacity>
         </View>
       </BottomModal>
 
-      <BottomModal visible={showAddMember} onClose={() => setShowAddMember(false)} variant="bottom">
-        <Text allowFontScaling={false} style={styles.modalTitle}>Add Member</Text>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ width: '100%', flex: 1 }}>
+      <BottomModal
+        visible={showAddMember}
+        onClose={() => setShowAddMember(false)}
+        variant="bottom"
+      >
+        <Text allowFontScaling={false} style={styles.modalTitle}>
+          Add Member
+        </Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ width: '100%', flex: 1 }}
+        >
           <View style={{ gap: SIZE(12), flex: 1 }}>
-            <AppInput value={memberName} onChangeText={setMemberName} placeholder="Full name" />
-            <AppInput value={memberPhone} onChangeText={setMemberPhone} placeholder="Phone number" keyboardType="phone-pad" prefix="+91" />
+            <AppInput
+              value={memberName}
+              onChangeText={setMemberName}
+              placeholder="Full name"
+            />
+            <AppInput
+              value={memberPhone}
+              onChangeText={setMemberPhone}
+              placeholder="Phone number"
+              keyboardType="phone-pad"
+              prefix="+91"
+            />
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
-                <AppDropdown options={['Male', 'Female']} value={memberGender} onSelect={setMemberGender} placeholder="Gender" />
+                <AppDropdown
+                  options={['Male', 'Female']}
+                  value={memberGender}
+                  onSelect={setMemberGender}
+                  placeholder="Gender"
+                />
               </View>
               <View style={{ flex: 1 }}>
-                <AppDatePicker value={memberDob} onChange={setMemberDob} placeholder="Date of birth" />
+                <AppDatePicker
+                  value={memberDob}
+                  onChange={setMemberDob}
+                  placeholder="Date of birth"
+                />
               </View>
             </View>
           </View>
           <PrimaryButton
             label="Continue"
             onPress={handleAddMember}
-            disabled={!memberName || !memberPhone || !memberGender || !memberDob || addingMember}
+            disabled={
+              !memberName ||
+              !memberPhone ||
+              !memberGender ||
+              !memberDob ||
+              addingMember
+            }
             loading={addingMember}
           />
         </KeyboardAvoidingView>
       </BottomModal>
 
-      <LoginModal visible={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      <LoginModal
+        visible={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -275,12 +433,22 @@ const styles = StyleSheet.create({
     gap: SIZE(8),
     paddingVertical: SIZE(14),
     borderRadius: SIZE(12),
+  },
+  loginBtnActive: {
     backgroundColor: colors.primary,
+  },
+  logoutBtnActive: {
+    backgroundColor: colors.dangerBgLogout,
   },
   logoutText: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(14),
+  },
+  loginTextActive: {
     color: colors.white,
+  },
+  logoutTextActive: {
+    color: colors.logoutdanger,
   },
   modalTitle: {
     fontFamily: 'Manrope-Bold',
