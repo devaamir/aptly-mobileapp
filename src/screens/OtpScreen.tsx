@@ -7,6 +7,8 @@ import {
   StatusBar,
   TouchableOpacity,
   Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -120,6 +122,7 @@ export default function OtpScreen() {
   const isFilled = otp.every(d => d !== '');
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
       <TouchableOpacity
@@ -182,6 +185,7 @@ export default function OtpScreen() {
         </Text>
       </Text>
     </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 

@@ -182,7 +182,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           </View>
         </View>
 
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           {/* Date picker */}
           <View style={styles.sectionHeader}>
             <Text allowFontScaling={false} style={styles.sectionTitle}>Select Date</Text>

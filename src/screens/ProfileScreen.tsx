@@ -111,6 +111,7 @@ export default function ProfileScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Menu Cards Group 1 */}
         <View style={styles.menuContainer}>

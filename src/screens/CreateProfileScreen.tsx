@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -62,6 +62,7 @@ export default function CreateProfileScreen() {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
       <TouchableOpacity onPress={handleBack} style={styles.backButton}>
@@ -126,6 +127,7 @@ export default function CreateProfileScreen() {
         </View>
       </BottomModal>
     </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, TouchableOpacity, StyleSheet, View } from 'react-native';
+import { Modal, TouchableOpacity, StyleSheet, View, Keyboard } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 
@@ -14,7 +14,7 @@ export default function BottomModal({ visible, onClose, children, variant = 'cen
   return (
     <Modal visible={visible} transparent animationType={variant === 'bottom' ? 'slide' : 'fade'} onRequestClose={onClose}>
       <TouchableOpacity style={[styles.overlay, variant === 'bottom' && styles.overlayBottom]} activeOpacity={1} onPress={onClose}>
-        <TouchableOpacity style={[styles.sheet, variant === 'bottom' && styles.sheetBottom]} activeOpacity={1}>
+        <TouchableOpacity style={[styles.sheet, variant === 'bottom' && styles.sheetBottom]} activeOpacity={1} onPress={Keyboard.dismiss}>
           {variant === 'bottom' && <View style={styles.handle} />}
           {children}
         </TouchableOpacity>

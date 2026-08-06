@@ -8,6 +8,8 @@ import {
   StatusBar,
   Alert,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { sendOtp } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -46,6 +48,7 @@ export default function PhoneNumberScreen() {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
       <TouchableOpacity
@@ -101,6 +104,7 @@ export default function PhoneNumberScreen() {
         loading={loading}
       />
     </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
