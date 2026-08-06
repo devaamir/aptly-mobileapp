@@ -4,7 +4,6 @@ import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import Firebase
 import FirebaseAuth
-import UserNotifications
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,9 +19,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     FirebaseApp.configure()
     #if targetEnvironment(simulator)
     Auth.auth().settings?.isAppVerificationDisabledForTesting = true
-    #else
-    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
-    application.registerForRemoteNotifications()
     #endif
 
     let delegate = ReactNativeDelegate()
