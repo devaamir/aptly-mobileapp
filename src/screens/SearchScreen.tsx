@@ -99,16 +99,28 @@ export default function SearchScreen() {
                     : navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })
                   }>
                   <View style={[styles.itemImage, isDoctor && styles.itemImageCircle]}>
-                    {(item as any).profilePicture
-                      ? <Image source={{ uri: (item as any).profilePicture }} style={{ width: '100%', height: '100%' }} />
-                      : null}
+                    <Image
+                      source={(item as any).profilePicture
+                        ? { uri: (item as any).profilePicture }
+                        : isDoctor
+                          ? require('../assets/images/doctor-profile.png')
+                          : require('../assets/images/aptly-logo2.png')}
+                      style={{ width: '100%', height: '100%' }}
+                    />
                   </View>
                   <View style={styles.cardContent}>
                     <Text allowFontScaling={false} style={styles.resultName}>{item.name}</Text>
-                    <Text allowFontScaling={false} style={styles.meta}>
+                    <Text allowFontScaling={false} style={styles.meta} numberOfLines={1}>
                       {isDoctor
                         ? (item as Doctor).specialties[0]?.name ?? ''
-                        : (item as Clinic).specialties[0]?.name ?? (item as Clinic).type}
+                        : (item as Clinic).specialties.length > 0
+                          ? (item as Clinic).specialties.map((s, i, arr) => (
+                              <Text key={i} allowFontScaling={false}>
+                                {s.name}
+                                {i < arr.length - 1 && <Text style={styles.metaDot}>{'  •  '}</Text>}
+                              </Text>
+                            ))
+                          : (item as Clinic).type}
                     </Text>
                     <View style={styles.locationRow}>
                       <LocationIcon width={SIZE(11)} height={SIZE(11)} />
@@ -184,6 +196,7 @@ const styles = StyleSheet.create({
   cardContent: { flex: 1, gap: SIZE(4) },
   resultName: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(14), color: colors.textPrimary },
   meta: { fontFamily: 'Manrope-Regular', fontSize: SIZE(12), color: colors.textSecondary },
+  metaDot: { fontSize: SIZE(16), color: colors.textSecondary },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: SIZE(4), marginTop: SIZE(2) },
   locationText: { fontFamily: 'Manrope-Regular', fontSize: SIZE(11), color: colors.textMuted, flex: 1 },
   empty: { fontFamily: 'Manrope-Regular', fontSize: SIZE(14), color: colors.textMuted, textAlign: 'center', marginTop: SIZE(40) },

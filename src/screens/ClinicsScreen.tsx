@@ -132,6 +132,7 @@ export default function ClinicsScreen({ navigation }: Props) {
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
+              specialties={item.specialties.map((s: { name: string }) => s.name)}
               location={item.address}
               image={item.profilePicture}
               distance={

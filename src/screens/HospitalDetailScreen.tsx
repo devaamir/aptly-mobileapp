@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, StatusBar, Image, ActivityIndicator, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, StatusBar, Image, ActivityIndicator, Dimensions, ScrollView, Linking, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -84,19 +84,53 @@ export default function HospitalDetailScreen() {
         <View style={[styles.topHeader, { borderRadius }]}>
           <View style={styles.sheetHandle} />
           <Text allowFontScaling={false} style={styles.clinicTitle}>{displayClinic.name}</Text>
-          <Text allowFontScaling={false} style={styles.clinicSpecialty}>{specialty}</Text>
+          <Text allowFontScaling={false} style={styles.clinicSpecialty} numberOfLines={2}>
+            {(displayClinic.specialties?.length > 0 ? displayClinic.specialties : [{ name: specialty }]).map((s: { name: string }, i: number, arr: { name: string }[]) => (
+              <Text key={i} allowFontScaling={false}>
+                {s.name}
+                {i < arr.length - 1 && <Text style={styles.specialtiesDot}>{'  •  '}</Text>}
+              </Text>
+            ))}
+          </Text>
           <View style={styles.locationRow}>
             <LocationIcon width={SIZE(12)} height={SIZE(12)} />
             <Text allowFontScaling={false} style={styles.clinicLocation}>{location}</Text>
           </View>
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              activeOpacity={0.7}
+              onPress={() => {
+                const phone = clinic?.phoneNumber;
+                if (phone) Linking.openURL(`tel:${phone}`);
+                else Alert.alert('Not available', 'No phone number found for this clinic.');
+              }}>
               <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              activeOpacity={0.7}
+              onPress={() => {
+                const lat = clinic?.latitude;
+                const lng = clinic?.longitude;
+                if (lat && lng) {
+                  const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                  Linking.openURL(url);
+                } else {
+                  const query = encodeURIComponent(location);
+                  Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+                }
+              }}>
               <MapIcon width={SIZE(22)} height={SIZE(22)} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              activeOpacity={0.7}
+              onPress={() => {
+                const url = clinic?.websiteUrl;
+                if (url) Linking.openURL(url.startsWith('http') ? url : `https://${url}`);
+                else Alert.alert('Not available', 'No website found for this clinic.');
+              }}>
               <WebIcon width={SIZE(22)} height={SIZE(22)} />
             </TouchableOpacity>
           </View>
@@ -202,7 +236,11 @@ const styles = StyleSheet.create({
     fontSize: SIZE(12),
     color: colors.subText,
     marginTop: -SIZE(10),
-    marginBottom: SIZE(16)
+    marginBottom: SIZE(16),
+  },
+  specialtiesDot: {
+    fontSize: SIZE(16),
+    color: colors.subText,
   },
   locationRow: {
     flexDirection: 'row',

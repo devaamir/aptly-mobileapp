@@ -26,6 +26,8 @@ import { Doctor, Appointment } from '../services/api';
 import { MetadataProvider } from '../context/MetadataContext';
 import { TrackingProvider } from '../context/TrackingContext';
 import { LocationProvider } from '../context/LocationContext';
+import AppUpdateModal from '../components/AppUpdateModal';
+import { useAppUpdate } from '../hooks/useAppUpdate';
 
 export type RootStackParamList = {
   PhoneNumber: undefined;
@@ -55,12 +57,15 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function Navigation() {
   const [initialRoute, setInitialRoute] = useState<'PhoneNumber' | 'CreateProfile' | 'Main' | null>(null);
+  const { visible, mandatory, latestVersion, handleSkip, handleUpdate } = useAppUpdate();
 
   useEffect(() => {
-    AsyncStorage.multiGet(['accessToken', 'name']).then(([tokenEntry, nameEntry]) => {
+    AsyncStorage.multiGet(['accessToken', 'name', 'skipped']).then(([tokenEntry, nameEntry, skippedEntry]) => {
       const token = tokenEntry[1];
       const name = nameEntry[1];
-      if (!token) setInitialRoute('PhoneNumber');
+      const skipped = skippedEntry[1];
+      if (!token && skipped === 'true') setInitialRoute('Main');
+      else if (!token) setInitialRoute('PhoneNumber');
       else if (!name) setInitialRoute('CreateProfile');
       else setInitialRoute('Main');
     });
@@ -102,7 +107,15 @@ export default function Navigation() {
         <Stack.Screen name="Clinics" component={ClinicsScreen} />
         <Stack.Screen name="Notifications" component={NotificationScreen} />
       </Stack.Navigator>
-    </NavigationContainer>
+      </NavigationContainer>
+      <AppUpdateModal
+        visible={visible}
+        mandatory={mandatory}
+        latestVersion={latestVersion}
+        storeUrl=""
+        onUpdate={handleUpdate}
+        onSkip={handleSkip}
+      />
     </LocationProvider>
     </TrackingProvider>
     </MetadataProvider>

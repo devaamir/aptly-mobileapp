@@ -8,6 +8,7 @@ import ArrowRight from '../assets/icons/arrow-right.svg';
 type Props = {
   name: string;
   subType: string;
+  specialties?: string[];
   location: string;
   distance?: string;
   image?: string;
@@ -15,16 +16,25 @@ type Props = {
   style?: ViewStyle;
 };
 
-export default function ClinicCard({ name, subType, location, distance = 'NA', image, onPress, style }: Props) {
+export default function ClinicCard({ name, subType, specialties, location, distance = 'NA', image, onPress, style }: Props) {
+  const tags = specialties && specialties.length > 0 ? specialties : [subType].filter(Boolean);
+
   return (
     <TouchableOpacity style={[styles.card, style]} activeOpacity={0.8} onPress={onPress}>
       <Image
-        source={image ? { uri: image } : require('../assets/images/aptly-logo.png')}
+        source={image ? { uri: image } : require('../assets/images/aptly-logo2.png')}
         style={styles.image}
       />
       <View style={styles.info}>
         <Text allowFontScaling={false} style={styles.name} numberOfLines={1}>{name}</Text>
-        <Text allowFontScaling={false} style={styles.subType}>{subType}</Text>
+        <Text allowFontScaling={false} style={styles.specialtiesText} numberOfLines={1}>
+          {tags.map((tag, i) => (
+            <Text key={i} allowFontScaling={false}>
+              {tag}
+              {i < tags.length - 1 && <Text style={styles.specialtiesDot}>  •  </Text>}
+            </Text>
+          ))}
+        </Text>
         <View style={styles.locationRow}>
           <View>
             <LocationIcon width={Platform.OS === 'web' ? SIZE(16) : SIZE(12)} height={Platform.OS === 'web' ? SIZE(16) : SIZE(12)} />
@@ -62,10 +72,16 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(16),
     color: colors.textPrimary,
+    marginBottom: SIZE(4),
   },
-  subType: {
+  specialtiesText: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
+    color: colors.textSecondary,
+    marginBottom: SIZE(4),
+  },
+  specialtiesDot: {
+    fontSize: SIZE(16),
     color: colors.textSecondary,
   },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: SIZE(4), marginTop: SIZE(2) },
@@ -81,3 +97,4 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
 });
+

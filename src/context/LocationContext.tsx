@@ -50,14 +50,16 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
         setLoadingLocation(false);
         setReady(true);
       },
-      { timeout: 8000, maximumAge: 0 },
+      { timeout: 10000, maximumAge: 60000 },
     );
   };
 
   useEffect(() => {
-    // Only init if already logged in (returning user)
-    AsyncStorage.getItem('accessToken').then(token => {
-      if (token) initLocation();
+    // Init for logged-in users and users who skipped login
+    AsyncStorage.multiGet(['accessToken', 'skipped']).then(([tokenEntry, skippedEntry]) => {
+      const token = tokenEntry[1];
+      const skipped = skippedEntry[1];
+      if (token || skipped === 'true') initLocation();
       else setReady(true);
     });
   }, []);

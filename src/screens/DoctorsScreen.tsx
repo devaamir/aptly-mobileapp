@@ -38,42 +38,6 @@ const DAYS = [
   'saturday',
 ];
 
-function getBookingStatus(doctor: Doctor): 'Booking Opened' | 'Not Started' {
-  const today = DAYS[new Date().getDay()];
-  const now = new Date();
-  const nowMins = now.getHours() * 60 + now.getMinutes();
-  const schedules = doctor.medicalCenters.flatMap(mc => mc.schedules ?? []);
-  const todaySchedules = schedules.filter(s => s.dayOfWeek === today);
-  const isOpen = todaySchedules.some(s => {
-    const [sh, sm] = s.startTime.split(':').map(Number);
-    const [eh, em] = s.stopTime.split(':').map(Number);
-    return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
-  });
-  return isOpen ? 'Booking Opened' : 'Not Started';
-}
-
-const to12h = (time: string) => {
-  const [h, m] = time.split(':').map(Number);
-  const ampm = h >= 12 ? 'pm' : 'am';
-  return `${h % 12 || 12}:${String(m).padStart(2, '0')}${ampm}`;
-};
-
-function getBookingTime(doctor: Doctor): string {
-  const today = DAYS[new Date().getDay()];
-  const now = new Date();
-  const nowMins = now.getHours() * 60 + now.getMinutes();
-  const schedules = doctor.medicalCenters.flatMap(mc => mc.schedules ?? []);
-  const current = schedules.find(s => {
-    if (s.dayOfWeek !== today) return false;
-    const [sh, sm] = s.startTime.split(':').map(Number);
-    const [eh, em] = s.stopTime.split(':').map(Number);
-    return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
-  });
-  if (!current) return 'No active session';
-  return `Booking available at ${to12h(current.startTime)} - ${to12h(
-    current.stopTime,
-  )}`;
-}
 
 export default function DoctorsScreen({ navigation }: Props) {
   const { location: userLocation } = useLocation();
@@ -178,6 +142,10 @@ export default function DoctorsScreen({ navigation }: Props) {
             const location = item.medicalCenters[0]
               ? `${item.medicalCenters[0].address}`
               : '';
+            const allSchedules = item.medicalCenters.flatMap(mc => mc.schedules ?? []);
+            const today = DAYS[new Date().getDay()];
+            const todaySchedule = allSchedules.find(s => s.dayOfWeek === today);
+            const nextSchedule = todaySchedule ?? allSchedules[0];
             return (
               <DoctorCard
                 name={item.name}
@@ -198,8 +166,7 @@ export default function DoctorsScreen({ navigation }: Props) {
                 })()}
                 experience={`${item.yearsOfExperience} yrs exp`}
                 image={item.profilePicture}
-                status={getBookingStatus(item)}
-                bookingTime={getBookingTime(item)}
+                nextSchedule={nextSchedule}
                 onPress={() =>
                   navigation.navigate('DoctorDetail', { doctorId: item.id })
                 }

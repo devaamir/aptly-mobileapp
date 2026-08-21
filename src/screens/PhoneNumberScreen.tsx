@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { sendOtp } from '../services/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -53,7 +54,8 @@ export default function PhoneNumberScreen() {
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
       <TouchableOpacity
         style={styles.skipButton}
-        onPress={() => {
+        onPress={async () => {
+          await AsyncStorage.setItem('skipped', 'true');
           initLocation();
           navigation.navigate('Main');
         }}>
@@ -62,7 +64,7 @@ export default function PhoneNumberScreen() {
         </Text>
       </TouchableOpacity>
       <Image
-        source={require('../assets/images/aptly-logo.png')}
+        source={require('../assets/images/aptly-logo2.png')}
         style={styles.logo}
       />
       <Text allowFontScaling={false} style={styles.title}>

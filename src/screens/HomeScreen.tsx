@@ -763,11 +763,14 @@ export default function HomeScreen() {
                   />
                 </View>
               </View>
-              {fallbackClinics.map(item => (
+              {fallbackClinics.map(item => {
+                console.log('[ClinicCard - fallback]', JSON.stringify(item, null, 2));
+                return (
                 <ClinicCard
                   key={item.id}
                   name={item.name}
                   subType={item.specialties[0]?.name ?? item.type}
+                  specialties={item.specialties.map((s: { name: string }) => s.name)}
                   location={item.address}
                   image={item.profilePicture}
                   distance={
@@ -790,7 +793,8 @@ export default function HomeScreen() {
                   }
                   style={styles.clinicCard}
                 />
-              ))}
+                );
+              })}
             </View>
           }
           ListHeaderComponent={
@@ -811,10 +815,13 @@ export default function HomeScreen() {
               trackData={trackData}
             />
           }
-          renderItem={({ item }) => (
+          renderItem={({ item }) => {
+            console.log('[ClinicCard - nearby]', JSON.stringify(item, null, 2));
+            return (
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
+              specialties={item.specialties.map((s: { name: string }) => s.name)}
               location={item.address}
               image={item.profilePicture}
               distance={
@@ -836,7 +843,8 @@ export default function HomeScreen() {
                 })
               }
             />
-          )}
+            );
+          }}
         />
 
         {/* PWA Install Instructions Modal */}

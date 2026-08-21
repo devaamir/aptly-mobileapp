@@ -134,6 +134,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
+              specialties={item.specialties.map((s: { name: string }) => s.name)}
               location={`${item.district}, ${item.state}`}
               image={item.profilePicture}
               distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}

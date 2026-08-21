@@ -134,7 +134,10 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            {doctor.profilePicture ? <Image source={{ uri: doctor.profilePicture }} style={styles.avatarImg} /> : null}
+            <Image
+              source={doctor.profilePicture ? { uri: doctor.profilePicture } : require('../assets/images/doctor-profile.png')}
+              style={styles.avatarImg}
+            />
           </View>
           <View style={styles.profileInfo}>
             <Text allowFontScaling={false} style={styles.doctorName}>{doctor.name}</Text>
