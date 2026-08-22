@@ -13,6 +13,7 @@ import {
   RefreshControl,
   Linking,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import Geolocation from '@react-native-community/geolocation';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
@@ -640,6 +641,12 @@ export default function HomeScreen() {
   } else {
     return (
       <SafeAreaView style={styles.container}>
+        <LinearGradient
+          colors={['#FFFFFF', '#F5F5F6']}
+          style={StyleSheet.absoluteFill}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        />
         <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
         {/* Header */}
         <View style={styles.header}>
@@ -1111,7 +1118,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
