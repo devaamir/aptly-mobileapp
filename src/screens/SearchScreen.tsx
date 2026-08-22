@@ -43,7 +43,7 @@ export default function SearchScreen() {
         </TouchableOpacity>
         <View style={styles.searchWrapper}>
           <SearchBar
-            placeholder='Search for "Skin Doctor"'
+            placeholder='Search'
             value={query}
             onChangeText={setQuery}
             autoFocus

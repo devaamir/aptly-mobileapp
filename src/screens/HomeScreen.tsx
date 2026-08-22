@@ -23,6 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import SearchBar from '../components/SearchBar';
+import AnimatedSearchBar from '../components/AnimatedSearchBar';
 import ClinicCard from '../components/ClinicCard';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
@@ -47,6 +48,7 @@ import PrimaryButton from '../components/PrimaryButton';
 import { usePWAInstall } from '../utils/usePWAInstall';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
+
 
 const ListHeader = ({
   onTokenPress,
@@ -713,13 +715,7 @@ export default function HomeScreen() {
             activeOpacity={0.8}
             onPress={() => navigation.navigate('Search')}
           >
-            <View pointerEvents="none">
-              <SearchBar
-                placeholder='Search for "Skin Doctor"'
-                editable={false}
-                style={{ borderColor: colors.searchBorder }}
-              />
-            </View>
+            <AnimatedSearchBar />
           </TouchableOpacity>
         </View>
 
@@ -764,35 +760,40 @@ export default function HomeScreen() {
                 </View>
               </View>
               {fallbackClinics.map(item => {
-                console.log('[ClinicCard - fallback]', JSON.stringify(item, null, 2));
+                console.log(
+                  '[ClinicCard - fallback]',
+                  JSON.stringify(item, null, 2),
+                );
                 return (
-                <ClinicCard
-                  key={item.id}
-                  name={item.name}
-                  subType={item.specialties[0]?.name ?? item.type}
-                  specialties={item.specialties.map((s: { name: string }) => s.name)}
-                  location={item.address}
-                  image={item.profilePicture}
-                  distance={
-                    location
-                      ? getDistance(
-                          location.latitude,
-                          location.longitude,
-                          item.latitude,
-                          item.longitude,
-                        )
-                      : undefined
-                  }
-                  onPress={() =>
-                    navigation.navigate('HospitalDetail', {
-                      id: item.id,
-                      name: item.name,
-                      specialty: item.specialties[0]?.name ?? '',
-                      location: item.address,
-                    })
-                  }
-                  style={styles.clinicCard}
-                />
+                  <ClinicCard
+                    key={item.id}
+                    name={item.name}
+                    subType={item.specialties[0]?.name ?? item.type}
+                    specialties={item.specialties.map(
+                      (s: { name: string }) => s.name,
+                    )}
+                    location={item.address}
+                    image={item.profilePicture}
+                    distance={
+                      location
+                        ? getDistance(
+                            location.latitude,
+                            location.longitude,
+                            item.latitude,
+                            item.longitude,
+                          )
+                        : undefined
+                    }
+                    onPress={() =>
+                      navigation.navigate('HospitalDetail', {
+                        id: item.id,
+                        name: item.name,
+                        specialty: item.specialties[0]?.name ?? '',
+                        location: item.address,
+                      })
+                    }
+                    style={styles.clinicCard}
+                  />
                 );
               })}
             </View>
@@ -818,31 +819,33 @@ export default function HomeScreen() {
           renderItem={({ item }) => {
             console.log('[ClinicCard - nearby]', JSON.stringify(item, null, 2));
             return (
-            <ClinicCard
-              name={item.name}
-              subType={item.specialties[0]?.name ?? item.type}
-              specialties={item.specialties.map((s: { name: string }) => s.name)}
-              location={item.address}
-              image={item.profilePicture}
-              distance={
-                location
-                  ? getDistance(
-                      location.latitude,
-                      location.longitude,
-                      item.latitude,
-                      item.longitude,
-                    )
-                  : undefined
-              }
-              onPress={() =>
-                navigation.navigate('HospitalDetail', {
-                  id: item.id,
-                  name: item.name,
-                  specialty: item.specialties[0]?.name ?? '',
-                  location: item.address,
-                })
-              }
-            />
+              <ClinicCard
+                name={item.name}
+                subType={item.specialties[0]?.name ?? item.type}
+                specialties={item.specialties.map(
+                  (s: { name: string }) => s.name,
+                )}
+                location={item.address}
+                image={item.profilePicture}
+                distance={
+                  location
+                    ? getDistance(
+                        location.latitude,
+                        location.longitude,
+                        item.latitude,
+                        item.longitude,
+                      )
+                    : undefined
+                }
+                onPress={() =>
+                  navigation.navigate('HospitalDetail', {
+                    id: item.id,
+                    name: item.name,
+                    specialty: item.specialties[0]?.name ?? '',
+                    location: item.address,
+                  })
+                }
+              />
             );
           }}
         />

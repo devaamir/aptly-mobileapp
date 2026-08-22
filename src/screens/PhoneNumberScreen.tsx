@@ -50,62 +50,66 @@ export default function PhoneNumberScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-    <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
-      <TouchableOpacity
-        style={styles.skipButton}
-        onPress={async () => {
-          await AsyncStorage.setItem('skipped', 'true');
-          initLocation();
-          navigation.navigate('Main');
-        }}>
-        <Text allowFontScaling={false} style={styles.skipText}>
-          Skip
-        </Text>
-      </TouchableOpacity>
-      <Image
-        source={require('../assets/images/aptly-logo2.png')}
-        style={styles.logo}
-      />
-      <Text allowFontScaling={false} style={styles.title}>
-        Welcome Back!
-      </Text>
-      <Text allowFontScaling={false} style={styles.subtitle}>
-        Access your account your phone number
-      </Text>
-
-      <View style={styles.inputRow}>
-        <View style={styles.countryCode}>
-          <Text allowFontScaling={false} style={styles.flag}>
-            +91
-          </Text>
-        </View>
-        <TextInput
-          allowFontScaling={false}
-          style={styles.input}
-          placeholder="Enter phone number"
-          placeholderTextColor={colors.textSecondary}
-          keyboardType="phone-pad"
-          value={phone}
-          onChangeText={setPhone}
-          maxLength={10}
+      <SafeAreaView style={styles.container}>
+        <StatusBar
+          backgroundColor={colors.textPrimary}
+          barStyle="dark-content"
         />
-      </View>
+        <TouchableOpacity
+          style={styles.skipButton}
+          onPress={async () => {
+            await AsyncStorage.setItem('skipped', 'true');
+            initLocation();
+            navigation.navigate('Main');
+          }}
+        >
+          <Text allowFontScaling={false} style={styles.skipText}>
+            Skip
+          </Text>
+        </TouchableOpacity>
+        <Image
+          source={require('../assets/images/aptly-logo2.png')}
+          style={styles.logo}
+        />
+        <Text allowFontScaling={false} style={styles.title}>
+          Welcome Back!
+        </Text>
+        <Text allowFontScaling={false} style={styles.subtitle}>
+          Access your account your phone number
+        </Text>
 
-      <PrimaryButton
-        label="Continue"
-        onPress={handleContinue}
-        disabled={!phone || loading}
-        icon={
-          loading ? undefined : !phone ? (
-            <ArrowRight width={18} height={18} />
-          ) : (
-            <ArrowRightWhite width={18} height={18} />
-          )
-        }
-        loading={loading}
-      />
-    </SafeAreaView>
+        <View style={styles.inputRow}>
+          <View style={styles.countryCode}>
+            <Text allowFontScaling={false} style={styles.flag}>
+              +91
+            </Text>
+          </View>
+          <TextInput
+            allowFontScaling={false}
+            style={styles.input}
+            placeholder="Enter phone number"
+            placeholderTextColor={colors.textSecondary}
+            keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
+            maxLength={10}
+          />
+        </View>
+
+        <PrimaryButton
+          label="Continue"
+          onPress={handleContinue}
+          disabled={!phone || loading}
+          icon={
+            loading ? undefined : !phone ? (
+              <ArrowRight width={18} height={18} />
+            ) : (
+              <ArrowRightWhite width={18} height={18} />
+            )
+          }
+          loading={loading}
+        />
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 }
@@ -126,10 +130,10 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   logo: {
-    width: 100,
+    width: SIZE(100),
     resizeMode: 'contain',
     marginTop: SIZE(127),
-    marginBottom: SIZE(83),
+    marginBottom: SIZE(75),
     alignSelf: 'center',
   },
   title: {

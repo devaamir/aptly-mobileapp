@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
+  Image,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -18,10 +19,31 @@ import { SIZE } from '../themes/sizes';
 import AppointmentCard from '../components/AppointmentCard';
 import { getAppointments, Appointment } from '../services/api';
 import { useTracking } from '../context/TrackingContext';
+const upcomingImg = require('../assets/images/appointment-upcoming.png');
+const completedImg = require('../assets/images/appointment-completed.png');
+const cancelledImg = require('../assets/images/appointment-cancelled.png');
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Tab = 'Upcoming' | 'Completed' | 'Cancelled';
 const TABS: Tab[] = ['Upcoming', 'Completed', 'Cancelled'];
+
+const EMPTY_CONFIG: Record<Tab, { image: any; title: string; description: string }> = {
+  Upcoming: {
+    image: upcomingImg,
+    title: 'No Appointments Yet',
+    description: 'Book your first appointment with nearby clinics and doctors.',
+  },
+  Completed: {
+    image: completedImg,
+    title: 'No Completed Appointments',
+    description: "Appointments you've completed will appear here for easy reference.",
+  },
+  Cancelled: {
+    image: cancelledImg,
+    title: 'No Cancelled Appointments',
+    description: "Great! You haven't cancelled any appointments.",
+  },
+};
 
 const statusMap: Record<
   string,
@@ -120,7 +142,7 @@ export default function AppointmentScreen() {
         <FlatList
           data={filtered}
           keyExtractor={item => item.id}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, filtered.length === 0 && styles.listEmpty]}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchPage(1, true)} colors={[colors.primary]} tintColor={colors.primary} />}
           onEndReached={() => {
@@ -135,11 +157,18 @@ export default function AppointmentScreen() {
               />
             ) : null
           }
-          ListEmptyComponent={
-            <Text allowFontScaling={false} style={styles.empty}>
-              No {tab.toLowerCase()} appointments
-            </Text>
-          }
+          ListEmptyComponent={() => {
+            const { image, title, description } = EMPTY_CONFIG[tab];
+            return (
+              <View style={styles.emptyContainer}>
+                <View style={styles.emptyInner}>
+                  <Image source={image} style={styles.emptyImage} resizeMode="contain" />
+                  <Text allowFontScaling={false} style={styles.emptyTitle}>{title}</Text>
+                  <Text allowFontScaling={false} style={styles.emptyDescription}>{description}</Text>
+                </View>
+              </View>
+            );
+          }}
           renderItem={({ item }) => {
             const liveAppt = trackData?.appointments.find(
               a => a.id === item.id,
@@ -268,11 +297,31 @@ const styles = StyleSheet.create({
     marginTop: SIZE(6),
   },
   list: { paddingHorizontal: SIZE(18), gap: SIZE(12), paddingBottom: SIZE(24) },
-  empty: {
-    fontFamily: 'Manrope-Regular',
+  listEmpty: { flexGrow: 1 },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyInner: {
+    width: SIZE(200),
+    alignItems: 'center',
+    gap: SIZE(8),
+  },
+  emptyImage: {
+    width: SIZE(139),
+    height: SIZE(139),
+  },
+  emptyTitle: {
+    fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(14),
-    color: colors.textMuted,
+    color: '#00001D',
     textAlign: 'center',
-    marginTop: SIZE(40),
+  },
+  emptyDescription: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(12),
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 });

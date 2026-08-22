@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  StatusBar,
+  Image,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -18,10 +26,16 @@ export default function NotificationScreen({ navigation }: Props) {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+          activeOpacity={0.7}
+        >
           <BackArrow width={SIZE(26)} height={SIZE(26)} />
         </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.title}>Notifications</Text>
+        <Text allowFontScaling={false} style={styles.title}>
+          Notifications
+        </Text>
       </View>
 
       <FlatList
@@ -30,7 +44,18 @@ export default function NotificationScreen({ navigation }: Props) {
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text allowFontScaling={false} style={styles.emptyText}>No notifications yet</Text>
+            <View style={styles.emptyInner}>
+              <Image
+                source={require('../assets/images/notification-icon.png')}
+                style={styles.emptyIcon}
+              />
+              <Text allowFontScaling={false} style={styles.emptyText}>
+                No notifications
+              </Text>
+              <Text allowFontScaling={false} style={styles.emptySubText}>
+                You're all caught up! New updates will appear here.
+              </Text>
+            </View>
           </View>
         }
         renderItem={({ item }) => (
@@ -40,16 +65,26 @@ export default function NotificationScreen({ navigation }: Props) {
             </View>
             <View style={styles.itemContent}>
               <View style={styles.itemRow}>
-                <Text allowFontScaling={false} style={styles.itemTitle}>{item.title}</Text>
+                <Text allowFontScaling={false} style={styles.itemTitle}>
+                  {item.title}
+                </Text>
                 {/* {!item.read && <View style={styles.dot} />} */}
               </View>
-              <Text allowFontScaling={false} style={styles.itemBody} numberOfLines={2}>{item.body}</Text>
-              <Text allowFontScaling={false} style={styles.itemTime}>{item.time}</Text>
+              <Text
+                allowFontScaling={false}
+                style={styles.itemBody}
+                numberOfLines={2}
+              >
+                {item.body}
+              </Text>
+              <Text allowFontScaling={false} style={styles.itemTime}>
+                {item.time}
+              </Text>
             </View>
             {/* {!item.read && <View style={styles.dot} />} */}
           </TouchableOpacity>
         )}
-      // ItemSeparatorComponent={() => <View style={styles.separator} />}
+        // ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
     </SafeAreaView>
   );
@@ -75,7 +110,7 @@ const styles = StyleSheet.create({
     right: 0,
     textAlign: 'center',
   },
-  list: { paddingTop: SIZE(20) },
+  list: { flexGrow: 1 },
   item: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -120,15 +155,37 @@ const styles = StyleSheet.create({
     color: colors.appointmentDate,
     lineHeight: SIZE(19),
   },
-  separator: { height: 1, backgroundColor: colors.border, marginHorizontal: SIZE(20) },
+  separator: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: SIZE(20),
+  },
   emptyContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: SIZE(100),
+    gap: SIZE(12),
+  },
+  emptyInner: {
+    width: SIZE(200),
+    alignItems: 'center',
+    gap: SIZE(8),
+  },
+  emptyIcon: {
+    width: SIZE(96),
+    height: SIZE(96),
+    resizeMode: 'contain',
   },
   emptyText: {
-    fontFamily: 'Manrope-Medium',
+    fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(16),
+    color: '#00001D',
+    textAlign: 'center',
+  },
+  emptySubText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(12),
     color: colors.textSecondary,
+    textAlign: 'center',
   },
 });
