@@ -12,8 +12,15 @@ import {
   Platform,
   RefreshControl,
   Linking,
+  useWindowDimensions,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import {
+  Svg,
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Stop,
+  Rect,
+} from 'react-native-svg';
 import Geolocation from '@react-native-community/geolocation';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
@@ -49,7 +56,6 @@ import PrimaryButton from '../components/PrimaryButton';
 import { usePWAInstall } from '../utils/usePWAInstall';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
-
 
 const ListHeader = ({
   onTokenPress,
@@ -523,6 +529,7 @@ function SkeletonScreen() {
 }
 
 export default function HomeScreen() {
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const navigation = useNavigation<HomeNavProp>();
   const { location, ready, loadingLocation } = useLocation();
   const { startTracking, stopTracking, trackData } = useTracking();
@@ -641,12 +648,20 @@ export default function HomeScreen() {
   } else {
     return (
       <SafeAreaView style={styles.container}>
-        <LinearGradient
-          colors={['#FFFFFF', '#F5F5F6']}
+        <Svg
           style={StyleSheet.absoluteFill}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-        />
+          width={screenWidth}
+          height={screenHeight}
+          pointerEvents="none"
+        >
+          <Defs>
+            <SvgLinearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFFFFF" stopOpacity="1" />
+              <Stop offset="1" stopColor="#F5F5F6" stopOpacity="1" />
+            </SvgLinearGradient>
+          </Defs>
+          <Rect width={screenWidth} height={screenHeight} fill="url(#bg)" />
+        </Svg>
         <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
         {/* Header */}
         <View style={styles.header}>
