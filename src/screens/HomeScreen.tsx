@@ -512,7 +512,7 @@ function SkeletonScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.mainContainer}>
         <S style={styles.height60Loader} />
@@ -647,7 +647,7 @@ export default function HomeScreen() {
     return <SkeletonScreen />;
   } else {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <Svg
           style={StyleSheet.absoluteFill}
           width={screenWidth}

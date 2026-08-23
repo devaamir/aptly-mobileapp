@@ -100,7 +100,7 @@ export default function ProfileScreen() {
     navigation.reset({ index: 0, routes: [{ name: 'PhoneNumber' as never }] });
   };
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
         <Text allowFontScaling={false} style={styles.title}>
