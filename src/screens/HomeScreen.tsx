@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import LottieView from 'lottie-react-native';
 import {
   View,
   Image,
@@ -70,6 +71,9 @@ const ListHeader = ({
   hasNearbyClinics,
   hasLocation,
   trackData,
+  recommendedClinics,
+  onClinicPress,
+  userLocation,
 }: {
   onTokenPress: (appt: Appointment) => void;
   onspecialstPress: () => void;
@@ -83,6 +87,9 @@ const ListHeader = ({
   hasNearbyClinics: boolean;
   hasLocation: boolean;
   trackData: import('../services/api').TrackData | null;
+  recommendedClinics: Clinic[];
+  onClinicPress: (item: Clinic) => void;
+  userLocation: { latitude: number; longitude: number } | null;
 }) => {
   const { currentToken, prevToken, nextToken } = useTracking();
   const today = new Date().toISOString().split('T')[0];
@@ -410,51 +417,131 @@ const ListHeader = ({
           onPress={onspecialstPress}
         >
           <Text allowFontScaling={false} style={styles.cardTitle}>
-            All specialst
+            Specialties
           </Text>
-          <View style={styles.iconsRow}>
-            {specialties.slice(0, 3).map(s => (
-              <View key={s.id} style={styles.iconBox}>
-                <Image source={{ uri: s.icon }} style={styles.iconImg} />
-              </View>
-            ))}
-          </View>
+          <Text allowFontScaling={false} style={styles.viewAllText}>
+            View all
+          </Text>
+          <Image
+            source={require('../assets/images/specialties-image.png')}
+            style={styles.cardImage}
+          />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.card}
           activeOpacity={0.7}
           onPress={onDoctorsPress}
         >
-          <Text allowFontScaling={false} style={styles.cardTitle}>
-            All doctors
-          </Text>
-          <View style={styles.avatarRow}>
-            {doctors.slice(0, 3).map((d, i) => (
-              <View
-                key={d.id}
-                style={[
-                  styles.avatarCircle,
-                  totalDoctorCount > 3 && { marginLeft: i > 0 ? SIZE(-12) : 0 },
-                ]}
-              >
-                <Image
-                  source={
-                    d.profilePicture
-                      ? { uri: d.profilePicture }
-                      : require('../assets/images/doctor-profile.png')
-                  }
-                  style={styles.avatarImg}
-                />
-              </View>
-            ))}
-            {totalDoctorCount > 3 && (
-              <Text allowFontScaling={false} style={styles.avatarCount}>
-                +{totalDoctorCount - 3}
-              </Text>
-            )}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: SIZE(4),
+            }}
+          >
+            <Text allowFontScaling={false} style={styles.cardTitle}>
+              Doctors
+            </Text>
+            <LottieView
+              source={require('../assets/images/simple-animation.json')}
+              autoPlay
+              loop
+              style={{
+                width: SIZE(25),
+                height: SIZE(25),
+              }}
+            />
           </View>
+          <Text allowFontScaling={false} style={styles.viewAllText}>
+            View all
+          </Text>
+          <Image
+            source={require('../assets/images/doctor-image.png')}
+            style={styles.cardImage}
+          />
         </TouchableOpacity>
       </View>
+      {hasLocation && (
+        <>
+          <View style={styles.sectionHeader}>
+            <Text allowFontScaling={false} style={styles.sectionTitle}>
+              Recommended for You
+            </Text>
+            {hasNearbyClinics && (
+              <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
+                <Text allowFontScaling={false} style={styles.viewAll}>
+                  See all
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          {recommendedClinics.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.recommendedScroll}
+            >
+              {recommendedClinics.map(item => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.recommendedCard}
+                  activeOpacity={0.8}
+                  onPress={() => onClinicPress(item)}
+                >
+                  <Image
+                    source={
+                      item.profilePicture
+                        ? { uri: item.profilePicture }
+                        : require('../assets/images/aptly-logo2.png')
+                    }
+                    style={styles.recommendedCardImage}
+                  />
+                  <View style={styles.recommendedCardInfo}>
+                    <Text
+                      allowFontScaling={false}
+                      style={styles.recommendedCardName}
+                      numberOfLines={1}
+                    >
+                      {item.name}
+                    </Text>
+                    <Text
+                      allowFontScaling={false}
+                      style={styles.recommendedCardSpecialty}
+                      numberOfLines={1}
+                    >
+                      {item.specialties[0]?.name ?? item.type}
+                    </Text>
+                    <View style={styles.recommendedCardLocationRow}>
+                      <LocationIcon width={SIZE(11)} height={SIZE(11)} />
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.recommendedCardLocation}
+                        numberOfLines={1}
+                      >
+                        {item.address}
+                      </Text>
+                      {userLocation && (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.recommendedCardDistance}
+                          numberOfLines={1}
+                        >
+                          {getDistance(
+                            userLocation.latitude,
+                            userLocation.longitude,
+                            item.latitude,
+                            item.longitude,
+                          )}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </>
+      )}
       {hasLocation && (
         <View style={styles.sectionHeader}>
           <Text allowFontScaling={false} style={styles.sectionTitle}>
@@ -836,6 +923,23 @@ export default function HomeScreen() {
               hasNearbyClinics={clinics.length > 0}
               hasLocation={!!location}
               trackData={trackData}
+              recommendedClinics={location ? clinics : fallbackClinics}
+              onClinicPress={item =>
+                navigation.navigate('HospitalDetail', {
+                  id: item.id,
+                  name: item.name,
+                  specialty: item.specialties[0]?.name ?? '',
+                  location: item.address,
+                })
+              }
+              userLocation={
+                location
+                  ? {
+                      latitude: location.latitude,
+                      longitude: location.longitude,
+                    }
+                  : null
+              }
             />
           }
           renderItem={({ item }) => {
@@ -1464,17 +1568,44 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
+    height: SIZE(116),
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: colors.borderLight,
     borderRadius: SIZE(22),
     padding: SIZE(18),
     backgroundColor: colors.surfaceLight,
+    overflow: 'hidden',
+  },
+  cardImage: {
+    width: SIZE(92),
+    height: SIZE(92),
+    resizeMode: 'contain',
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+  },
+  leftView: {
+    width: '60%',
+    justifyContent: 'space-between',
+    gap: SIZE(8),
+    // backgroundColor: '#00f',
+  },
+  rightView: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    width: '40%',
+    // backgroundColor: '#f00',
+  },
+  viewAllText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(13),
+    color: colors.accent,
   },
   cardTitle: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(15),
     color: colors.textPrimary,
-    marginBottom: SIZE(18),
   },
   iconsRow: {
     flexDirection: 'row',
@@ -1536,7 +1667,7 @@ const styles = StyleSheet.create({
   viewAll: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(13),
-    color: colors.primary,
+    color: colors.accent,
   },
   listContent: {
     paddingBottom: SIZE(24),
@@ -1651,5 +1782,58 @@ const styles = StyleSheet.create({
     height: SIZE(100),
     borderRadius: SIZE(12),
     backgroundColor: colors.backgroundLight,
+  },
+  // Recommended for You horizontal cards
+  recommendedScroll: {
+    paddingHorizontal: SIZE(18),
+    paddingBottom: SIZE(8),
+    gap: SIZE(12),
+  },
+  recommendedCard: {
+    width: SIZE(206),
+    height: SIZE(190),
+    borderRadius: SIZE(14),
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    backgroundColor: colors.white,
+    overflow: 'hidden',
+  },
+  recommendedCardImage: {
+    width: '100%',
+    height: SIZE(110),
+    resizeMode: 'cover',
+    backgroundColor: colors.backgroundLight,
+  },
+  recommendedCardInfo: {
+    flex: 1,
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(8),
+    justifyContent: 'space-between',
+  },
+  recommendedCardName: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(13),
+    color: colors.textPrimary,
+  },
+  recommendedCardSpecialty: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: colors.textSecondary,
+  },
+  recommendedCardLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(3),
+  },
+  recommendedCardLocation: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(10),
+    color: colors.textSecondary,
+    flex: 1,
+  },
+  recommendedCardDistance: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(10),
+    color: colors.primary,
   },
 });

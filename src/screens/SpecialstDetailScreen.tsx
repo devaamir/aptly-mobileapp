@@ -12,7 +12,7 @@ import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
-import { getClinics, getDoctors, Clinic, Doctor } from '../services/api';
+import { getClinics, getDoctors, getDoctor, Clinic, Doctor } from '../services/api';
 import FilterModal from '../components/FilterModal';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
@@ -22,6 +22,8 @@ import { useMetadata } from '../context/MetadataContext';
 
 type Tab = 'clinics' | 'doctors';
 type Props = NativeStackScreenProps<RootStackParamList, 'SpecialstDetail'>;
+
+const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 export default function SpecialstDetailScreen({ navigation, route }: Props) {
   const { name, id } = route.params;
@@ -44,7 +46,10 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
       getDoctors(1, 20, { ...baseFilters, ...(medicalSystemId ? { medicalSystemId } : {}) }),
     ]).then(([clinicRes, doctorRes]) => {
       setClinics(clinicRes.data);
-      setDoctors(doctorRes.data);
+      // Fetch full doctor details to get medicalCenters[].schedules
+      return Promise.all(doctorRes.data.map(d => getDoctor(d.id).then(r => r.data)));
+    }).then(fullDoctors => {
+      setDoctors(fullDoctors);
     }).catch(() => { }).finally(() => setLoading(false));
   }, [id, location, appliedFilters]);
 
@@ -97,7 +102,12 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
             keyExtractor={item => item.id}
             contentContainerStyle={[styles.listContent, { paddingHorizontal: SIZE(18) }]}
             showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
+            renderItem={({ item }) => {
+              const allSchedules = item.medicalCenters.flatMap(mc => (mc.schedules ?? []));
+              const today = DAYS[new Date().getDay()];
+              const todaySchedule = allSchedules.find(s => s.dayOfWeek.toLowerCase() === today);
+              const derivedSchedule = item.nextSchedule ?? todaySchedule ?? allSchedules[0];
+              return (
               <DoctorCard
                 name={item.name}
                 type={item.specialties[0]?.name ?? ''}
@@ -105,11 +115,13 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
                 clinicType={item.medicalCenters[0]?.type ?? ''}
                 experience={`${item.yearsOfExperience} yrs exp`}
                 image={item.profilePicture}
+                nextSchedule={derivedSchedule}
                 distance={(() => { const mc = item.medicalCenters[0]; return (location && mc) ? getDistance(location.latitude, location.longitude, mc.latitude, mc.longitude) : undefined; })()}
                 onPress={() => navigation.navigate('DoctorDetail', { doctorId: item.id })}
-                onBookPress={() => navigation.navigate('BookAppointment', { doctor: item })}
+                onBookPress={() => navigation.navigate('BookAppointment', { doctor: item, clinicId: item.medicalCenters[0]?.id })}
               />
-            )}
+              );
+            }}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />

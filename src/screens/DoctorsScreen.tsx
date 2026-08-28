@@ -171,7 +171,7 @@ export default function DoctorsScreen({ navigation }: Props) {
                   navigation.navigate('DoctorDetail', { doctorId: item.id })
                 }
                 onBookPress={() =>
-                  navigation.navigate('BookAppointment', { doctor: item })
+                  navigation.navigate('BookAppointment', { doctor: item, clinicId: item.medicalCenters[0]?.id })
                 }
               />
             );
