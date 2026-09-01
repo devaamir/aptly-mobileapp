@@ -442,15 +442,17 @@ const ListHeader = ({
             <Text allowFontScaling={false} style={styles.cardTitle}>
               Doctors
             </Text>
-            <LottieView
-              source={require('../assets/images/simple-animation.json')}
-              autoPlay
-              loop
-              style={{
-                width: SIZE(25),
-                height: SIZE(25),
-              }}
-            />
+            {Platform.OS !== 'ios' && (
+              <LottieView
+                source={require('../assets/images/simple-animation.json')}
+                autoPlay
+                loop
+                style={{
+                  width: SIZE(25),
+                  height: SIZE(25),
+                }}
+              />
+            )}
           </View>
           <Text allowFontScaling={false} style={styles.viewAllText}>
             View all
@@ -461,87 +463,85 @@ const ListHeader = ({
           />
         </TouchableOpacity>
       </View>
-      {hasLocation && (
-        <>
-          <View style={styles.sectionHeader}>
-            <Text allowFontScaling={false} style={styles.sectionTitle}>
-              Recommended for You
+      {/* Recommended for You section — temporarily disabled
+      <>
+        <View style={styles.sectionHeader}>
+          <Text allowFontScaling={false} style={styles.sectionTitle}>
+            Recommended for You
+          </Text>
+          <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
+            <Text allowFontScaling={false} style={styles.viewAll}>
+              See all
             </Text>
-            {hasNearbyClinics && (
-              <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
-                <Text allowFontScaling={false} style={styles.viewAll}>
-                  See all
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          {recommendedClinics.length > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.recommendedScroll}
-            >
-              {recommendedClinics.map(item => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.recommendedCard}
-                  activeOpacity={0.8}
-                  onPress={() => onClinicPress(item)}
-                >
-                  <Image
-                    source={
-                      item.profilePicture
-                        ? { uri: item.profilePicture }
-                        : require('../assets/images/aptly-logo2.png')
-                    }
-                    style={styles.recommendedCardImage}
-                  />
-                  <View style={styles.recommendedCardInfo}>
+          </TouchableOpacity>
+        </View>
+        {recommendedClinics.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.recommendedScroll}
+          >
+            {recommendedClinics.map(item => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.recommendedCard}
+                activeOpacity={0.8}
+                onPress={() => onClinicPress(item)}
+              >
+                <Image
+                  source={
+                    item.profilePicture
+                      ? { uri: item.profilePicture }
+                      : require('../assets/images/aptly-logo2.png')
+                  }
+                  style={styles.recommendedCardImage}
+                />
+                <View style={styles.recommendedCardInfo}>
+                  <Text
+                    allowFontScaling={false}
+                    style={styles.recommendedCardName}
+                    numberOfLines={1}
+                  >
+                    {item.name}
+                  </Text>
+                  <Text
+                    allowFontScaling={false}
+                    style={styles.recommendedCardSpecialty}
+                    numberOfLines={1}
+                  >
+                    {item.specialties[0]?.name ?? item.type}
+                  </Text>
+                  <View style={styles.recommendedCardLocationRow}>
+                    <LocationIcon width={SIZE(11)} height={SIZE(11)} />
                     <Text
                       allowFontScaling={false}
-                      style={styles.recommendedCardName}
+                      style={styles.recommendedCardLocation}
                       numberOfLines={1}
                     >
-                      {item.name}
+                      {item.address}
                     </Text>
-                    <Text
-                      allowFontScaling={false}
-                      style={styles.recommendedCardSpecialty}
-                      numberOfLines={1}
-                    >
-                      {item.specialties[0]?.name ?? item.type}
-                    </Text>
-                    <View style={styles.recommendedCardLocationRow}>
-                      <LocationIcon width={SIZE(11)} height={SIZE(11)} />
+                    {userLocation && (
                       <Text
                         allowFontScaling={false}
-                        style={styles.recommendedCardLocation}
+                        style={styles.recommendedCardDistance}
                         numberOfLines={1}
                       >
-                        {item.address}
+                        {getDistance(
+                          userLocation.latitude,
+                          userLocation.longitude,
+                          item.latitude,
+                          item.longitude,
+                        )}
                       </Text>
-                      {userLocation && (
-                        <Text
-                          allowFontScaling={false}
-                          style={styles.recommendedCardDistance}
-                          numberOfLines={1}
-                        >
-                          {getDistance(
-                            userLocation.latitude,
-                            userLocation.longitude,
-                            item.latitude,
-                            item.longitude,
-                          )}
-                        </Text>
-                      )}
-                    </View>
+                    )}
                   </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-        </>
-      )}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </>
+      */}
       {hasLocation && (
         <View style={styles.sectionHeader}>
           <Text allowFontScaling={false} style={styles.sectionTitle}>

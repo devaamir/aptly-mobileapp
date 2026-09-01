@@ -38,7 +38,10 @@ export default function HospitalDetailScreen() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const displayClinic = clinic ?? { name, about: '', phoneNumber: '', websiteUrl: '', doctors: [], specialties: [] };
+  // When navigating from a deep link only `id` is available; name/specialty/location
+  // will be undefined until the API call resolves. The fallback strings keep the
+  // screen from crashing while loading.
+  const displayClinic = clinic ?? { name: name ?? '', about: '', phoneNumber: '', websiteUrl: '', doctors: [], specialties: [] };
 
   console.log(displayClinic.doctors);
 
@@ -85,7 +88,7 @@ export default function HospitalDetailScreen() {
           <View style={styles.sheetHandle} />
           <Text allowFontScaling={false} style={styles.clinicTitle}>{displayClinic.name}</Text>
           <Text allowFontScaling={false} style={styles.clinicSpecialty} numberOfLines={2}>
-            {(displayClinic.specialties?.length > 0 ? displayClinic.specialties : [{ name: specialty }]).map((s: { name: string }, i: number, arr: { name: string }[]) => (
+            {(displayClinic.specialties?.length > 0 ? displayClinic.specialties : [{ name: specialty ?? '' }]).map((s: { name: string }, i: number, arr: { name: string }[]) => (
               <Text key={i} allowFontScaling={false}>
                 {s.name}
                 {i < arr.length - 1 && <Text style={styles.specialtiesDot}>{'  •  '}</Text>}
@@ -94,7 +97,7 @@ export default function HospitalDetailScreen() {
           </Text>
           <View style={styles.locationRow}>
             <LocationIcon width={SIZE(12)} height={SIZE(12)} />
-            <Text allowFontScaling={false} style={styles.clinicLocation}>{location}</Text>
+            <Text allowFontScaling={false} style={styles.clinicLocation}>{clinic?.address ?? location}</Text>
           </View>
           <View style={styles.actions}>
             <TouchableOpacity
@@ -117,8 +120,12 @@ export default function HospitalDetailScreen() {
                   const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
                   Linking.openURL(url);
                 } else {
-                  const query = encodeURIComponent(location);
-                  Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+                  const query = encodeURIComponent(location ?? '');
+                  if (query) {
+                    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+                  } else {
+                    Alert.alert('Not available', 'No location found for this clinic.');
+                  }
                 }
               }}>
               <MapIcon width={SIZE(22)} height={SIZE(22)} />
@@ -156,7 +163,7 @@ export default function HospitalDetailScreen() {
               name={doc.name}
               type={doc.specialties[0]?.name ?? ''}
               hospital={displayClinic.name}
-              clinicType={specialty}
+              clinicType={specialty ?? ''}
               experience={doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''}
               image={doc.profilePicture}
               nextSchedule={doc.nextSchedule}

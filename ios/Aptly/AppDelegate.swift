@@ -57,6 +57,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     return false
   }
+
+  // MARK: - Universal Links (iOS)
+  // Called when the app is opened via a Universal Link (https://qr.aptly.care/c/<uuid>).
+  // React Native's Linking module listens to this and forwards the URL to JavaScript.
+  func application(
+    _ application: UIApplication,
+    continue userActivity: NSUserActivity,
+    restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
+  ) -> Bool {
+    guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+          let url = userActivity.webpageURL else {
+      return false
+    }
+    // Forward to React Native's Linking API so the JS layer can handle navigation.
+    return RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
+  }
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
