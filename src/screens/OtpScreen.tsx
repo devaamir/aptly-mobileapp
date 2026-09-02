@@ -66,6 +66,19 @@ export default function OtpScreen() {
   };
 
   const handleChange = (text: string, index: number) => {
+    // Handle autofill paste — full OTP pasted at once (iOS QuickType / Android suggestion)
+    if (text.length > 1) {
+      const digits = text.replace(/\D/g, '').slice(0, OTP_LENGTH).split('');
+      const newOtp = [...otp];
+      digits.forEach((d, i) => {
+        newOtp[i] = d;
+      });
+      setOtp(newOtp);
+      const lastIndex = Math.min(digits.length - 1, OTP_LENGTH - 1);
+      inputs.current[lastIndex]?.focus();
+      return;
+    }
+
     const newOtp = [...otp];
     newOtp[index] = text;
     setOtp(newOtp);
@@ -150,13 +163,14 @@ export default function OtpScreen() {
             ref={ref => (inputs.current[index] = ref)}
             style={[styles.otpBox, digit ? styles.otpBoxFilled : null]}
             value={digit}
-            onChangeText={text => handleChange(text.slice(-1), index)}
+            onChangeText={text => handleChange(text, index)}
             onKeyPress={e => handleKeyPress(e, index)}
             placeholder="0"
             placeholderTextColor={colors.border}
-            maxLength={1}
+            maxLength={OTP_LENGTH}
             keyboardType="number-pad"
             textAlign="center"
+            textContentType="oneTimeCode"
           />
         ))}
       </View>
