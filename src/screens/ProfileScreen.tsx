@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import dayjs from 'dayjs';
 import {
   View,
   Text,
@@ -70,7 +71,7 @@ export default function ProfileScreen() {
         memberName,
         memberPhone,
         memberGender.toLowerCase(),
-        memberDob.toISOString().split('T')[0],
+        dayjs(memberDob).format('YYYY-MM-DD'),
       );
       const res = await getPatients();
       setPatients(res.data.filter(p => !!p.name));

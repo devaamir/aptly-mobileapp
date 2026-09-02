@@ -15,6 +15,7 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import AppInput from '../components/AppInput';
 import { createPatient, updatePatient } from '../services/api';
+import dayjs from 'dayjs';
 import { useAuth } from '../context/AuthContext';
 
 export default function CreateProfileScreen() {
@@ -25,7 +26,11 @@ export default function CreateProfileScreen() {
   const { initLocation } = useLocation();
   const [name, setName] = useState(isEdit ? (user?.name ?? '') : '');
   const [gender, setGender] = useState(isEdit ? (user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : '') : '');
-  const [dob, setDob] = useState<Date | null>(isEdit && user?.dateOfBirth ? new Date(user.dateOfBirth) : null);
+  const [dob, setDob] = useState<Date | null>(() => {
+    if (!isEdit || !user?.dateOfBirth) return null;
+    const [y, m, d] = user.dateOfBirth.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  });
   const [loading, setLoading] = useState(false);
   const [activeField, setActiveField] = useState<'name' | 'gender' | 'dob' | null>(null);
   const [cancelVisible, setCancelVisible] = useState(false);
@@ -40,7 +45,7 @@ export default function CreateProfileScreen() {
   const handleContinue = async () => {
     try {
       setLoading(true);
-      const dateOfBirth = dob!.toISOString().split('T')[0];
+      const dateOfBirth = dayjs(dob).format('YYYY-MM-DD');
       const genderLower = gender.toLowerCase();
       let patientId: string;
       if (isEdit && user?.patientId) {

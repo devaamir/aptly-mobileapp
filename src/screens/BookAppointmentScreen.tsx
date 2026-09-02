@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert, KeyboardAvoidingView } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker from 'react-native-ui-datepicker';
+import dayjs from 'dayjs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -20,6 +21,7 @@ import PrimaryButton from '../components/PrimaryButton';
 import { createAppointment, getPatients, addPatient, getDoctorSchedule, Patient } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Schedule } from '../services/api';
+
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookAppointment'>;
 
@@ -142,10 +144,14 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
       .finally(() => setScheduleFetching(false));
   }, [selectedDay]);
 
-  const onDateChange = (_: any, date?: Date) => {
-    setShowCalendar(Platform.OS === 'ios');
+  const onDateChange = ({ date }: { date: any }) => {
     if (date) {
-      const idx = DAYS.findIndex(d => d.full.toDateString() === date.toDateString());
+      const jsDate = date as Date;
+      const y = Platform.OS === 'ios' ? jsDate.getUTCFullYear() : jsDate.getFullYear();
+      const m = Platform.OS === 'ios' ? jsDate.getUTCMonth() : jsDate.getMonth();
+      const d = Platform.OS === 'ios' ? jsDate.getUTCDate() : jsDate.getDate();
+      const local = new Date(y, m, d);
+      const idx = DAYS.findIndex(day => day.full.toDateString() === local.toDateString());
       if (idx !== -1) setSelectedDay(idx);
     }
   };
@@ -192,12 +198,19 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           </View>
           {showCalendar && (
             <DateTimePicker
-              value={DAYS[selectedDay].full}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'inline' : 'default'}
-              minimumDate={DAYS[0].full}
-              maximumDate={DAYS[DAYS.length - 1].full}
+              mode="single"
+              date={dayjs(DAYS[selectedDay].full)}
+              minDate={dayjs(DAYS[0].full)}
+              maxDate={dayjs(DAYS[DAYS.length - 1].full)}
               onChange={onDateChange}
+              styles={{
+                selected: { backgroundColor: colors.primary, borderRadius: SIZE(20) },
+                selected_label: { color: colors.white, fontFamily: 'Manrope-SemiBold' },
+                day_label: { fontFamily: 'Manrope-Regular', color: colors.textPrimary },
+                weekday_label: { fontFamily: 'Manrope-Medium', color: colors.textSecondary },
+                month_selector_label: { fontFamily: 'Manrope-SemiBold', color: colors.textPrimary },
+                year_selector_label: { fontFamily: 'Manrope-SemiBold', color: colors.textPrimary },
+              }}
             />
           )}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysRow}>

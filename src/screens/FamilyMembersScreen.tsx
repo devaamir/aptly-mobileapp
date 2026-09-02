@@ -12,6 +12,7 @@ import AppDropdown from '../components/AppDropdown';
 import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
 import { addPatient, getPatients, Patient } from '../services/api';
+import dayjs from 'dayjs';
 
 export default function FamilyMembersScreen() {
   const navigation = useNavigation();
@@ -33,7 +34,7 @@ export default function FamilyMembersScreen() {
     if (!memberName || !memberPhone || !memberGender || !memberDob) return;
     try {
       setAddingMember(true);
-      await addPatient(memberName, memberPhone, memberGender.toLowerCase(), memberDob.toISOString().split('T')[0]);
+      await addPatient(memberName, memberPhone, memberGender.toLowerCase(), dayjs(memberDob).format('YYYY-MM-DD'));
       const res = await getPatients();
       setPatients(res.data.filter(p => !!p.name));
       setShowAddMember(false);
@@ -75,7 +76,7 @@ export default function FamilyMembersScreen() {
               id: p.id,
               name: p.name,
               phone: p.phoneNumber,
-              age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 0,
+              age: p.dateOfBirth ? new Date().getFullYear() - Number(p.dateOfBirth.split('-')[0]) : 0,
               gender: p.gender ?? '',
             }))}
             showRadio={false}
