@@ -104,6 +104,7 @@ export default function CreateProfileScreen() {
             focused={activeField === 'dob'}
             onOpen={() => setActiveField('dob')}
             onClose={() => setActiveField(null)}
+            disableFuture
           />
         </View>
       </View>

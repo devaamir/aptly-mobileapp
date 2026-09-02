@@ -301,6 +301,7 @@ export default function ProfileScreen() {
                   value={memberDob}
                   onChange={setMemberDob}
                   placeholder="Date of birth"
+                  disableFuture
                 />
               </View>
             </View>

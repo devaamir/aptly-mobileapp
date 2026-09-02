@@ -13,6 +13,8 @@ type Props = {
   focused?: boolean;
   onOpen?: () => void;
   onClose?: () => void;
+  /** Prevents selecting today or any future date. Useful for date-of-birth fields. */
+  disableFuture?: boolean;
 };
 
 export default function AppDatePicker({
@@ -22,6 +24,7 @@ export default function AppDatePicker({
   focused: externalFocused,
   onOpen,
   onClose,
+  disableFuture = false,
 }: Props) {
   const [show, setShow] = useState(false);
   const focused = externalFocused !== undefined ? externalFocused : show;
@@ -45,7 +48,10 @@ export default function AppDatePicker({
     ? dayjs(`${dayjs(value).format('YYYY-MM-DD')}T12:00:00`)
     : undefined;
 
-  const pickerMaxDate = dayjs(`${dayjs().format('YYYY-MM-DD')}T12:00:00`);
+  // When disableFuture is true, cap the selectable range to today.
+  const pickerMaxDate = disableFuture
+    ? dayjs(`${dayjs().format('YYYY-MM-DD')}T12:00:00`)
+    : undefined;
 
   return (
     <View style={styles.container}>
@@ -108,6 +114,15 @@ export default function AppDatePicker({
                 day_label: {
                   fontFamily: 'Manrope-Regular',
                   color: colors.textPrimary,
+                },
+                // Future dates are greyed out and visually muted when disableFuture is on
+                disabled: {
+                  opacity: 0.3,
+                },
+                disabled_label: {
+                  fontFamily: 'Manrope-Regular',
+                  color: colors.textSecondary,
+                  textDecorationLine: 'line-through',
                 },
                 weekday_label: {
                   fontFamily: 'Manrope-Medium',

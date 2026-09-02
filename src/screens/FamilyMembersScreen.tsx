@@ -96,7 +96,7 @@ export default function FamilyMembersScreen() {
                 <AppDropdown options={['Male', 'Female']} value={memberGender} onSelect={setMemberGender} placeholder="Gender" />
               </View>
               <View style={{ flex: 1 }}>
-                <AppDatePicker value={memberDob} onChange={setMemberDob} placeholder="Date of birth" />
+                <AppDatePicker value={memberDob} onChange={setMemberDob} placeholder="Date of birth" disableFuture />
               </View>
             </View>
           </View>

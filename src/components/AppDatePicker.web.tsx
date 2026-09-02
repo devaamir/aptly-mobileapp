@@ -11,14 +11,16 @@ type Props = {
   focused?: boolean;
   onOpen?: () => void;
   onClose?: () => void;
+  /** Prevents selecting today or any future date. Useful for date-of-birth fields. */
+  disableFuture?: boolean;
 };
 
-export default function AppDatePicker({ value, onChange, placeholder = 'Select', focused }: Props) {
+export default function AppDatePicker({ value, onChange, placeholder = 'Select', focused, disableFuture = false }: Props) {
   const formatted = value
     ? value.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
     : null;
 
-  const maxDate = new Date().toISOString().split('T')[0];
+  const maxDate = disableFuture ? new Date().toISOString().split('T')[0] : undefined;
   const inputValue = value ? value.toISOString().split('T')[0] : '';
 
   return (

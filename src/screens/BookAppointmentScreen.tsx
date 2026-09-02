@@ -207,6 +207,8 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
                 selected: { backgroundColor: colors.primary, borderRadius: SIZE(20) },
                 selected_label: { color: colors.white, fontFamily: 'Manrope-SemiBold' },
                 day_label: { fontFamily: 'Manrope-Regular', color: colors.textPrimary },
+                disabled: { opacity: 0.3 },
+                disabled_label: { fontFamily: 'Manrope-Regular', color: colors.textSecondary, textDecorationLine: 'line-through' },
                 weekday_label: { fontFamily: 'Manrope-Medium', color: colors.textSecondary },
                 month_selector_label: { fontFamily: 'Manrope-SemiBold', color: colors.textPrimary },
                 year_selector_label: { fontFamily: 'Manrope-SemiBold', color: colors.textPrimary },
@@ -304,7 +306,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             <AppInput value={memberPhone} onChangeText={setMemberPhone} placeholder="Phone number" keyboardType="phone-pad" prefix="+91" />
             <View style={styles.memberRow}>
               <View style={{ flex: 1 }}><AppDropdown options={['Male', 'Female']} value={memberGender} onSelect={setMemberGender} placeholder="Gender" /></View>
-              <View style={{ flex: 1 }}><AppDatePicker value={memberDob} onChange={setMemberDob} placeholder="Date of birth" /></View>
+              <View style={{ flex: 1 }}><AppDatePicker value={memberDob} onChange={setMemberDob} placeholder="Date of birth" disableFuture /></View>
             </View>
           </View>
           <PrimaryButton
