@@ -19,9 +19,16 @@ export default function FamilyMembersScreen() {
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
+  const [memberPhoneTouched, setMemberPhoneTouched] = useState(false);
   const [memberGender, setMemberGender] = useState('');
   const [memberDob, setMemberDob] = useState<Date | null>(null);
   const [addingMember, setAddingMember] = useState(false);
+
+  const phoneError =
+    memberPhoneTouched && memberPhone.length > 0 && memberPhone.length < 10
+      ? 'Phone number must be 10 digits'
+      : null;
+  const isPhoneValid = memberPhone.length === 10;
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +45,7 @@ export default function FamilyMembersScreen() {
       const res = await getPatients();
       setPatients(res.data.filter(p => !!p.name));
       setShowAddMember(false);
-      setMemberName(''); setMemberPhone(''); setMemberGender(''); setMemberDob(null);
+      setMemberName(''); setMemberPhone(''); setMemberPhoneTouched(false); setMemberGender(''); setMemberDob(null);
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to add member');
     } finally {
@@ -85,12 +92,25 @@ export default function FamilyMembersScreen() {
         )}
       </ScrollView>
 
-      <BottomModal visible={showAddMember} onClose={() => setShowAddMember(false)} variant="bottom">
+      <BottomModal visible={showAddMember} onClose={() => { setShowAddMember(false); setMemberPhoneTouched(false); }} variant="bottom">
         <Text allowFontScaling={false} style={styles.modalTitle}>Add Member</Text>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ width: '100%', flex: 1 }}>
           <View style={{ gap: SIZE(12), flex: 1 }}>
             <AppInput value={memberName} onChangeText={setMemberName} placeholder="Full name" />
-            <AppInput value={memberPhone} onChangeText={setMemberPhone} placeholder="Phone number" keyboardType="phone-pad" prefix="+91" />
+            <View>
+              <AppInput
+                value={memberPhone}
+                onChangeText={text => { setMemberPhone(text); }}
+                onBlur={() => setMemberPhoneTouched(true)}
+                placeholder="Phone number"
+                keyboardType="phone-pad"
+                prefix="+91"
+                maxLength={10}
+              />
+              {phoneError ? (
+                <Text allowFontScaling={false} style={styles.errorText}>{phoneError}</Text>
+              ) : null}
+            </View>
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <AppDropdown options={['Male', 'Female']} value={memberGender} onSelect={setMemberGender} placeholder="Gender" />
@@ -103,7 +123,7 @@ export default function FamilyMembersScreen() {
           <PrimaryButton
             label="Continue"
             onPress={handleAddMember}
-            disabled={!memberName || !memberPhone || !memberGender || !memberDob || addingMember}
+            disabled={!memberName || !isPhoneValid || !memberGender || !memberDob || addingMember}
             loading={addingMember}
           />
         </KeyboardAvoidingView>
@@ -137,6 +157,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Bold',
     fontSize: SIZE(16),
     color: colors.textPrimary,
+  },
+  errorText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.error,
+    marginTop: SIZE(-10),
+    marginBottom: SIZE(4),
+    paddingHorizontal: SIZE(4),
   },
   skeletonContainer: {
     borderRadius: SIZE(12),

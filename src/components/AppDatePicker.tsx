@@ -136,6 +136,12 @@ export default function AppDatePicker({
                   fontFamily: 'Manrope-SemiBold',
                   color: colors.textPrimary,
                 },
+                button_prev_image: {
+                  tintColor: '#000000',
+                },
+                button_next_image: {
+                  tintColor: '#000000',
+                },
               }}
             />
           </View>
