@@ -12,6 +12,7 @@ import { searchLocations, reverseGeocode } from '../services/api';
 import { useLocation } from '../context/LocationContext';
 import Geolocation from '@react-native-community/geolocation';
 import { requestLocationPermission } from '../utils/requestLocationPermission';
+import DistancePicker from '../components/DistancePicker';
 
 const POPULAR_PLACES = [
   'Manjeri',
@@ -36,6 +37,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
   const [popularLoading, setPopularLoading] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [distance, setDistance] = useState(25);
 
   const handleSelect = (item: Location) => {
     console.log(item);
@@ -115,6 +117,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
             onChangeText={setQuery}
             autoFocus
           />
+          <DistancePicker value={distance} onChange={setDistance} />
         </View>
       </View>
 

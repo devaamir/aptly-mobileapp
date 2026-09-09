@@ -27,7 +27,17 @@ const statusColors: Record<Status, { bg: string; dot: string }> = {
   Cancelled: { bg: colors.cancelledBg, dot: colors.cancelledDot },
 };
 
-export default function AppointmentCard({ doctor, type, hospital, date, time, token, status, avatar, clinicAvatar }: Props) {
+export default function AppointmentCard({
+  doctor,
+  type,
+  hospital,
+  date,
+  time,
+  token,
+  status,
+  avatar,
+  clinicAvatar,
+}: Props) {
   const { currentToken, prevToken, nextToken } = useTracking();
   const s = statusColors[status];
   return (
@@ -36,27 +46,48 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
       <View style={styles.topBar}>
         <View style={styles.statusBadge}>
           <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
-          <Text allowFontScaling={false} style={styles.statusText}>{status}</Text>
+          <Text allowFontScaling={false} style={styles.statusText}>
+            {status}
+          </Text>
         </View>
         <ArrowRight width={SIZE(18)} height={SIZE(18)} />
       </View>
       <View style={styles.cardTop}>
         <View style={styles.avatar}>
-          {clinicAvatar ? <Image source={{ uri: clinicAvatar }} style={styles.avatarImg} /> : null}
+          {clinicAvatar ? (
+            <Image source={{ uri: clinicAvatar }} style={styles.avatarImg} />
+          ) : null}
         </View>
         <View style={styles.cardInfo}>
-          <Text allowFontScaling={false} style={styles.doctorName}>{hospital}</Text>
-          <Text allowFontScaling={false} style={styles.doctorType}>{type}</Text>
+          <Text allowFontScaling={false} style={styles.doctorName}>
+            {hospital}
+          </Text>
+          <Text allowFontScaling={false} style={styles.doctorType}>
+            {type}
+          </Text>
         </View>
       </View>
       <View style={styles.dashedDivider} />
       <View style={styles.doctorRow}>
         <View style={styles.doctorAvatar}>
-          {avatar ? <Image source={{ uri: avatar }} style={styles.avatarImg} /> : <Image source={require('../assets/images/doctor-profile.png')} style={styles.avatarImg} />}
+          {avatar ? (
+            <Image source={{ uri: avatar }} style={styles.avatarImg} />
+          ) : (
+            <Image
+              source={require('../assets/images/doctor-profile.png')}
+              style={styles.avatarImg}
+            />
+          )}
         </View>
-        <Text allowFontScaling={false} style={styles.doctorName}>{doctor}</Text>
-        <Text allowFontScaling={false} style={styles.doctorSep}>|</Text>
-        <Text allowFontScaling={false} style={styles.doctorType}>{type}</Text>
+        <Text allowFontScaling={false} style={styles.doctorName}>
+          {doctor}
+        </Text>
+        <Text allowFontScaling={false} style={styles.doctorSep}>
+          |
+        </Text>
+        <Text allowFontScaling={false} style={styles.doctorType}>
+          {type}
+        </Text>
       </View>
       {status === 'Live' && (
         <View style={styles.tokenCard}>
@@ -76,24 +107,45 @@ export default function AppointmentCard({ doctor, type, hospital, date, time, to
             repeat
             muted
           />
-          <Text allowFontScaling={false} style={[styles.tokenLabel, styles.tokenLabelLive]}>Your Token</Text>
+          <Text
+            allowFontScaling={false}
+            style={[styles.tokenLabel, styles.tokenLabelLive]}
+          >
+            Your Token
+          </Text>
           <View style={styles.tokenQueue}>
-            <Text allowFontScaling={false} style={styles.tokenNextPrev}>{prevToken ?? ''}</Text>
-            <Text allowFontScaling={false} style={styles.tokenCurrent}>{currentToken ?? ''}</Text>
-            <Text allowFontScaling={false} style={styles.tokenNextPrev}>{nextToken ?? ''}</Text>
-            <Text allowFontScaling={false} style={styles.ourTokenNumber}>{token}</Text>
+            <Text allowFontScaling={false} style={styles.tokenNextPrev}>
+              {prevToken ?? ''}
+            </Text>
+            <Text allowFontScaling={false} style={styles.tokenCurrent}>
+              {currentToken ?? ''}
+            </Text>
+            <Text allowFontScaling={false} style={styles.tokenNextPrev}>
+              {nextToken ?? ''}
+            </Text>
+            <Text allowFontScaling={false} style={styles.ourTokenNumber}>
+              {token}
+            </Text>
           </View>
         </View>
       )}
       {status === 'Upcoming' && (
         <View style={[styles.tokenCard, { backgroundColor: colors.tokenBg }]}>
-          <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>
-          <Text allowFontScaling={false} style={styles.tokenNumber}>{token}</Text>
+          <Text allowFontScaling={false} style={styles.tokenLabel}>
+            Your Token
+          </Text>
+          <Text allowFontScaling={false} style={styles.tokenNumber}>
+            {token}
+          </Text>
         </View>
       )}
       <View style={styles.appointmentTime}>
-        <Text allowFontScaling={false} style={styles.appointmentOn}>Appointment on </Text>
-        <Text allowFontScaling={false} style={styles.appointmentDate}>{date}, {time}</Text>
+        <Text allowFontScaling={false} style={styles.appointmentOn}>
+          Appointment on{' '}
+        </Text>
+        <Text allowFontScaling={false} style={styles.appointmentDate}>
+          {date}, {time}
+        </Text>
       </View>
     </View>
   );
@@ -103,7 +155,7 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     overflow: 'hidden',
   },
   topBar: {

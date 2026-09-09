@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ViewStyle, StyleProp } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ViewStyle, StyleProp, Platform } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon.svg';
@@ -11,8 +11,8 @@ import LoginModal from './LoginModal';
 type Props = {
   name: string;
   type: string;
-  hospital: string;
-  clinicType: string;
+  hospital?: string;
+  clinicType?: string;
   experience: string;
   image?: string;
   location?: string;
@@ -100,8 +100,8 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
             <ArrowRight width={SIZE(18)} height={SIZE(18)} />
           </View>
           <View style={styles.cardBottom}>
-            <Text allowFontScaling={false} style={styles.hospitalText}>{hospital}</Text>
-            <Text allowFontScaling={false} style={styles.clinicTypeText}>{clinicType}</Text>
+            {hospital ? <Text allowFontScaling={false} style={styles.hospitalText}>{hospital}</Text> : null}
+            {clinicType ? <Text allowFontScaling={false} style={styles.clinicTypeText}>{clinicType}</Text> : null}
             {location ? (
               <View style={styles.locationRow}>
                 <View style={[styles.locationRow, { width: '80%' }]}>
@@ -112,7 +112,15 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
               </View>
             ) : null}
           </View>
-          <View style={styles.divider} />
+          {Platform.OS === 'android' ? (
+            <View style={styles.divider} />
+          ) : (
+            <View style={styles.iosDivider}>
+              {Array.from({ length: 40 }).map((_, i) => (
+                <View key={i} style={styles.iosDash} />
+              ))}
+            </View>
+          )}
           <View style={styles.cardCenter}>
             <View>
               <Text allowFontScaling={false} style={styles.expYears}>{experience.replace(' exp', '')}</Text>
@@ -204,11 +212,26 @@ const styles = StyleSheet.create({
   cardBottom: {
     marginTop: SIZE(12),
   },
+  dividerWrapper: {
+    marginTop: SIZE(12),
+    overflow: 'hidden',
+  },
   divider: {
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     borderStyle: 'dashed',
     marginTop: SIZE(12),
+  },
+  iosDivider: {
+    flexDirection: 'row',
+    marginTop: SIZE(12),
+    overflow: 'hidden',
+    gap: SIZE(4),
+  },
+  iosDash: {
+    width: SIZE(6),
+    height: 1,
+    backgroundColor: colors.border,
   },
   cardCenter: {
     flexDirection: 'row',

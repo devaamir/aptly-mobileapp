@@ -254,12 +254,12 @@ const styles = StyleSheet.create({
     padding: SIZE(8),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
   },
   clinicCard: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     overflow: 'hidden',
     backgroundColor: colors.backgroundLight,
   },
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   scheduleCard: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     overflow: 'hidden',
     width: '100%',
   },
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(14),
     paddingVertical: SIZE(10),
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
+    borderBottomColor: colors.cardBorderLight,
   },
   dayText: {
     fontFamily: 'Manrope-Medium',
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   infoCard: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     overflow: 'hidden',
   },
   infoRow: {
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(16),
     paddingVertical: SIZE(12),
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
+    borderBottomColor: colors.cardBorderLight,
   },
   infoLabel: {
     fontFamily: 'Manrope-Regular',

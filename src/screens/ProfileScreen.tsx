@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     padding: SIZE(16),
     borderRadius: SIZE(14),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     marginBottom: SIZE(16),
   },
   avatar: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   menuContainer: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     overflow: 'hidden',
     marginBottom: SIZE(16),
   },

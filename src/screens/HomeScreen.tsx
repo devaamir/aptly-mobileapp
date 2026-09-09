@@ -47,6 +47,7 @@ import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
 import {
   getHomeData,
+  IS_DEV,
   getClinics,
   Specialty,
   Doctor,
@@ -102,8 +103,6 @@ const ListHeader = ({
   };
 
   const renderBannerCard = (appt: Appointment) => {
-    console.log('appt', appt);
-
     const sseToken = trackData?.appointments.find(
       a => a.tokenNumber === appt.tokenNumber,
     );
@@ -547,13 +546,11 @@ const ListHeader = ({
           <Text allowFontScaling={false} style={styles.sectionTitle}>
             Near by Clinics
           </Text>
-          {hasNearbyClinics && (
-            <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
-              <Text allowFontScaling={false} style={styles.viewAll}>
-                See all
-              </Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
+            <Text allowFontScaling={false} style={styles.viewAll}>
+              See all
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </>
@@ -644,7 +641,7 @@ export default function HomeScreen() {
       getClinics(1, 20),
     ])
       .then(([homeRes, clinicsRes]) => {
-        console.log(clinicsRes.data);
+        if (IS_DEV) console.log(clinicsRes.data);
 
         handleHomeData(homeRes);
         setFallbackClinics(clinicsRes.data);
@@ -657,7 +654,7 @@ export default function HomeScreen() {
   };
 
   const handleHomeData = (res: { success: boolean; data: any }) => {
-    console.log(res.data);
+    if (IS_DEV) console.log(res.data);
 
     setSpecialties(res.data.specialties);
     setDoctors(res.data.doctors as Doctor[]);
@@ -847,32 +844,43 @@ export default function HomeScreen() {
           ListEmptyComponent={
             <View>
               <View style={styles.emptyContainer}>
-                <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
-                <Text allowFontScaling={false} style={styles.emptyTitle}>
-                  We're expanding here soon — stay tuned for clinics near you 😊
-                </Text>
-                <Text allowFontScaling={false} style={styles.emptyMessage}>
-                  We couldn't find any clinics in this area right now. Try
-                  changing your location or adjusting filters.
-                </Text>
-                <View
-                  style={{
-                    width: '100%',
-                    paddingHorizontal: SIZE(16),
-                    marginTop: SIZE(8),
-                  }}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.emptyCard}
+                  onPress={() => navigation.navigate('LocationSearch')}
                 >
-                  <PrimaryButton
-                    label="Use another location"
-                    onPress={() => navigation.navigate('LocationSearch')}
+                  <Image
+                    source={require('../assets/images/location-image.png')}
+                    style={styles.emptyCardImage}
                   />
-                </View>
+                  <View style={styles.emptyCardInfo}>
+                    <Text
+                      allowFontScaling={false}
+                      style={styles.emptyCardTitle}
+                      numberOfLines={2}
+                    >
+                      We're Still Growing Here
+                    </Text>
+                    <Text
+                      allowFontScaling={false}
+                      style={styles.emptyCardSubtitle}
+                      numberOfLines={2}
+                    >
+                      No clinics within 25 km. Explore the nearest available
+                      clinics below
+                    </Text>
+                    <View style={styles.emptyCardBtn}>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.emptyCardBtnText}
+                      >
+                        Use another location
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
               </View>
               {fallbackClinics.map(item => {
-                console.log(
-                  '[ClinicCard - fallback]',
-                  JSON.stringify(item, null, 2),
-                );
                 return (
                   <ClinicCard
                     key={item.id}
@@ -943,7 +951,11 @@ export default function HomeScreen() {
             />
           }
           renderItem={({ item }) => {
-            console.log('[ClinicCard - nearby]', JSON.stringify(item, null, 2));
+            if (IS_DEV)
+              console.log(
+                '[ClinicCard - nearby]',
+                JSON.stringify(item, null, 2),
+              );
             return (
               <ClinicCard
                 name={item.name}
@@ -1395,7 +1407,7 @@ const styles = StyleSheet.create({
   },
   bannerCard: {
     marginHorizontal: SIZE(18),
-    marginBottom: SIZE(20),
+    marginBottom: SIZE(18),
     ...(Platform.OS !== 'web' && { height: 323 }),
     borderRadius: SIZE(18),
     backgroundColor: colors.primary,
@@ -1406,10 +1418,11 @@ const styles = StyleSheet.create({
   bannerCardMulti: {
     marginHorizontal: SIZE(8),
     width: SIZE(361),
+    overflow: 'hidden',
   },
   bannerScroll: {
     paddingHorizontal: SIZE(10),
-    paddingBottom: SIZE(20),
+    // paddingBottom: SIZE(20),
   },
   livebadge: {
     flexDirection: 'row',
@@ -1655,7 +1668,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SIZE(18),
-    paddingVertical: SIZE(12),
+    marginTop: SIZE(12),
+    // paddingVertical: SIZE(12),
     // marginBottom: SIZE(12),
     backgroundColor: colors.surfaceLightFaded,
   },
@@ -1674,12 +1688,57 @@ const styles = StyleSheet.create({
     gap: SIZE(12),
   },
   emptyContainer: {
+    paddingHorizontal: SIZE(18),
+    paddingTop: SIZE(0),
+    paddingBottom: SIZE(12),
+  },
+  emptyCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SIZE(32),
-    paddingVertical: SIZE(32),
-    width: '80%',
-    alignSelf: 'center',
-    // gap: SIZE(10),
+    // gap: SIZE(12),
+    borderRadius: SIZE(12),
+    borderWidth: 1,
+    borderColor: colors.cardBorderLight,
+    backgroundColor: colors.white,
+  },
+  emptyCardImage: {
+    width: SIZE(102),
+    height: SIZE(102),
+    borderTopLeftRadius: SIZE(10),
+    borderBottomLeftRadius: SIZE(10),
+    backgroundColor: colors.backgroundLight,
+    resizeMode: 'cover',
+  },
+  emptyCardInfo: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+  },
+  emptyCardTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(15),
+    color: colors.textPrimary,
+    marginBottom: SIZE(2),
+  },
+  emptyCardSubtitle: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: colors.textSecondary,
+    marginBottom: SIZE(6),
+  },
+  emptyCardBtn: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary,
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+    borderRadius: SIZE(8),
+  },
+  emptyCardBtnText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(11),
+    color: colors.white,
   },
   emptyTitle: {
     fontFamily: 'Manrope-SemiBold',
@@ -1704,7 +1763,7 @@ const styles = StyleSheet.create({
     marginHorizontal: SIZE(18),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     backgroundColor: colors.white,
     padding: SIZE(4),
     gap: SIZE(12),
@@ -1794,7 +1853,7 @@ const styles = StyleSheet.create({
     height: SIZE(190),
     borderRadius: SIZE(14),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     backgroundColor: colors.white,
     overflow: 'hidden',
   },

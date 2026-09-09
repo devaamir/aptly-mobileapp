@@ -167,7 +167,10 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             <BackArrow width={SIZE(26)} height={SIZE(26)} />
           </TouchableOpacity>
           <View style={styles.headerAvatar}>
-            {doctor.profilePicture ? <Image source={{ uri: doctor.profilePicture }} style={styles.avatarImg} /> : null}
+            <Image
+              source={doctor.profilePicture ? { uri: doctor.profilePicture } : require('../assets/images/doctor-profile.png')}
+              style={styles.avatarImg}
+            />
           </View>
           <View>
             <Text allowFontScaling={false} style={styles.title}>{doctor.name}</Text>
@@ -402,7 +405,7 @@ const styles = StyleSheet.create({
     padding: SIZE(14),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
   },
   avatar: {
     width: SIZE(56),
@@ -413,7 +416,7 @@ const styles = StyleSheet.create({
   },
   avatarImg: {
     width: '100%',
-    height: '100%'
+    height: '100%',
   },
   doctorName: {
     fontFamily: 'Manrope-SemiBold',
@@ -451,13 +454,13 @@ const styles = StyleSheet.create({
   slotCard: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     padding: SIZE(14),
   },
   sessionList: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     overflow: 'hidden',
   },
   sessionRow: {
@@ -466,7 +469,7 @@ const styles = StyleSheet.create({
     gap: SIZE(12),
     padding: SIZE(14),
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
+    borderBottomColor: colors.cardBorderLight,
   },
   radio: {
     width: SIZE(20),
@@ -498,7 +501,7 @@ const styles = StyleSheet.create({
   patientsContainer: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     overflow: 'hidden',
   },
   patientCard: {
@@ -509,7 +512,7 @@ const styles = StyleSheet.create({
   },
   patientCardBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
+    borderBottomColor: colors.cardBorderLight,
   },
   patientDivider: {
     height: 1,

@@ -80,8 +80,37 @@ api.interceptors.response.use(
   response => response.data,
   async error => {
     const original = error.config;
+    const status = error?.response?.status;
 
-    if (error?.response?.status === 401 && !original._retry) {
+    // Treat 500 on the refresh-token endpoint as an auth failure
+    if (status === 500 && original?.url?.includes('/auth/refresh-token')) {
+      if (IS_DEV)
+        console.log(
+          '[Token] Refresh endpoint returned 500 — treating as expired',
+        );
+      processQueue(error, null);
+      isRefreshing = false;
+      return Promise.reject(error?.response?.data || error);
+    }
+
+    if (status === 401 && !original._retry) {
+      if (IS_DEV) {
+        AsyncStorage.multiGet(['accessToken', 'refreshToken']).then(
+          ([[, at], [, rt]]) => {
+            console.log(
+              '[Token] Access token expired — current accessToken:',
+              at,
+            );
+            console.log(
+              '[Token] Access token expired — current refreshToken:',
+              rt,
+            );
+          },
+        );
+      }
+
+      original._retry = true; // set immediately before any async branch
+
       // Another refresh is already in flight — queue this request
       if (isRefreshing) {
         return new Promise<string>((resolve, reject) => {
@@ -92,7 +121,6 @@ api.interceptors.response.use(
         });
       }
 
-      original._retry = true;
       isRefreshing = true;
 
       try {
@@ -100,14 +128,28 @@ api.interceptors.response.use(
 
         // No refresh token stored — bail out immediately
         if (!refreshToken) {
+          if (IS_DEV)
+            console.log('[Token] No refresh token found — cannot refresh');
           processQueue(error, null);
+          isRefreshing = false; // reset so future requests aren't stuck
           return Promise.reject(error?.response?.data || error);
         }
+
+        if (IS_DEV)
+          console.log(
+            '[Token] Calling refresh endpoint with refreshToken:',
+            refreshToken,
+          );
 
         const res = await axios.post(`${baseURL}/auth/refresh-token`, {
           refreshToken,
         });
         const { accessToken, refreshToken: newRefresh } = res.data.data;
+
+        if (IS_DEV) {
+          console.log('[Token] New accessToken:', accessToken);
+          console.log('[Token] New refreshToken:', newRefresh);
+        }
 
         await AsyncStorage.multiSet([
           ['accessToken', accessToken],

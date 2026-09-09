@@ -1,5 +1,13 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, Platform, BackHandler } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StatusBar,
+  Platform,
+  BackHandler,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Video from 'react-native-video';
@@ -12,7 +20,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'BookingConfirmed'>;
 export default function BookingConfirmedScreen({ navigation, route }: Props) {
   const { token, doctorName, hospital, date } = route.params;
 
-  const goHome = () => navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+  const goHome = () =>
+    navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -35,18 +44,30 @@ export default function BookingConfirmedScreen({ navigation, route }: Props) {
       />
 
       <View style={styles.content}>
-        <Text allowFontScaling={false} style={styles.tokenLabel}>Your Token</Text>
-        <Text allowFontScaling={false} style={styles.tokenNumber}>{token}</Text>
+        <Text allowFontScaling={false} style={styles.tokenLabel}>
+          Your Token
+        </Text>
+        <Text allowFontScaling={false} style={styles.tokenNumber}>
+          {token}
+        </Text>
       </View>
 
       <View style={styles.footer}>
-        <Text allowFontScaling={false} style={styles.successTitle}>Successfully Booked</Text>
-        <Text allowFontScaling={false} style={styles.successDesc}>Track your token status and proceed to the clinic when your number is approaching.</Text>
+        <Text allowFontScaling={false} style={styles.successTitle}>
+          Successfully Booked
+        </Text>
+        <Text allowFontScaling={false} style={styles.successDesc}>
+          Track your token status and proceed to the clinic when your number is
+          approaching.
+        </Text>
         <TouchableOpacity
           style={styles.doneBtn}
           activeOpacity={0.8}
-          onPress={goHome}>
-          <Text allowFontScaling={false} style={styles.doneBtnText}>Done</Text>
+          onPress={goHome}
+        >
+          <Text allowFontScaling={false} style={styles.doneBtnText}>
+            Done
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

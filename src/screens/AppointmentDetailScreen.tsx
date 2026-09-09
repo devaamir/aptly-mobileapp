@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Modal, Pressable, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  Modal,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -29,36 +39,59 @@ export default function AppointmentDetailScreen() {
   const [appointment, setAppointment] = useState<Appointment | null>(null);
 
   useEffect(() => {
-    getAppointment(id).then(res => { console.log("appointment", res.data); setAppointment(res.data) }).catch(console.error);
-
+    getAppointment(id)
+      .then(res => {
+        console.log('appointment', res.data);
+        setAppointment(res.data);
+      })
+      .catch(console.error);
   }, [id]);
 
   const appt = appointment;
   const displayDoctor = appt?.doctor.name ?? doctor;
   const displayHospital = appt?.medicalCenter.name ?? hospital;
   const displayType = appt?.doctor.specialties[0]?.name ?? type;
-  const displayLocation = appt ? `${appt.medicalCenter.district}, ${appt.medicalCenter.state}` : '';
+  const displayLocation = appt
+    ? `${appt.medicalCenter.district}, ${appt.medicalCenter.state}`
+    : '';
   const displayDate = appt
-    ? new Date(appt.appointmentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    ? new Date(appt.appointmentDate).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
     : date;
   const to12h = (t: string) => {
     const [h, m] = t.split(':').map(Number);
-    return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`;
+    return `${h % 12 || 12}:${String(m).padStart(2, '0')}${
+      h >= 12 ? 'pm' : 'am'
+    }`;
   };
-  const displayTime = appt ? `${to12h(appt.schedule.startTime)} - ${to12h(appt.schedule.stopTime)}` : time;
+  const displayTime = appt
+    ? `${to12h(appt.schedule.startTime)} - ${to12h(appt.schedule.stopTime)}`
+    : time;
   const displayToken = appt?.tokenNumber ?? token;
-  const statusMap: Record<string, string> = { pending: 'Upcoming', active: 'Live', completed: 'Completed', done: 'Completed', cancelled: 'Cancelled' };
+  const statusMap: Record<string, string> = {
+    pending: 'Upcoming',
+    active: 'Live',
+    completed: 'Completed',
+    done: 'Completed',
+    cancelled: 'Cancelled',
+  };
 
   const computeStatus = (): string => {
     if (!appt) return status;
-    if (appt.tokenStatus !== 'pending') return statusMap[appt.tokenStatus] ?? appt.tokenStatus;
+    if (appt.tokenStatus !== 'pending')
+      return statusMap[appt.tokenStatus] ?? appt.tokenStatus;
     const today = new Date().toISOString().split('T')[0];
     if (appt.appointmentDate !== today) return 'Upcoming';
     const now = new Date();
     const nowMins = now.getHours() * 60 + now.getMinutes();
     const [sh, sm] = appt.schedule.startTime.split(':').map(Number);
     const [eh, em] = appt.schedule.stopTime.split(':').map(Number);
-    return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em ? 'Live' : 'Upcoming';
+    return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em
+      ? 'Live'
+      : 'Upcoming';
   };
 
   const displayStatus = computeStatus();
@@ -68,24 +101,41 @@ export default function AppointmentDetailScreen() {
     const consultMins = appt.doctor.estimateConsultationTime ?? 15;
     const tokensAhead = Math.max(0, displayToken - 1);
     const est = new Date(Date.now() + tokensAhead * consultMins * 60 * 1000);
-    const h = est.getHours(), m = est.getMinutes();
-    return `${h % 12 || 12}:${String(m).padStart(2, '0')}${h >= 12 ? 'pm' : 'am'}`;
+    const h = est.getHours(),
+      m = est.getMinutes();
+    return `${h % 12 || 12}:${String(m).padStart(2, '0')}${
+      h >= 12 ? 'pm' : 'am'
+    }`;
   })();
   const displayPatient = appt?.patient ?? null;
 
-  const patientForSelector = displayPatient ? [{
-    id: displayPatient.id,
-    name: displayPatient.name,
-    phone: displayPatient.phoneNumber,
-    age: displayPatient.dateOfBirth ? new Date().getFullYear() - new Date(displayPatient.dateOfBirth).getFullYear() : 0,
-    gender: displayPatient.gender,
-  }] : user ? [{
-    id: user.patientId,
-    name: user.name,
-    phone: user.phoneNumber,
-    age: user.dateOfBirth ? new Date().getFullYear() - new Date(user.dateOfBirth).getFullYear() : 0,
-    gender: user.gender ?? '',
-  }] : [];
+  const patientForSelector = displayPatient
+    ? [
+        {
+          id: displayPatient.id,
+          name: displayPatient.name,
+          phone: displayPatient.phoneNumber,
+          age: displayPatient.dateOfBirth
+            ? new Date().getFullYear() -
+              new Date(displayPatient.dateOfBirth).getFullYear()
+            : 0,
+          gender: displayPatient.gender,
+        },
+      ]
+    : user
+    ? [
+        {
+          id: user.patientId,
+          name: user.name,
+          phone: user.phoneNumber,
+          age: user.dateOfBirth
+            ? new Date().getFullYear() -
+              new Date(user.dateOfBirth).getFullYear()
+            : 0,
+          gender: user.gender ?? '',
+        },
+      ]
+    : [];
 
   const handleCancel = async () => {
     setCancelling(true);
@@ -104,17 +154,32 @@ export default function AppointmentDetailScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={SIZE(10)}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={SIZE(10)}
+        >
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.title}>Appointment Details</Text>
+        <Text allowFontScaling={false} style={styles.title}>
+          Appointment Details
+        </Text>
         <View style={{ width: SIZE(22) }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Token card */}
         {(displayStatus === 'Live' || displayStatus === 'Upcoming') && (
-          <View style={[styles.liveCard, displayStatus === 'Upcoming' && { backgroundColor: colors.upcomingTokenBg }]}>
+          <View
+            style={[
+              styles.liveCard,
+              displayStatus === 'Upcoming' && {
+                backgroundColor: colors.upcomingTokenBg,
+              },
+            ]}
+          >
             {displayStatus === 'Live' && (
               <Video
                 source={require('../assets/images/background-video.mp4')}
@@ -134,22 +199,60 @@ export default function AppointmentDetailScreen() {
               />
             )}
             <View style={styles.statusBadge}>
-              <View style={[styles.statusDot, { backgroundColor: displayStatus === 'Upcoming' ? colors.upcomingDot : colors.successDot }]} />
-              <Text allowFontScaling={false} style={styles.statusText}>{displayStatus}</Text>
+              <View
+                style={[
+                  styles.statusDot,
+                  {
+                    backgroundColor:
+                      displayStatus === 'Upcoming'
+                        ? colors.upcomingDot
+                        : colors.successDot,
+                  },
+                ]}
+              />
+              <Text allowFontScaling={false} style={styles.statusText}>
+                {displayStatus}
+              </Text>
             </View>
             <View style={styles.liveRight}>
               {displayStatus === 'Live' && (
                 <View style={styles.tokenQueue}>
-                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>{prevToken ?? ''}</Text>
-                  <Text allowFontScaling={false} style={styles.tokenCurrent}>{currentToken ?? ''}</Text>
-                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>{nextToken ?? ''}</Text>
+                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>
+                    {prevToken ?? ''}
+                  </Text>
+                  <Text allowFontScaling={false} style={styles.tokenCurrent}>
+                    {currentToken ?? ''}
+                  </Text>
+                  <Text allowFontScaling={false} style={styles.tokenNextPrev}>
+                    {nextToken ?? ''}
+                  </Text>
                 </View>
               )}
               <View style={styles.liveTokenContent}>
-                <Text allowFontScaling={false} style={[styles.liveLabel, displayStatus === 'Upcoming' && { color: colors.textMuted }]}>Your Token</Text>
-                <Text allowFontScaling={false} style={[styles.liveToken, displayStatus === 'Upcoming' && { color: colors.textPrimary }]}>{displayToken}</Text>
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.liveLabel,
+                    displayStatus === 'Upcoming' && { color: colors.textMuted },
+                  ]}
+                >
+                  Your Token
+                </Text>
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.liveToken,
+                    displayStatus === 'Upcoming' && {
+                      color: colors.textPrimary,
+                    },
+                  ]}
+                >
+                  {displayToken}
+                </Text>
                 {displayStatus === 'Live' && estimatedTime && (
-                  <Text allowFontScaling={false} style={styles.liveEstimated}>Estimated {estimatedTime}</Text>
+                  <Text allowFontScaling={false} style={styles.liveEstimated}>
+                    Estimated {estimatedTime}
+                  </Text>
                 )}
               </View>
             </View>
@@ -157,7 +260,9 @@ export default function AppointmentDetailScreen() {
         )}
 
         {/* Clinic & Doctor Information */}
-        <Text allowFontScaling={false} style={styles.sectionLabel}>Clinic & Doctor Information</Text>
+        <Text allowFontScaling={false} style={styles.sectionLabel}>
+          Clinic & Doctor Information
+        </Text>
         <AppointmentInfoCard
           hospital={displayHospital}
           hospitalType={displayType}
@@ -171,18 +276,34 @@ export default function AppointmentDetailScreen() {
           doctorSpecialty={displayType}
           doctorPicture={appt?.doctor?.profilePicture}
           variant="light"
-          onDoctorPress={() => appt && navigation.navigate('DoctorDetail', { doctorId: appt.doctor.id })}
+          onDoctorPress={() =>
+            appt &&
+            navigation.navigate('DoctorDetail', { doctorId: appt.doctor.id })
+          }
         />
 
         {/* Patient Details */}
-        <Text allowFontScaling={false} style={[styles.sectionLabel, { marginTop: SIZE(24) }]}>Patient Details</Text>
+        <Text
+          allowFontScaling={false}
+          style={[styles.sectionLabel, { marginTop: SIZE(24) }]}
+        >
+          Patient Details
+        </Text>
         <PatientSelector patients={patientForSelector} showRadio={false} />
 
         {/* Meta */}
-        <Text allowFontScaling={false} style={[styles.sectionLabel, { marginTop: SIZE(24) }]}>Appointment Info</Text>
+        <Text
+          allowFontScaling={false}
+          style={[styles.sectionLabel, { marginTop: SIZE(24) }]}
+        >
+          Appointment Info
+        </Text>
         <View style={styles.section}>
           {[
-            { label: 'Appointment ID', value: appt ? `#${appt.referenceId}` : '#APT-00' + displayToken },
+            {
+              label: 'Appointment ID',
+              value: appt ? `#${appt.referenceId}` : '#APT-00' + displayToken,
+            },
             { label: 'Appointment Date', value: displayDate },
             { label: 'Session Time', value: displayTime },
             { label: 'Booking Method', value: 'Online' },
@@ -190,8 +311,12 @@ export default function AppointmentDetailScreen() {
           ].map((item, index, arr) => (
             <View key={item.label}>
               <View style={styles.infoRow}>
-                <Text allowFontScaling={false} style={styles.metaLabel}>{item.label}</Text>
-                <Text allowFontScaling={false} style={styles.metaValue}>{item.value}</Text>
+                <Text allowFontScaling={false} style={styles.metaLabel}>
+                  {item.label}
+                </Text>
+                <Text allowFontScaling={false} style={styles.metaValue}>
+                  {item.value}
+                </Text>
               </View>
               {index < arr.length - 1 && <View style={styles.divider} />}
             </View>
@@ -200,27 +325,63 @@ export default function AppointmentDetailScreen() {
 
         {/* Cancel button */}
         {displayStatus !== 'Completed' && displayStatus !== 'Cancelled' && (
-          <TouchableOpacity style={styles.cancelBtn} activeOpacity={0.8} onPress={() => setConfirmVisible(true)}>
-            <Text allowFontScaling={false} style={styles.cancelBtnText}>Cancel Appointment</Text>
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            activeOpacity={0.8}
+            onPress={() => setConfirmVisible(true)}
+          >
+            <Text allowFontScaling={false} style={styles.cancelBtnText}>
+              Cancel Appointment
+            </Text>
           </TouchableOpacity>
         )}
-
       </ScrollView>
 
       {/* Confirmation modal */}
-      <Modal visible={confirmVisible} transparent animationType="fade" onRequestClose={() => setConfirmVisible(false)}>
-        <Pressable style={styles.overlay} onPress={() => setConfirmVisible(false)}>
-          <Pressable style={styles.modalSheet} onPress={e => e.stopPropagation()}>
-            <Text allowFontScaling={false} style={styles.modalTitle}>Cancel Appointment</Text>
-            <Text allowFontScaling={false} style={styles.modalBody}>Are you sure you want to cancel this appointment? This action cannot be undone.</Text>
+      <Modal
+        visible={confirmVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmVisible(false)}
+      >
+        <Pressable
+          style={styles.overlay}
+          onPress={() => setConfirmVisible(false)}
+        >
+          <Pressable
+            style={styles.modalSheet}
+            onPress={e => e.stopPropagation()}
+          >
+            <Text allowFontScaling={false} style={styles.modalTitle}>
+              Cancel Appointment
+            </Text>
+            <Text allowFontScaling={false} style={styles.modalBody}>
+              Are you sure you want to cancel this appointment? This action
+              cannot be undone.
+            </Text>
             <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalKeepBtn} activeOpacity={0.8} onPress={() => setConfirmVisible(false)}>
-                <Text allowFontScaling={false} style={styles.modalKeepText}>Keep</Text>
+              <TouchableOpacity
+                style={styles.modalKeepBtn}
+                activeOpacity={0.8}
+                onPress={() => setConfirmVisible(false)}
+              >
+                <Text allowFontScaling={false} style={styles.modalKeepText}>
+                  Keep
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.modalCancelBtn} activeOpacity={0.8} onPress={handleCancel} disabled={cancelling}>
-                {cancelling
-                  ? <ActivityIndicator color={colors.white} size="small" />
-                  : <Text allowFontScaling={false} style={styles.modalCancelText}>Yes, Cancel</Text>}
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                activeOpacity={0.8}
+                onPress={handleCancel}
+                disabled={cancelling}
+              >
+                {cancelling ? (
+                  <ActivityIndicator color={colors.white} size="small" />
+                ) : (
+                  <Text allowFontScaling={false} style={styles.modalCancelText}>
+                    Yes, Cancel
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           </Pressable>
@@ -252,7 +413,7 @@ const styles = StyleSheet.create({
     padding: SIZE(14),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
   },
   liveCard: {
     height: SIZE(120),
@@ -344,7 +505,7 @@ const styles = StyleSheet.create({
     padding: SIZE(14),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
   },
   divider: {
     height: 1,

@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   skeletonContainer: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     overflow: 'hidden',
   },
   skeletonCard: {
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     gap: SIZE(12),
     padding: SIZE(14),
     borderBottomWidth: 1,
-    borderBottomColor: colors.cardBorder,
+    borderBottomColor: colors.cardBorderLight,
   },
   skeletonAvatar: {
     width: SIZE(40),

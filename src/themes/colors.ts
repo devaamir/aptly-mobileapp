@@ -22,6 +22,7 @@ const colors = {
   textSecondary: '#7E8695',
   borderMuted: '#E0E2E6CC',
   cardBorder: '#F1F2F4',
+  cardBorderLight: '#E6E6E6',
   danger: '#FF5A4F',
   logoutdanger: '#CB092D',
   accent: '#FF7B63',

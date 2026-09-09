@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     overflow: 'hidden',
   },
   patientCard: {

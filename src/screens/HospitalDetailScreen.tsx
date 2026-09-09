@@ -162,8 +162,6 @@ export default function HospitalDetailScreen() {
             <DoctorCard
               name={doc.name}
               type={doc.specialties[0]?.name ?? ''}
-              hospital={displayClinic.name}
-              clinicType={specialty ?? ''}
               experience={doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''}
               image={doc.profilePicture}
               nextSchedule={doc.nextSchedule}

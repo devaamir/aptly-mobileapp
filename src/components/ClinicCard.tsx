@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, ViewStyle, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ViewStyle,
+  Platform,
+} from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon.svg';
@@ -16,31 +24,68 @@ type Props = {
   style?: ViewStyle;
 };
 
-export default function ClinicCard({ name, subType, specialties, location, distance = 'NA', image, onPress, style }: Props) {
-  const tags = specialties && specialties.length > 0 ? specialties : [subType].filter(Boolean);
+export default function ClinicCard({
+  name,
+  subType,
+  specialties,
+  location,
+  distance = 'NA',
+  image,
+  onPress,
+  style,
+}: Props) {
+  const tags =
+    specialties && specialties.length > 0
+      ? specialties
+      : [subType].filter(Boolean);
 
   return (
-    <TouchableOpacity style={[styles.card, style]} activeOpacity={0.8} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.card, style]}
+      activeOpacity={0.8}
+      onPress={onPress}
+    >
       <Image
-        source={image ? { uri: image } : require('../assets/images/aptly-logo2.png')}
+        source={
+          image ? { uri: image } : require('../assets/images/aptly-logo2.png')
+        }
         style={styles.image}
       />
       <View style={styles.info}>
-        <Text allowFontScaling={false} style={styles.name} numberOfLines={1}>{name}</Text>
-        <Text allowFontScaling={false} style={styles.specialtiesText} numberOfLines={1}>
+        <Text allowFontScaling={false} style={styles.name} numberOfLines={1}>
+          {name}
+        </Text>
+        <Text
+          allowFontScaling={false}
+          style={styles.specialtiesText}
+          numberOfLines={1}
+        >
           {tags.map((tag, i) => (
             <Text key={i} allowFontScaling={false}>
               {tag}
-              {i < tags.length - 1 && <Text style={styles.specialtiesDot}>  •  </Text>}
+              {i < tags.length - 1 && (
+                <Text style={styles.specialtiesDot}> • </Text>
+              )}
             </Text>
           ))}
         </Text>
         <View style={styles.locationRow}>
           <View>
-            <LocationIcon width={Platform.OS === 'web' ? SIZE(16) : SIZE(12)} height={Platform.OS === 'web' ? SIZE(16) : SIZE(12)} />
+            <LocationIcon
+              width={Platform.OS === 'web' ? SIZE(16) : SIZE(12)}
+              height={Platform.OS === 'web' ? SIZE(16) : SIZE(12)}
+            />
           </View>
-          <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>{location}</Text>
-          <Text allowFontScaling={false} style={styles.distanceText}>{distance}</Text>
+          <Text
+            allowFontScaling={false}
+            style={styles.locationText}
+            numberOfLines={1}
+          >
+            {location}
+          </Text>
+          <Text allowFontScaling={false} style={styles.distanceText}>
+            {distance}
+          </Text>
         </View>
       </View>
       <ArrowRight width={SIZE(18)} height={SIZE(18)} />
@@ -57,7 +102,7 @@ const styles = StyleSheet.create({
     marginHorizontal: SIZE(18),
     borderRadius: SIZE(12),
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: colors.cardBorderLight,
     backgroundColor: colors.white,
   },
   image: {
@@ -67,7 +112,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundLight,
     resizeMode: 'cover',
   },
-  info: { flex: 1, justifyContent: 'space-between', alignSelf: 'stretch', paddingVertical: SIZE(7) },
+  info: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
+    paddingVertical: SIZE(7),
+  },
   name: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(16),
@@ -84,7 +134,12 @@ const styles = StyleSheet.create({
     fontSize: SIZE(16),
     color: colors.textSecondary,
   },
-  locationRow: { flexDirection: 'row', alignItems: 'center', gap: SIZE(4), marginTop: SIZE(2) },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(4),
+    marginTop: SIZE(2),
+  },
   locationText: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
@@ -97,4 +152,3 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
 });
-

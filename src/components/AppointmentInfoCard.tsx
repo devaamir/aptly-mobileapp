@@ -80,9 +80,11 @@ export default function AppointmentInfoCard({
           <View style={styles.dashedLine} />
         </View>
         <TouchableOpacity style={styles.hospitalBottom} activeOpacity={0.7} onPress={onDoctorPress}>
-          {doctorPicture
-            ? <Image source={{ uri: doctorPicture }} style={styles.doctorAvatar} resizeMode="cover" />
-            : <View style={[styles.doctorAvatar, isLight && styles.avatarLight]} />}
+          <Image
+            source={doctorPicture ? { uri: doctorPicture } : require('../assets/images/doctor-profile.png')}
+            style={styles.doctorAvatar}
+            resizeMode="cover"
+          />
           <View style={styles.doctorInfo}>
             <Text allowFontScaling={false} style={[styles.doctorName, isLight && styles.textDark]}>{doctor}</Text>
             <Text allowFontScaling={false} style={[styles.doctorSpecialty, isLight && styles.textMuted]}>{doctorSpecialty}</Text>
