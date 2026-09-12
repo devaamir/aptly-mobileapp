@@ -74,6 +74,8 @@ const colors = {
   white30: 'rgba(255,255,255,0.3)',
   white20: 'rgba(255,255,255,0.2)',
   white15: 'rgba(255,255,255,0.15)',
+  specialtyChipBg: '#EFF8FF',
+  specialtyChipText: '#175CD3',
 };
 
 export default colors;

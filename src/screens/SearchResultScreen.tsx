@@ -27,13 +27,12 @@ const EMPTY_FILTERS = { specialties: [], availability: [], type: [] } as Record<
 export default function SearchResultScreen({ navigation, route }: Props) {
   const { title, latitude, longitude, radius, initialFilters } = route.params;
   const isDoctor = DOCTOR_TITLES.includes(title.toLowerCase());
-  const { location } = useLocation();
+  const { location, distance, setDistance } = useLocation();
   const { specialties: allSpecialties, medicalSystems } = useMetadata();
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>(initialFilters ?? EMPTY_FILTERS);
-  const [distance, setDistance] = useState(25);
 
   useEffect(() => {
     if (!location) { setLoading(false); setClinics([]); setDoctors([]); return; }

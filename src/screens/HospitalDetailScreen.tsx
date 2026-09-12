@@ -1,6 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, StatusBar, Image, ActivityIndicator, Dimensions, ScrollView, Linking, Alert } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  StatusBar,
+  Image,
+  ActivityIndicator,
+  Dimensions,
+  ScrollView,
+  Linking,
+  Alert,
+} from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -28,6 +44,7 @@ export default function HospitalDetailScreen() {
   const [tab, setTab] = useState<'Doctors' | 'Details'>('Doctors');
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
+  const [specialtiesExpanded, setSpecialtiesExpanded] = useState(false);
   const { top } = useSafeAreaInsets();
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -41,10 +58,15 @@ export default function HospitalDetailScreen() {
   // When navigating from a deep link only `id` is available; name/specialty/location
   // will be undefined until the API call resolves. The fallback strings keep the
   // screen from crashing while loading.
-  const displayClinic = clinic ?? { name: name ?? '', about: '', phoneNumber: '', websiteUrl: '', doctors: [], specialties: [] };
-
-  console.log(displayClinic.doctors);
-
+  const displayClinic = clinic ?? {
+    name: name ?? '',
+    about: '',
+    phoneNumber: '',
+    websiteUrl: '',
+    doctors: [],
+    specialties: [],
+    medicalSystem: null,
+  };
 
   const backBtnBottom = top + SIZE(8) + SIZE(36) + SIZE(8);
   const collapsedBannerHeight = backBtnBottom;
@@ -57,7 +79,11 @@ export default function HospitalDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="transparent"
+      />
 
       {/* Fixed banner — always behind everything */}
       <Image
@@ -67,13 +93,22 @@ export default function HospitalDetailScreen() {
 
       {/* Sticky back button */}
       <View style={[styles.backBtnContainer, { top: top + SIZE(8) }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} hitSlop={SIZE(10)}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+          hitSlop={SIZE(10)}
+        >
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
       </View>
       <Animated.ScrollView
         style={[styles.scrollView, { marginTop: collapsedBannerHeight }]}
-        contentContainerStyle={[styles.sheetContent, { minHeight: Dimensions.get('window').height - collapsedBannerHeight }]}
+        contentContainerStyle={[
+          styles.sheetContent,
+          {
+            minHeight: Dimensions.get('window').height - collapsedBannerHeight,
+          },
+        ]}
         showsVerticalScrollIndicator={false}
         scrollIndicatorInsets={{ top: 0 }}
         contentInset={{ bottom: 0 }}
@@ -82,23 +117,60 @@ export default function HospitalDetailScreen() {
           { useNativeDriver: false },
         )}
         scrollEventThrottle={16}
-        stickyHeaderIndices={[1]}>
+        stickyHeaderIndices={[1]}
+      >
         <View style={{ height: BANNER_HEIGHT - top - SIZE(50) }} />
         <View style={[styles.topHeader, { borderRadius }]}>
           <View style={styles.sheetHandle} />
-          <Text allowFontScaling={false} style={styles.clinicTitle}>{displayClinic.name}</Text>
-          <Text allowFontScaling={false} style={styles.clinicSpecialty} numberOfLines={2}>
-            {(displayClinic.specialties?.length > 0 ? displayClinic.specialties : [{ name: specialty ?? '' }]).map((s: { name: string }, i: number, arr: { name: string }[]) => (
-              <Text key={i} allowFontScaling={false}>
-                {s.name}
-                {i < arr.length - 1 && <Text style={styles.specialtiesDot}>{'  •  '}</Text>}
-              </Text>
-            ))}
+          <Text allowFontScaling={false} style={styles.clinicTitle}>
+            {displayClinic.name}
           </Text>
+          {displayClinic.medicalSystem?.name ? (
+            <Text
+              allowFontScaling={false}
+              style={styles.clinicSpecialty}
+              numberOfLines={2}
+            >
+              {displayClinic.medicalSystem.name}
+            </Text>
+          ) : null}
           <View style={styles.locationRow}>
             <LocationIcon width={SIZE(12)} height={SIZE(12)} />
-            <Text allowFontScaling={false} style={styles.clinicLocation}>{clinic?.address ?? location}</Text>
+            <Text allowFontScaling={false} style={styles.clinicLocation}>
+              {clinic?.address ?? location}
+            </Text>
           </View>
+          {displayClinic.specialties?.length > 0 && (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setSpecialtiesExpanded(e => !e)}
+              style={styles.specialtiesRow}
+            >
+              {(specialtiesExpanded
+                ? displayClinic.specialties
+                : displayClinic.specialties.slice(0, 3)
+              ).map((s: { name: string }, i: number) => (
+                <View key={i} style={styles.specialtyChip}>
+                  <Text
+                    allowFontScaling={false}
+                    style={styles.specialtyChipText}
+                  >
+                    {s.name}
+                  </Text>
+                </View>
+              ))}
+              {!specialtiesExpanded && displayClinic.specialties.length > 3 && (
+                <View style={styles.specialtyChip}>
+                  <Text
+                    allowFontScaling={false}
+                    style={styles.specialtyChipText}
+                  >
+                    +{displayClinic.specialties.length - 3}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
           <View style={styles.actions}>
             <TouchableOpacity
               style={styles.actionBtn}
@@ -106,8 +178,13 @@ export default function HospitalDetailScreen() {
               onPress={() => {
                 const phone = clinic?.phoneNumber;
                 if (phone) Linking.openURL(`tel:${phone}`);
-                else Alert.alert('Not available', 'No phone number found for this clinic.');
-              }}>
+                else
+                  Alert.alert(
+                    'Not available',
+                    'No phone number found for this clinic.',
+                  );
+              }}
+            >
               <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
             </TouchableOpacity>
             <TouchableOpacity
@@ -122,12 +199,18 @@ export default function HospitalDetailScreen() {
                 } else {
                   const query = encodeURIComponent(location ?? '');
                   if (query) {
-                    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+                    Linking.openURL(
+                      `https://www.google.com/maps/search/?api=1&query=${query}`,
+                    );
                   } else {
-                    Alert.alert('Not available', 'No location found for this clinic.');
+                    Alert.alert(
+                      'Not available',
+                      'No location found for this clinic.',
+                    );
                   }
                 }
-              }}>
+              }}
+            >
               <MapIcon width={SIZE(22)} height={SIZE(22)} />
             </TouchableOpacity>
             <TouchableOpacity
@@ -135,21 +218,53 @@ export default function HospitalDetailScreen() {
               activeOpacity={0.7}
               onPress={() => {
                 const url = clinic?.websiteUrl;
-                if (url) Linking.openURL(url.startsWith('http') ? url : `https://${url}`);
-                else Alert.alert('Not available', 'No website found for this clinic.');
-              }}>
+                if (url)
+                  Linking.openURL(
+                    url.startsWith('http') ? url : `https://${url}`,
+                  );
+                else
+                  Alert.alert(
+                    'Not available',
+                    'No website found for this clinic.',
+                  );
+              }}
+            >
               <WebIcon width={SIZE(22)} height={SIZE(22)} />
             </TouchableOpacity>
           </View>
 
           {/* Tabs */}
           <View style={styles.tabs}>
-            <TouchableOpacity onPress={() => setTab('Doctors')} style={styles.tab} activeOpacity={0.8}>
-              <Text allowFontScaling={false} style={[styles.tabText, tab === 'Doctors' && styles.tabTextActive]}>Doctors</Text>
+            <TouchableOpacity
+              onPress={() => setTab('Doctors')}
+              style={styles.tab}
+              activeOpacity={0.8}
+            >
+              <Text
+                allowFontScaling={false}
+                style={[
+                  styles.tabText,
+                  tab === 'Doctors' && styles.tabTextActive,
+                ]}
+              >
+                Doctors
+              </Text>
               {tab === 'Doctors' && <View style={styles.tabUnderline} />}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setTab('Details')} style={styles.tab} activeOpacity={0.8}>
-              <Text allowFontScaling={false} style={[styles.tabText, tab === 'Details' && styles.tabTextActive]}>Details</Text>
+            <TouchableOpacity
+              onPress={() => setTab('Details')}
+              style={styles.tab}
+              activeOpacity={0.8}
+            >
+              <Text
+                allowFontScaling={false}
+                style={[
+                  styles.tabText,
+                  tab === 'Details' && styles.tabTextActive,
+                ]}
+              >
+                Details
+              </Text>
               {tab === 'Details' && <View style={styles.tabUnderline} />}
             </TouchableOpacity>
           </View>
@@ -157,23 +272,32 @@ export default function HospitalDetailScreen() {
 
         {loading && <ActivityIndicator color={colors.accent} />}
 
-        {!loading && tab === 'Doctors' && displayClinic.doctors.map(doc => (
-          <View key={doc.id} style={styles.doctorCardWrapper}>
-            <DoctorCard
-              name={doc.name}
-              type={doc.specialties[0]?.name ?? ''}
-              experience={doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''}
-              image={doc.profilePicture}
-              nextSchedule={doc.nextSchedule}
-              onPress={() => navigation.navigate('DoctorDetail', { doctorId: doc.id })}
-              onBookPress={async () => {
-                const res = await getDoctor(doc.id);
-                navigation.navigate('BookAppointment', { doctor: res.data, clinicId: clinic?.id });
-              }}
-              style={{ marginBottom: SIZE(16) }}
-            />
-          </View>
-        ))}
+        {!loading &&
+          tab === 'Doctors' &&
+          displayClinic.doctors.map(doc => (
+            <View key={doc.id} style={styles.doctorCardWrapper}>
+              <DoctorCard
+                name={doc.name}
+                type={doc.specialties[0]?.name ?? ''}
+                experience={
+                  doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''
+                }
+                image={doc.profilePicture}
+                nextSchedule={doc.nextSchedule}
+                onPress={() =>
+                  navigation.navigate('DoctorDetail', { doctorId: doc.id })
+                }
+                onBookPress={async () => {
+                  const res = await getDoctor(doc.id);
+                  navigation.navigate('BookAppointment', {
+                    doctor: res.data,
+                    clinicId: clinic?.id,
+                  });
+                }}
+                style={{ marginBottom: SIZE(16) }}
+              />
+            </View>
+          ))}
 
         {!loading && tab === 'Details' && (
           <Text allowFontScaling={false} style={styles.detailsText}>
@@ -228,13 +352,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     alignSelf: 'center',
     marginBottom: SIZE(4),
-
   },
   clinicTitle: {
     fontFamily: 'Manrope-Bold',
     fontSize: SIZE(20),
     color: colors.black,
-    marginBottom: SIZE(16)
+    marginBottom: SIZE(16),
   },
   clinicSpecialty: {
     fontFamily: 'Manrope-Regular',
@@ -243,25 +366,39 @@ const styles = StyleSheet.create({
     marginTop: -SIZE(10),
     marginBottom: SIZE(16),
   },
-  specialtiesDot: {
-    fontSize: SIZE(16),
-    color: colors.subText,
-  },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(4),
-    marginBottom: SIZE(16)
+    marginBottom: SIZE(16),
   },
   clinicLocation: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
     color: colors.subText,
   },
+  specialtiesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SIZE(6),
+    marginBottom: SIZE(16),
+  },
+  specialtyChip: {
+    paddingHorizontal: SIZE(8),
+    paddingVertical: SIZE(2),
+    borderRadius: SIZE(6),
+    backgroundColor: colors.specialtyChipBg,
+  },
+  specialtyChipText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(11),
+    color: colors.specialtyChipText,
+    lineHeight: SIZE(20),
+  },
   actions: {
     flexDirection: 'row',
     gap: SIZE(8),
-    marginBottom: SIZE(16)
+    marginBottom: SIZE(16),
   },
   actionBtn: {
     flex: 1,
@@ -307,6 +444,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(13),
     color: colors.textSecondary,
-    padding: SIZE(16)
+    padding: SIZE(16),
   },
 });

@@ -46,7 +46,7 @@ function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0
         </View>
         <View style={styles.hospitalInfo}>
           <Text allowFontScaling={false} style={styles.hospitalName}>{mc.name}</Text>
-          <Text allowFontScaling={false} style={styles.hospitalType}>{mc.type}</Text>
+          <Text allowFontScaling={false} style={styles.hospitalType}>{doctor.medicalSystem?.name ?? mc.type}</Text>
           <View style={styles.locationContainer}>
             <LocationIcon width={SIZE(12)} height={SIZE(12)} />
             {mc.district ? <Text allowFontScaling={false} style={styles.hospitalLocation}>{mc.district}, {mc.state} | 2.5 km</Text> : null}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -9,15 +9,12 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
-import FilterIcon from '../assets/icons/filter-black-icon.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
 import { getClinics, getDoctors, getDoctor, Clinic, Doctor } from '../services/api';
 import FilterModal from '../components/FilterModal';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
-import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
-import PrimaryButton from '../components/PrimaryButton';
 import { useMetadata } from '../context/MetadataContext';
 
 type Tab = 'clinics' | 'doctors';
@@ -27,11 +24,13 @@ const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 
 
 export default function SpecialstDetailScreen({ navigation, route }: Props) {
   const { name, id } = route.params;
-  const { location } = useLocation();
+  const { location, distance } = useLocation();
   const { specialties: allSpecialties, medicalSystems } = useMetadata();
   const [tab, setTab] = useState<Tab>('clinics');
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [fallbackClinics, setFallbackClinics] = useState<Clinic[]>([]);
+  const [fallbackDoctors, setFallbackDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({ specialties: [], availability: [], type: [] });
 
@@ -40,18 +39,30 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
     setLoading(true);
     const filterSpecialtyId = allSpecialties.find(s => appliedFilters.specialties?.includes(s.name))?.id;
     const medicalSystemId = medicalSystems.find(s => appliedFilters.type?.includes(s.name))?.id;
-    const baseFilters = { specialtyId: filterSpecialtyId ?? id, latitude: location.latitude, longitude: location.longitude };
+    const baseFilters = { specialtyId: filterSpecialtyId ?? id, latitude: location.latitude, longitude: location.longitude, radius: distance };
     Promise.all([
       getClinics(1, 20, { ...baseFilters, ...(medicalSystemId ? { medicalSystemId } : {}) }),
       getDoctors(1, 20, { ...baseFilters, ...(medicalSystemId ? { medicalSystemId } : {}) }),
     ]).then(([clinicRes, doctorRes]) => {
       setClinics(clinicRes.data);
-      // Fetch full doctor details to get medicalCenters[].schedules
+      if (clinicRes.data.length === 0) {
+        getClinics(1, 20).then(r => setFallbackClinics(r.data)).catch(() => {});
+      } else {
+        setFallbackClinics([]);
+      }
       return Promise.all(doctorRes.data.map(d => getDoctor(d.id).then(r => r.data)));
     }).then(fullDoctors => {
       setDoctors(fullDoctors);
+      if (fullDoctors.length === 0) {
+        getDoctors(1, 20)
+          .then(r => Promise.all(r.data.map(d => getDoctor(d.id).then(x => x.data))))
+          .then(setFallbackDoctors)
+          .catch(() => {});
+      } else {
+        setFallbackDoctors([]);
+      }
     }).catch(() => { }).finally(() => setLoading(false));
-  }, [id, location, appliedFilters]);
+  }, [id, location, distance, appliedFilters]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -112,7 +123,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
                 name={item.name}
                 type={item.specialties[0]?.name ?? ''}
                 hospital={item.medicalCenters[0]?.name ?? ''}
-                clinicType={item.medicalCenters[0]?.type ?? ''}
+                clinicType={item.medicalSystem?.name ?? ''}
                 experience={`${item.yearsOfExperience} yrs exp`}
                 image={item.profilePicture}
                 nextSchedule={derivedSchedule}
@@ -123,13 +134,44 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
               );
             }}
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
-                <Text allowFontScaling={false} style={styles.emptyTitle}>No doctors available here</Text>
-                <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any doctors in this area right now. Try changing your location or adjusting filters.</Text>
-                <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
-                  <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
+              <View style={{ marginHorizontal: -SIZE(18) }}>
+                <View style={styles.emptyContainer}>
+                  <TouchableOpacity activeOpacity={0.8} style={styles.emptyCard} onPress={() => navigation.navigate('LocationSearch')}>
+                    <Image source={require('../assets/images/location-image.png')} style={styles.emptyCardImage} />
+                    <View style={styles.emptyCardInfo}>
+                      <Text allowFontScaling={false} style={styles.emptyCardTitle} numberOfLines={2}>We're Still Growing Here</Text>
+                      <Text allowFontScaling={false} style={styles.emptyCardSubtitle} numberOfLines={2}>No doctors within this area. Explore other available doctors below.</Text>
+                      <View style={styles.emptyCardBtn}>
+                        <Text allowFontScaling={false} style={styles.emptyCardBtnText}>Use another location</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
                 </View>
+                {fallbackDoctors.length > 0 && (
+                  <Text allowFontScaling={false} style={styles.fallbackHeading}>Available doctors</Text>
+                )}
+                {fallbackDoctors.map(item => {
+                  const allSchedules = item.medicalCenters.flatMap(mc => (mc.schedules ?? []));
+                  const today = DAYS[new Date().getDay()];
+                  const todaySchedule = allSchedules.find(s => s.dayOfWeek.toLowerCase() === today);
+                  const derivedSchedule = item.nextSchedule ?? todaySchedule ?? allSchedules[0];
+                  return (
+                    <View key={item.id} style={styles.fallbackItem}>
+                      <DoctorCard
+                        name={item.name}
+                        type={item.specialties[0]?.name ?? ''}
+                        hospital={item.medicalCenters[0]?.name ?? ''}
+                        clinicType={item.medicalSystem?.name ?? ''}
+                        experience={`${item.yearsOfExperience} yrs exp`}
+                        image={item.profilePicture}
+                        nextSchedule={derivedSchedule}
+                        distance={(() => { const mc = item.medicalCenters[0]; return (location && mc) ? getDistance(location.latitude, location.longitude, mc.latitude, mc.longitude) : undefined; })()}
+                        onPress={() => navigation.navigate('DoctorDetail', { doctorId: item.id })}
+                        onBookPress={() => navigation.navigate('BookAppointment', { doctor: item, clinicId: item.medicalCenters[0]?.id })}
+                      />
+                    </View>
+                  );
+                })}
               </View>
             }
           />
@@ -145,7 +187,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}
-              subType={item.specialties[0]?.name ?? item.type}
+              subType={item.medicalSystem?.name ?? item.type}
               specialties={item.specialties.map((s: { name: string }) => s.name)}
               location={`${item.district}, ${item.state}`}
               image={item.profilePicture}
@@ -154,13 +196,36 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
             />
           )}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
-              <Text allowFontScaling={false} style={styles.emptyTitle}>No clinics available here</Text>
-              <Text allowFontScaling={false} style={styles.emptyMessage}>We couldn't find any clinics in this area right now. Try changing your location or adjusting filters.</Text>
-              <View style={{ width: '100%', paddingHorizontal: SIZE(16), marginTop: SIZE(8) }}>
-                <PrimaryButton label="Use another location" onPress={() => navigation.navigate('LocationSearch')} />
+            <View>
+              <View style={styles.emptyContainer}>
+                <TouchableOpacity activeOpacity={0.8} style={styles.emptyCard} onPress={() => navigation.navigate('LocationSearch')}>
+                  <Image source={require('../assets/images/location-image.png')} style={styles.emptyCardImage} />
+                  <View style={styles.emptyCardInfo}>
+                    <Text allowFontScaling={false} style={styles.emptyCardTitle} numberOfLines={2}>We're Still Growing Here</Text>
+                    <Text allowFontScaling={false} style={styles.emptyCardSubtitle} numberOfLines={2}>No clinics within this area. Explore other available clinics below.</Text>
+                    <View style={styles.emptyCardBtn}>
+                      <Text allowFontScaling={false} style={styles.emptyCardBtnText}>Use another location</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
               </View>
+              {fallbackClinics.length > 0 && (
+                <Text allowFontScaling={false} style={styles.fallbackHeading}>Available clinics</Text>
+              )}
+              {fallbackClinics.map(item => (
+                <View key={item.id} style={styles.fallbackItem}>
+                  <ClinicCard
+                    name={item.name}
+                    subType={item.medicalSystem?.name ?? item.type}
+                    specialties={item.specialties.map((s: { name: string }) => s.name)}
+                    location={`${item.district}, ${item.state}`}
+                    image={item.profilePicture}
+                    distance={location ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude) : undefined}
+                    onPress={() => navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: item.specialties[0]?.name ?? '', location: item.address })}
+                    style={{ marginHorizontal: 0 }}
+                  />
+                </View>
+              ))}
             </View>
           }
         />
@@ -225,16 +290,42 @@ const styles = StyleSheet.create({
     paddingBottom: SIZE(24),
     gap: SIZE(12),
   },
-  emptyText: {
-    fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(14),
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: SIZE(40),
+  emptyContainer: { paddingHorizontal: SIZE(18), paddingTop: SIZE(16), paddingBottom: SIZE(12) },
+  emptyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: SIZE(12),
+    borderWidth: 1,
+    borderColor: colors.cardBorderLight,
+    backgroundColor: colors.white,
   },
-  emptyContainer: { alignItems: 'center', paddingHorizontal: SIZE(32), paddingVertical: SIZE(32), gap: SIZE(10) },
-  emptyTitle: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(16), color: '#1C1E22', marginTop: SIZE(8) },
-  emptyMessage: { fontFamily: 'Manrope-Regular', fontSize: SIZE(11), color: '#636A79', textAlign: 'center', lineHeight: SIZE(20) },
+  emptyCardImage: {
+    width: SIZE(102),
+    height: SIZE(102),
+    borderTopLeftRadius: SIZE(10),
+    borderBottomLeftRadius: SIZE(10),
+    backgroundColor: colors.backgroundLight,
+    resizeMode: 'cover',
+  },
+  emptyCardInfo: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+  },
+  emptyCardTitle: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(15), color: colors.textPrimary, marginBottom: SIZE(2) },
+  emptyCardSubtitle: { fontFamily: 'Manrope-Regular', fontSize: SIZE(11), color: colors.textSecondary, marginBottom: SIZE(6) },
+  emptyCardBtn: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary,
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+    borderRadius: SIZE(8),
+  },
+  emptyCardBtnText: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(11), color: colors.white },
+  fallbackHeading: { fontFamily: 'Manrope-Regular', fontSize: SIZE(12), color: colors.textSecondary, paddingTop: SIZE(8), paddingBottom: SIZE(4), paddingHorizontal: SIZE(18) },
+  fallbackItem: { marginBottom: SIZE(12), paddingHorizontal: SIZE(18) },
   locationFilterRow: {
     flexDirection: 'row',
     alignItems: 'center',

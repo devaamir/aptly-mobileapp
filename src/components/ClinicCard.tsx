@@ -34,11 +34,6 @@ export default function ClinicCard({
   onPress,
   style,
 }: Props) {
-  const tags =
-    specialties && specialties.length > 0
-      ? specialties
-      : [subType].filter(Boolean);
-
   return (
     <TouchableOpacity
       style={[styles.card, style]}
@@ -52,23 +47,16 @@ export default function ClinicCard({
         style={styles.image}
       />
       <View style={styles.info}>
-        <Text allowFontScaling={false} style={styles.name} numberOfLines={1}>
-          {name}
-        </Text>
-        <Text
-          allowFontScaling={false}
-          style={styles.specialtiesText}
-          numberOfLines={1}
-        >
-          {tags.map((tag, i) => (
-            <Text key={i} allowFontScaling={false}>
-              {tag}
-              {i < tags.length - 1 && (
-                <Text style={styles.specialtiesDot}> • </Text>
-              )}
+        <View style={styles.topRow}>
+          <View style={styles.topRowLeft}>
+            <Text allowFontScaling={false} style={styles.name} numberOfLines={1}>
+              {name}
             </Text>
-          ))}
-        </Text>
+            <Text allowFontScaling={false} style={styles.specialtiesText} numberOfLines={1}>
+              {subType}
+            </Text>
+          </View>
+        </View>
         <View style={styles.locationRow}>
           <View>
             <LocationIcon
@@ -117,6 +105,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignSelf: 'stretch',
     paddingVertical: SIZE(7),
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  topRowLeft: {
+    flex: 1,
   },
   name: {
     fontFamily: 'Manrope-SemiBold',

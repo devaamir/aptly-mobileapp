@@ -49,6 +49,7 @@ import {
   getHomeData,
   IS_DEV,
   getClinics,
+  getClinic,
   Specialty,
   Doctor,
   Clinic,
@@ -615,7 +616,7 @@ function SkeletonScreen() {
 export default function HomeScreen() {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const navigation = useNavigation<HomeNavProp>();
-  const { location, ready, loadingLocation } = useLocation();
+  const { location, ready, loadingLocation, distance } = useLocation();
   const { startTracking, stopTracking, trackData } = useTracking();
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -636,15 +637,22 @@ export default function HomeScreen() {
       setRefreshing(true);
       setLoading(true);
     }
+    const nearbyPromise = location
+      ? getClinics(1, 20, { latitude: location.latitude, longitude: location.longitude, radius: distance })
+          .then(res => Promise.all(res.data.map(c => getClinic(c.id).then(r => r.data))))
+      : Promise.resolve([] as Clinic[]);
     Promise.all([
       getHomeData(location?.latitude, location?.longitude),
-      getClinics(1, 20),
+      nearbyPromise,
+      getClinics(1, 20).then(res =>
+        Promise.all(res.data.map(c => getClinic(c.id).then(r => r.data))),
+      ),
     ])
-      .then(([homeRes, clinicsRes]) => {
-        if (IS_DEV) console.log(clinicsRes.data);
-
+      .then(([homeRes, nearbyClinics, fullClinics]) => {
+        if (IS_DEV) console.log(fullClinics);
         handleHomeData(homeRes);
-        setFallbackClinics(clinicsRes.data);
+        setClinics(nearbyClinics);
+        setFallbackClinics(fullClinics);
       })
       .catch(() => {})
       .finally(() => {
@@ -658,7 +666,6 @@ export default function HomeScreen() {
 
     setSpecialties(res.data.specialties);
     setDoctors(res.data.doctors as Doctor[]);
-    setClinics(res.data.topClinics);
     setTotalDoctorCount(res.data.totalDoctorCount);
     const today = new Date().toISOString().split('T')[0];
     const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
@@ -683,7 +690,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (ready) fetchData();
-  }, [ready, location?.latitude, location?.longitude]);
+  }, [ready, location?.latitude, location?.longitude, distance]);
 
   useEffect(() => {
     if (!spotlightAppt) {
@@ -701,21 +708,28 @@ export default function HomeScreen() {
     else stopTracking();
   }, [spotlightAppt]);
   const locationRef = useRef(location);
-  useEffect(() => {
-    locationRef.current = location;
-  }, [location]);
+  useEffect(() => { locationRef.current = location; }, [location]);
+  const distanceRef = useRef(distance);
+  useEffect(() => { distanceRef.current = distance; }, [distance]);
 
   useEffect(
     () =>
       navigation.addListener('focus', () => {
         if (!ready) return;
         const loc = locationRef.current;
+        const dist = distanceRef.current;
+        const nearbyPromise = loc
+          ? getClinics(1, 20, { latitude: loc.latitude, longitude: loc.longitude, radius: dist })
+              .then(res => Promise.all(res.data.map(c => getClinic(c.id).then(r => r.data))))
+          : Promise.resolve([] as Clinic[]);
         Promise.all([
           getHomeData(loc?.latitude, loc?.longitude),
+          nearbyPromise,
           getClinics(1, 20),
         ])
-          .then(([homeRes, clinicsRes]) => {
+          .then(([homeRes, nearbyClinics, clinicsRes]) => {
             handleHomeData(homeRes);
+            setClinics(nearbyClinics);
             setFallbackClinics(clinicsRes.data);
           })
           .catch(() => {})
@@ -866,7 +880,7 @@ export default function HomeScreen() {
                       style={styles.emptyCardSubtitle}
                       numberOfLines={2}
                     >
-                      No clinics within 25 km. Explore the nearest available
+                      No clinics within {distance} km. Explore the nearest available
                       clinics below
                     </Text>
                     <View style={styles.emptyCardBtn}>
@@ -885,7 +899,7 @@ export default function HomeScreen() {
                   <ClinicCard
                     key={item.id}
                     name={item.name}
-                    subType={item.specialties[0]?.name ?? item.type}
+                    subType={item.medicalSystem?.name ?? item.type}
                     specialties={item.specialties.map(
                       (s: { name: string }) => s.name,
                     )}
@@ -959,7 +973,7 @@ export default function HomeScreen() {
             return (
               <ClinicCard
                 name={item.name}
-                subType={item.specialties[0]?.name ?? item.type}
+                subType={item.medicalSystem?.name ?? item.type}
                 specialties={item.specialties.map(
                   (s: { name: string }) => s.name,
                 )}

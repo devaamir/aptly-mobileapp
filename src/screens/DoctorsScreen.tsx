@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
+  Image,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -20,10 +21,8 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
-import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
 import { getDoctors, getDoctor, Doctor } from '../services/api';
 import { useLocation } from '../context/LocationContext';
-import PrimaryButton from '../components/PrimaryButton';
 import { getDistance } from '../utils/getDistance';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Doctors'>;
@@ -40,14 +39,14 @@ const DAYS = [
 
 
 export default function DoctorsScreen({ navigation }: Props) {
-  const { location: userLocation } = useLocation();
+  const { location: userLocation, distance, setDistance } = useLocation();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [fallbackDoctors, setFallbackDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<
     Record<string, string[]>
   >({ specialties: [], availability: [], type: [] });
-  const [distance, setDistance] = useState(25);
 
   const fetchDoctors = (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -66,7 +65,20 @@ export default function DoctorsScreen({ navigation }: Props) {
       .then(res =>
         Promise.all(res.data.map(d => getDoctor(d.id).then(r => r.data))),
       )
-      .then(setDoctors)
+      .then(results => {
+        setDoctors(results);
+        if (results.length === 0) {
+          // Fetch all doctors without location filter as fallback
+          getDoctors(1, 20)
+            .then(res =>
+              Promise.all(res.data.map(d => getDoctor(d.id).then(r => r.data))),
+            )
+            .then(setFallbackDoctors)
+            .catch(() => {});
+        } else {
+          setFallbackDoctors([]);
+        }
+      })
       .catch(() => {})
       .finally(() => {
         setLoading(false);
@@ -177,27 +189,95 @@ export default function DoctorsScreen({ navigation }: Props) {
             );
           }}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
-              <Text allowFontScaling={false} style={styles.emptyTitle}>
-                No doctors available here
-              </Text>
-              <Text allowFontScaling={false} style={styles.emptyMessage}>
-                We couldn't find any doctors in this area right now. Try
-                changing your location or adjusting filters.
-              </Text>
-              <View
-                style={{
-                  width: '100%',
-                  paddingHorizontal: SIZE(16),
-                  marginTop: SIZE(8),
-                }}
-              >
-                <PrimaryButton
-                  label="Use another location"
+            <View>
+              <View style={styles.emptyContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.emptyCard}
                   onPress={() => navigation.navigate('LocationSearch')}
-                />
+                >
+                  <Image
+                    source={require('../assets/images/location-image.png')}
+                    style={styles.emptyCardImage}
+                  />
+                  <View style={styles.emptyCardInfo}>
+                    <Text
+                      allowFontScaling={false}
+                      style={styles.emptyCardTitle}
+                      numberOfLines={2}
+                    >
+                      We're Still Growing Here
+                    </Text>
+                    <Text
+                      allowFontScaling={false}
+                      style={styles.emptyCardSubtitle}
+                      numberOfLines={2}
+                    >
+                      No doctors within this area. Explore other available
+                      doctors below.
+                    </Text>
+                    <View style={styles.emptyCardBtn}>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.emptyCardBtnText}
+                      >
+                        Use another location
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
               </View>
+              {fallbackDoctors.length > 0 && (
+                <Text allowFontScaling={false} style={styles.fallbackHeading}>
+                  Available doctors
+                </Text>
+              )}
+              {fallbackDoctors.map(item => {
+                const specialty = item.specialties[0]?.name ?? '';
+                const hospital = item.medicalCenters[0]?.name ?? '';
+                const clinicType = item.medicalCenters[0]?.type ?? '';
+                const location = item.medicalCenters[0]
+                  ? `${item.medicalCenters[0].address}`
+                  : '';
+                const allSchedules = item.medicalCenters.flatMap(mc => mc.schedules ?? []);
+                const today = DAYS[new Date().getDay()];
+                const todaySchedule = allSchedules.find(s => s.dayOfWeek === today);
+                const nextSchedule = todaySchedule ?? allSchedules[0];
+                return (
+                  <View key={item.id} style={styles.fallbackItem}>
+                    <DoctorCard
+                      name={item.name}
+                      type={specialty}
+                      hospital={hospital}
+                      clinicType={clinicType}
+                      location={location}
+                      distance={(() => {
+                        const mc = item.medicalCenters[0];
+                        return userLocation && mc
+                          ? getDistance(
+                              userLocation.latitude,
+                              userLocation.longitude,
+                              mc.latitude,
+                              mc.longitude,
+                            )
+                          : undefined;
+                      })()}
+                      experience={`${item.yearsOfExperience} yrs exp`}
+                      image={item.profilePicture}
+                      nextSchedule={nextSchedule}
+                      onPress={() =>
+                        navigation.navigate('DoctorDetail', { doctorId: item.id })
+                      }
+                      onBookPress={() =>
+                        navigation.navigate('BookAppointment', {
+                          doctor: item,
+                          clinicId: item.medicalCenters[0]?.id,
+                        })
+                      }
+                    />
+                  </View>
+                );
+              })}
             </View>
           }
         />
@@ -259,23 +339,65 @@ const styles = StyleSheet.create({
     marginBottom: SIZE(8),
   },
   emptyContainer: {
+    paddingTop: SIZE(16),
+    paddingBottom: SIZE(12),
+  },
+  fallbackItem: {
+    marginBottom: SIZE(12),
+  },
+  fallbackHeading: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.textSecondary,
+    paddingTop: SIZE(8),
+    paddingBottom: SIZE(4),
+  },
+  emptyCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SIZE(32),
-    paddingVertical: SIZE(32),
-    gap: SIZE(10),
+    borderRadius: SIZE(12),
+    borderWidth: 1,
+    borderColor: colors.cardBorderLight,
+    backgroundColor: colors.white,
   },
-  emptyTitle: {
+  emptyCardImage: {
+    width: SIZE(102),
+    height: SIZE(102),
+    borderTopLeftRadius: SIZE(10),
+    borderBottomLeftRadius: SIZE(10),
+    backgroundColor: colors.backgroundLight,
+    resizeMode: 'cover',
+  },
+  emptyCardInfo: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+  },
+  emptyCardTitle: {
     fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(16),
-    color: '#1C1E22',
-    marginTop: SIZE(8),
+    fontSize: SIZE(15),
+    color: colors.textPrimary,
+    marginBottom: SIZE(2),
   },
-  emptyMessage: {
+  emptyCardSubtitle: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
-    color: '#636A79',
-    textAlign: 'center',
-    lineHeight: SIZE(20),
+    color: colors.textSecondary,
+    marginBottom: SIZE(6),
+  },
+  emptyCardBtn: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary,
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+    borderRadius: SIZE(8),
+  },
+  emptyCardBtnText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(11),
+    color: colors.white,
   },
   distanceText: {
     fontFamily: 'Manrope-SemiBold',

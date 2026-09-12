@@ -31,18 +31,18 @@ type Props = NativeStackScreenProps<RootStackParamList, 'LocationSearch'>;
 type Location = { description: string; placeId: string; latitude: number; longitude: number; mainText: string; secondaryText: string };
 
 export default function LocationSearchScreen({ navigation }: Props) {
-  const { setLocation } = useLocation();
+  const { setLocation, distance, setDistance } = useLocation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
   const [popularLoading, setPopularLoading] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
-  const [distance, setDistance] = useState(25);
 
   const handleSelect = (item: Location) => {
     console.log(item);
 
     setLocation({ mainText: item.mainText, secondaryText: item.secondaryText, latitude: item.latitude, longitude: item.longitude, isGps: false });
+    if (distance !== 25) setDistance(25);
     navigation.goBack();
   };
 
@@ -78,6 +78,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
           secondaryText = res.data.address;
         } catch { /* fallback to defaults */ }
         setLocation({ mainText, secondaryText, latitude, longitude, isGps: true });
+        if (distance !== 25) setDistance(25);
         setGpsLoading(false);
         navigation.goBack();
       },

@@ -30,7 +30,7 @@ import { useMetadata } from '../context/MetadataContext';
 type Props = NativeStackScreenProps<RootStackParamList, 'Clinics'>;
 
 export default function ClinicsScreen({ navigation }: Props) {
-  const { location } = useLocation();
+  const { location, distance, setDistance } = useLocation();
   const { specialties: allSpecialties, medicalSystems } = useMetadata();
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,6 @@ export default function ClinicsScreen({ navigation }: Props) {
   const [appliedFilters, setAppliedFilters] = useState<
     Record<string, string[]>
   >({ specialties: [], availability: [], type: [] });
-  const [distance, setDistance] = useState(25);
 
   const fetchClinics = (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -127,12 +126,21 @@ export default function ClinicsScreen({ navigation }: Props) {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchClinics(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => fetchClinics(true)}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
           renderItem={({ item }) => (
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
-              specialties={item.specialties.map((s: { name: string }) => s.name)}
+              specialties={item.specialties.map(
+                (s: { name: string }) => s.name,
+              )}
               location={item.address}
               image={item.profilePicture}
               distance={
