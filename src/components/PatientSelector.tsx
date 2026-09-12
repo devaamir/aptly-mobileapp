@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import AddIconBlue from '../assets/icons/add-icon-blue.svg';
+import EditIcon from '../assets/icons/edit-icon.svg';
+import DeleteIcon from '../assets/icons/delete-icon.svg';
 
 type Patient = {
   id: string;
   name: string;
   phone: string;
-  age: number;
+  age: string;
   gender: string;
 };
 
@@ -18,9 +20,12 @@ type Props = {
   onSelect?: (id: string) => void;
   showRadio?: boolean;
   onAddMember?: () => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  ownPatientId?: string;
 };
 
-export default function PatientSelector({ patients, selectedId, onSelect, showRadio = true, onAddMember }: Props) {
+export default function PatientSelector({ patients, selectedId, onSelect, showRadio = true, onAddMember, onEdit, onDelete, ownPatientId }: Props) {
   return (
     <>
       <View style={styles.container}>
@@ -35,7 +40,7 @@ export default function PatientSelector({ patients, selectedId, onSelect, showRa
                   {selectedId === p.id && <View style={styles.radioDot} />}
                 </View>
               )}
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text allowFontScaling={false} style={styles.patientName}>{p.name}</Text>
                 <View style={styles.patientMeta}>
                   <Text allowFontScaling={false} style={styles.metaText}>{p.phone}</Text>
@@ -45,6 +50,16 @@ export default function PatientSelector({ patients, selectedId, onSelect, showRa
                   <Text allowFontScaling={false} style={styles.metaText}>Gender: {p.gender}</Text>
                 </View>
               </View>
+              {onEdit && (
+                <TouchableOpacity onPress={() => onEdit(p.id)} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <EditIcon width={SIZE(18)} height={SIZE(18)} />
+                </TouchableOpacity>
+              )}
+              {onDelete && p.id !== ownPatientId && (
+                <TouchableOpacity onPress={() => onDelete(p.id)} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <DeleteIcon width={SIZE(18)} height={SIZE(18)} />
+                </TouchableOpacity>
+              )}
             </TouchableOpacity>
             {index < patients.length - 1 && <View style={styles.divider} />}
           </View>

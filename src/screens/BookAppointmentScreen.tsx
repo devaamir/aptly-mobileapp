@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert, KeyboardAvoidingView, Modal } from 'react-native';
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,14 @@ import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
+
+const formatAge = (dob: string): string => {
+  const birth = new Date(dob);
+  const now = new Date();
+  const totalMonths = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+  if (totalMonths < 12) return `${Math.max(totalMonths, 0)} months`;
+  return `${Math.floor(totalMonths / 12)} years`;
+};
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import CalendarIcon from '../assets/icons/calendar-icon.svg';
 import SwipeToBook from '../components/SwipeToBook';
@@ -146,13 +154,11 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
 
   const onDateChange = ({ date }: { date: any }) => {
     if (date) {
-      const jsDate = date as Date;
-      const y = Platform.OS === 'ios' ? jsDate.getUTCFullYear() : jsDate.getFullYear();
-      const m = Platform.OS === 'ios' ? jsDate.getUTCMonth() : jsDate.getMonth();
-      const d = Platform.OS === 'ios' ? jsDate.getUTCDate() : jsDate.getDate();
-      const local = new Date(y, m, d);
+      const corrected = dayjs(date as never).add(1, 'hour');
+      const local = new Date(corrected.year(), corrected.month(), corrected.date());
       const idx = DAYS.findIndex(day => day.full.toDateString() === local.toDateString());
       if (idx !== -1) setSelectedDay(idx);
+      setShowCalendar(false);
     }
   };
 
@@ -199,25 +205,6 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
               <CalendarIcon width={SIZE(20)} height={SIZE(20)} />
             </TouchableOpacity>
           </View>
-          {showCalendar && (
-            <DateTimePicker
-              mode="single"
-              date={dayjs(DAYS[selectedDay].full)}
-              minDate={dayjs(DAYS[0].full)}
-              maxDate={dayjs(DAYS[DAYS.length - 1].full)}
-              onChange={onDateChange}
-              styles={{
-                selected: { backgroundColor: colors.primary, borderRadius: SIZE(20) },
-                selected_label: { color: colors.white, fontFamily: 'Manrope-SemiBold' },
-                day_label: { fontFamily: 'Manrope-Regular', color: colors.textPrimary },
-                disabled: { opacity: 0.3 },
-                disabled_label: { fontFamily: 'Manrope-Regular', color: colors.textSecondary, textDecorationLine: 'line-through' },
-                weekday_label: { fontFamily: 'Manrope-Medium', color: colors.textSecondary },
-                month_selector_label: { fontFamily: 'Manrope-SemiBold', color: colors.textPrimary },
-                year_selector_label: { fontFamily: 'Manrope-SemiBold', color: colors.textPrimary },
-              }}
-            />
-          )}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysRow}>
             {DAYS.map((d, i) => (
               <TouchableOpacity
@@ -271,7 +258,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           {/* Select patient */}
           <Text allowFontScaling={false} style={styles.sectionTitle}>Select Patient</Text>
           <PatientSelector
-            patients={patients.map(p => ({ id: p.id, name: p.name, phone: p.phoneNumber, age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 0, gender: p.gender }))}
+            patients={patients.map(p => ({ id: p.id, name: p.name, phone: p.phoneNumber, age: p.dateOfBirth ? formatAge(p.dateOfBirth) : '—', gender: p.gender }))}
             selectedId={selectedPatient}
             onSelect={setSelectedPatient}
             showRadio
@@ -300,6 +287,35 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+
+      <Modal visible={showCalendar} transparent animationType="slide" onRequestClose={() => setShowCalendar(false)}>
+        <View style={styles.calendarOverlay}>
+          <View style={styles.calendarSheet}>
+            <View style={styles.calendarHeader}>
+              <TouchableOpacity onPress={() => setShowCalendar(false)}>
+                <Text allowFontScaling={false} style={styles.calendarCancelBtn}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+            <DateTimePicker
+              mode="single"
+              date={dayjs(`${dayjs(DAYS[selectedDay].full).format('YYYY-MM-DD')}T12:00:00`)}
+              minDate={dayjs(`${dayjs(DAYS[0].full).format('YYYY-MM-DD')}T12:00:00`)}
+              maxDate={dayjs(`${dayjs(DAYS[DAYS.length - 1].full).format('YYYY-MM-DD')}T12:00:00`)}
+              onChange={onDateChange}
+              styles={{
+                selected: { backgroundColor: colors.primary, borderRadius: SIZE(20) },
+                selected_label: { color: colors.white, fontFamily: 'Manrope-SemiBold' },
+                day_label: { fontFamily: 'Manrope-Regular', color: colors.textPrimary },
+                disabled: { opacity: 0.3 },
+                disabled_label: { fontFamily: 'Manrope-Regular', color: colors.textSecondary, textDecorationLine: 'line-through' },
+                weekday_label: { fontFamily: 'Manrope-Medium', color: colors.textSecondary },
+                month_selector_label: { fontFamily: 'Manrope-SemiBold', color: colors.textPrimary },
+                year_selector_label: { fontFamily: 'Manrope-SemiBold', color: colors.textPrimary },
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
 
       <BottomModal visible={showAddMember} onClose={() => setShowAddMember(false)} variant="bottom">
         <Text allowFontScaling={false} style={styles.addMemberTitle}>Add Member</Text>
@@ -657,6 +673,31 @@ const styles = StyleSheet.create({
     fontSize: SIZE(15),
     color: colors.white,
     textAlign: 'center',
+  },
+  calendarOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  calendarSheet: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: SIZE(16),
+    borderTopRightRadius: SIZE(16),
+    paddingBottom: SIZE(24),
+    paddingHorizontal: SIZE(8),
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: SIZE(12),
+    paddingVertical: SIZE(14),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  calendarCancelBtn: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(16),
+    color: colors.textSecondary,
   },
   addMemberTitle: {
     fontFamily: 'Manrope-SemiBold',

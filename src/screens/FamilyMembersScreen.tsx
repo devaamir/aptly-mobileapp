@@ -5,17 +5,27 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
+
+const formatAge = (dob: string): string => {
+  const birth = new Date(dob);
+  const now = new Date();
+  const totalMonths = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+  if (totalMonths < 12) return `${Math.max(totalMonths, 0)} months`;
+  return `${Math.floor(totalMonths / 12)} years`;
+};
 import PatientSelector from '../components/PatientSelector';
 import BottomModal from '../components/BottomModal';
 import AppInput from '../components/AppInput';
 import AppDropdown from '../components/AppDropdown';
 import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
-import { addPatient, getPatients, Patient } from '../services/api';
+import { addPatient, updatePatient, deletePatient, getPatients, Patient } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import dayjs from 'dayjs';
 
 export default function FamilyMembersScreen() {
   const navigation = useNavigation();
+  const { user } = useAuth();
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberName, setMemberName] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
@@ -23,6 +33,54 @@ export default function FamilyMembersScreen() {
   const [memberGender, setMemberGender] = useState('');
   const [memberDob, setMemberDob] = useState<Date | null>(null);
   const [addingMember, setAddingMember] = useState(false);
+
+  const [showEditMember, setShowEditMember] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editGender, setEditGender] = useState('');
+  const [editDob, setEditDob] = useState<Date | null>(null);
+  const [savingMember, setSavingMember] = useState(false);
+
+  const openEdit = (id: string) => {
+    const patient = patients.find(p => p.id === id);
+    if (!patient) return;
+    setEditingPatient(patient);
+    setEditName(patient.name);
+    setEditGender(patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : '');
+    setEditDob(patient.dateOfBirth ? new Date(patient.dateOfBirth) : null);
+    setShowEditMember(true);
+  };
+
+  const handleDeleteMember = (id: string) => {
+    Alert.alert('Remove Member', 'Are you sure you want to remove this member?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove', style: 'destructive', onPress: async () => {
+          try {
+            await deletePatient(id);
+            setPatients(prev => prev.filter(p => p.id !== id));
+          } catch (err: any) {
+            Alert.alert('Error', err?.message || 'Failed to remove member');
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleEditMember = async () => {
+    if (!editingPatient || !editName || !editGender || !editDob) return;
+    try {
+      setSavingMember(true);
+      await updatePatient(editingPatient.id, editName, editGender.toLowerCase(), dayjs(editDob).format('YYYY-MM-DD'));
+      const res = await getPatients();
+      setPatients(res.data.filter(p => !!p.name));
+      setShowEditMember(false);
+    } catch (err: any) {
+      Alert.alert('Error', err?.message || 'Failed to update member');
+    } finally {
+      setSavingMember(false);
+    }
+  };
 
   const phoneError =
     memberPhoneTouched && memberPhone.length > 0 && memberPhone.length < 10
@@ -83,10 +141,13 @@ export default function FamilyMembersScreen() {
               id: p.id,
               name: p.name,
               phone: p.phoneNumber,
-              age: p.dateOfBirth ? new Date().getFullYear() - Number(p.dateOfBirth.split('-')[0]) : 0,
+              age: p.dateOfBirth ? formatAge(p.dateOfBirth) : '—',
               gender: p.gender ?? '',
             }))}
             showRadio={false}
+            onEdit={openEdit}
+            onDelete={handleDeleteMember}
+            ownPatientId={user?.patientId}
             onAddMember={() => setShowAddMember(true)}
           />
         )}
@@ -125,6 +186,28 @@ export default function FamilyMembersScreen() {
             onPress={handleAddMember}
             disabled={!memberName || !isPhoneValid || !memberGender || !memberDob || addingMember}
             loading={addingMember}
+          />
+        </KeyboardAvoidingView>
+      </BottomModal>
+      <BottomModal visible={showEditMember} onClose={() => setShowEditMember(false)} variant="bottom">
+        <Text allowFontScaling={false} style={styles.modalTitle}>Edit Member</Text>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ width: '100%', flex: 1 }}>
+          <View style={{ gap: SIZE(12), flex: 1 }}>
+            <AppInput value={editName} onChangeText={setEditName} placeholder="Full name" />
+            <View style={styles.row}>
+              <View style={{ flex: 1 }}>
+                <AppDropdown options={['Male', 'Female']} value={editGender} onSelect={setEditGender} placeholder="Gender" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <AppDatePicker value={editDob} onChange={setEditDob} placeholder="Date of birth" disableFuture />
+              </View>
+            </View>
+          </View>
+          <PrimaryButton
+            label="Save"
+            onPress={handleEditMember}
+            disabled={!editName || !editGender || !editDob || savingMember}
+            loading={savingMember}
           />
         </KeyboardAvoidingView>
       </BottomModal>

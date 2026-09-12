@@ -218,6 +218,11 @@ export const updatePatient = (
 ): Promise<{ success: boolean; data: Patient }> =>
   api.patch(`/patients/${patientId}`, { name, gender, dateOfBirth });
 
+export const deletePatient = (
+  patientId: string,
+): Promise<{ success: boolean; message: string }> =>
+  api.delete(`/patients/${patientId}`);
+
 export const getPatients = (): Promise<{ success: boolean; data: Patient[] }> =>
   api.get('/patients');
 
