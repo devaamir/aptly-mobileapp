@@ -8,6 +8,7 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -15,13 +16,11 @@ import { RootStackParamList } from '../navigations/Navigation';
 import ClinicCard from '../components/ClinicCard';
 import FilterModal from '../components/FilterModal';
 import DistancePicker from '../components/DistancePicker';
-import PrimaryButton from '../components/PrimaryButton';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
-import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
 import { getClinics, Clinic } from '../services/api';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
@@ -33,6 +32,7 @@ export default function ClinicsScreen({ navigation }: Props) {
   const { location, distance, setDistance } = useLocation();
   const { specialties: allSpecialties, medicalSystems } = useMetadata();
   const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [fallbackClinics, setFallbackClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<
@@ -48,18 +48,27 @@ export default function ClinicsScreen({ navigation }: Props) {
     const medicalSystemId = medicalSystems.find(s =>
       appliedFilters.type?.includes(s.name),
     )?.id;
-    getClinics(1, 20, {
-      ...(location
-        ? {
-            latitude: location.latitude,
-            longitude: location.longitude,
-            radius: distance,
-          }
-        : {}),
-      ...(specialtyId ? { specialtyId } : {}),
-      ...(medicalSystemId ? { medicalSystemId } : {}),
-    })
-      .then(res => setClinics(res.data))
+    Promise.all([
+      getClinics(1, 20, {
+        ...(location
+          ? {
+              latitude: location.latitude,
+              longitude: location.longitude,
+              radius: distance,
+            }
+          : {}),
+        ...(specialtyId ? { specialtyId } : {}),
+        ...(medicalSystemId ? { medicalSystemId } : {}),
+      }),
+      getClinics(1, 20, {
+        ...(specialtyId ? { specialtyId } : {}),
+        ...(medicalSystemId ? { medicalSystemId } : {}),
+      }),
+    ])
+      .then(([nearbyRes, fallbackRes]) => {
+        setClinics(nearbyRes.data);
+        setFallbackClinics(fallbackRes.data);
+      })
       .catch(() => {})
       .finally(() => {
         setLoading(false);
@@ -138,22 +147,14 @@ export default function ClinicsScreen({ navigation }: Props) {
             <ClinicCard
               name={item.name}
               subType={item.specialties[0]?.name ?? item.type}
-              specialties={item.specialties.map(
-                (s: { name: string }) => s.name,
-              )}
+              specialties={item.specialties.map((s: { name: string }) => s.name)}
               location={item.address}
               image={item.profilePicture}
               distance={
                 location
-                  ? getDistance(
-                      location.latitude,
-                      location.longitude,
-                      item.latitude,
-                      item.longitude,
-                    )
+                  ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude)
                   : undefined
               }
-              style={{ marginHorizontal: 0 }}
               onPress={() =>
                 navigation.navigate('HospitalDetail', {
                   id: item.id,
@@ -165,27 +166,60 @@ export default function ClinicsScreen({ navigation }: Props) {
             />
           )}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <LocationSlashIcon width={SIZE(81)} height={SIZE(81)} />
-              <Text allowFontScaling={false} style={styles.emptyTitle}>
-                No clinics available here
-              </Text>
-              <Text allowFontScaling={false} style={styles.emptyMessage}>
-                We couldn't find any clinics in this area right now. Try
-                changing your location or adjusting filters.
-              </Text>
-              <View
-                style={{
-                  width: '100%',
-                  paddingHorizontal: SIZE(16),
-                  marginTop: SIZE(8),
-                }}
-              >
-                <PrimaryButton
-                  label="Use another location"
+            <View>
+              <View style={styles.emptyContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.emptyCard}
                   onPress={() => navigation.navigate('LocationSearch')}
-                />
+                >
+                  <Image
+                    source={require('../assets/images/location-image.png')}
+                    style={styles.emptyCardImage}
+                  />
+                  <View style={styles.emptyCardInfo}>
+                    <Text allowFontScaling={false} style={styles.emptyCardTitle} numberOfLines={2}>
+                      We're Still Growing Here
+                    </Text>
+                    <Text allowFontScaling={false} style={styles.emptyCardSubtitle} numberOfLines={2}>
+                      No clinics within {distance} km. Explore the nearest available clinics below
+                    </Text>
+                    <View style={styles.emptyCardBtn}>
+                      <Text allowFontScaling={false} style={styles.emptyCardBtnText}>
+                        Use another location
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
               </View>
+              {fallbackClinics.length > 0 && (
+                <Text allowFontScaling={false} style={styles.fallbackHeading}>Available clinics</Text>
+              )}
+              {fallbackClinics.map(item => (
+                <View key={item.id} style={styles.fallbackItem}>
+                  <ClinicCard
+                    name={item.name}
+                    subType={item.specialties[0]?.name ?? item.type}
+                    specialties={item.specialties.map((s: { name: string }) => s.name)}
+                    location={item.address}
+                    image={item.profilePicture}
+                    distance={
+                      location
+                        ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude)
+                        : undefined
+                    }
+                    style={{ marginHorizontal: 0 }}
+                    onPress={() =>
+                      navigation.navigate('HospitalDetail', {
+                        id: item.id,
+                        name: item.name,
+                        specialty: item.specialties[0]?.name ?? '',
+                        location: item.address,
+                      })
+                    }
+                  />
+                </View>
+              ))}
             </View>
           }
         />
@@ -212,7 +246,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: SIZE(24),
     gap: SIZE(12),
-    paddingHorizontal: SIZE(20),
   },
   locationBox: {
     flexDirection: 'row',
@@ -243,22 +276,67 @@ const styles = StyleSheet.create({
   },
   filterRow: { paddingHorizontal: SIZE(18), marginBottom: SIZE(8) },
   emptyContainer: {
+    paddingHorizontal: SIZE(18),
+    paddingTop: SIZE(16),
+    paddingBottom: SIZE(12),
+  },
+  emptyCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SIZE(32),
-    paddingVertical: SIZE(32),
-    gap: SIZE(10),
+    borderRadius: SIZE(12),
+    borderWidth: 1,
+    borderColor: colors.cardBorderLight,
+    backgroundColor: colors.white,
   },
-  emptyTitle: {
+  emptyCardImage: {
+    width: SIZE(102),
+    height: SIZE(102),
+    borderTopLeftRadius: SIZE(10),
+    borderBottomLeftRadius: SIZE(10),
+    backgroundColor: colors.backgroundLight,
+    resizeMode: 'cover',
+  },
+  emptyCardInfo: {
+    flex: 1,
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+  },
+  emptyCardTitle: {
     fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(16),
-    color: '#1C1E22',
-    marginTop: SIZE(8),
+    fontSize: SIZE(15),
+    color: colors.textPrimary,
+    marginBottom: SIZE(2),
   },
-  emptyMessage: {
+  emptyCardSubtitle: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
-    color: '#636A79',
-    textAlign: 'center',
-    lineHeight: SIZE(20),
+    color: colors.textSecondary,
+    marginBottom: SIZE(6),
+  },
+  emptyCardBtn: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary,
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(6),
+    borderRadius: SIZE(8),
+  },
+  emptyCardBtnText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(11),
+    color: colors.white,
+  },
+  fallbackHeading: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.textSecondary,
+    paddingTop: SIZE(8),
+    paddingBottom: SIZE(4),
+    paddingHorizontal: SIZE(18),
+  },
+  fallbackItem: {
+    marginBottom: SIZE(12),
+    paddingHorizontal: SIZE(18),
   },
 });
