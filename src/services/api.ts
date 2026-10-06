@@ -32,8 +32,8 @@ export type {
   Patient,
 };
 
-// const baseURL = 'https://aptly-server.onrender.com/api'; // dev
-const baseURL = 'https://api.aptly.care/api'; // prod
+const baseURL = 'https://aptly-server.onrender.com/api'; // dev
+// const baseURL = 'https://api.aptly.care/api'; // prod
 export const IS_DEV = baseURL.includes('onrender.com');
 
 // Phone numbers that receive OTP auto-fill even in production (bypassed numbers)
@@ -63,6 +63,7 @@ export const setTokenRefreshCallback = (cb: typeof onTokenRefreshed) => {
 
 // Queue for requests that arrive while a token refresh is in progress
 let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
 let failedQueue: Array<{
   resolve: (token: string) => void;
   reject: (err: unknown) => void;
@@ -109,13 +110,11 @@ api.interceptors.response.use(
         );
       }
 
-      original._retry = true; // set immediately before any async branch
+      original._retry = true;
 
-      // Another refresh is already in flight — queue this request
-      if (isRefreshing) {
-        return new Promise<string>((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(token => {
+      // If a refresh is already in flight, wait for it instead of starting a new one
+      if (isRefreshing && refreshPromise) {
+        return refreshPromise.then(token => {
           original.headers.Authorization = `Bearer ${token}`;
           return api(original);
         });
@@ -123,16 +122,13 @@ api.interceptors.response.use(
 
       isRefreshing = true;
 
-      try {
+      refreshPromise = (async () => {
         const refreshToken = await AsyncStorage.getItem('refreshToken');
 
-        // No refresh token stored — bail out immediately
         if (!refreshToken) {
           if (IS_DEV)
             console.log('[Token] No refresh token found — cannot refresh');
-          processQueue(error, null);
-          isRefreshing = false; // reset so future requests aren't stuck
-          return Promise.reject(error?.response?.data || error);
+          throw error?.response?.data || error;
         }
 
         if (IS_DEV)
@@ -157,14 +153,23 @@ api.interceptors.response.use(
         ]);
         onTokenRefreshed?.(accessToken, newRefresh);
         processQueue(null, accessToken);
+        return accessToken;
+      })()
+        .catch(refreshError => {
+          processQueue(refreshError, null);
+          throw refreshError;
+        })
+        .finally(() => {
+          isRefreshing = false;
+          refreshPromise = null;
+        });
 
-        original.headers.Authorization = `Bearer ${accessToken}`;
+      try {
+        const token = await refreshPromise;
+        original.headers.Authorization = `Bearer ${token}`;
         return api(original);
       } catch (refreshError) {
-        processQueue(refreshError, null);
         return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
       }
     }
 
@@ -360,6 +365,16 @@ export const createAppointment = (
 
 export const cancelAppointment = (id: string): Promise<{ success: boolean }> =>
   api.patch(`/appointments/${id}/status`, { tokenStatus: 'cancelled' });
+
+export const registerDeviceToken = (
+  token: string,
+  platform: 'ios' | 'android',
+): Promise<{ success: boolean }> => api.post('/devices', { token, platform });
+
+export const unregisterDeviceToken = (
+  token: string,
+): Promise<{ success: boolean }> =>
+  api.delete(`/devices/${encodeURIComponent(token)}`);
 
 export type TrackData = {
   appointments: {

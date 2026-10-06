@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator } from 'react-native';
+import { SvgUri } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -49,7 +50,11 @@ export default function SpecialstScreen({ navigation }: Props) {
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('SpecialstDetail', { name: item.name, id: item.id, desc: item.description, clinics: 0, doctors: 0 })}>
-              <Image source={{ uri: item.icon }} style={styles.avatar} />
+              {item.icon?.toLowerCase().endsWith('.svg') ? (
+                <SvgUri uri={item.icon} width={SIZE(52)} height={SIZE(52)} style={styles.avatar} />
+              ) : (
+                <Image source={{ uri: item.icon }} style={styles.avatar} />
+              )}
               <View style={styles.info}>
                 <Text allowFontScaling={false} style={styles.name}>{item.name}</Text>
                 <Text allowFontScaling={false} style={styles.desc}>{item.description}</Text>

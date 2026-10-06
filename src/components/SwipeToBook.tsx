@@ -60,7 +60,7 @@ export default function SwipeToBook({ onSwipeComplete, disabled }: Props) {
 
   return (
     <View style={[styles.track, disabled && styles.disabled]}>
-      <Animated.Text style={[styles.label, labelOpacity]}>Swipe to Book</Animated.Text>
+      <Animated.Text style={[styles.label, labelOpacity]}>Confirm Appointment</Animated.Text>
       <GestureDetector gesture={pan}>
         <Animated.View style={[styles.thumb, thumbStyle]}>
           <ArrowRightBlue width={SIZE(26)} height={SIZE(26)} />

@@ -41,7 +41,7 @@ export default function HospitalDetailScreen() {
   const navigation = useNavigation<Nav>();
   const { params } = useRoute<Route>();
   const { id, name, specialty, location } = params;
-  const [tab, setTab] = useState<'Doctors' | 'Details'>('Doctors');
+  const [tab, setTab] = useState<'Doctors' | 'Details' | 'Facilities'>('Doctors');
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
   const [specialtiesExpanded, setSpecialtiesExpanded] = useState(false);
@@ -267,6 +267,22 @@ export default function HospitalDetailScreen() {
               </Text>
               {tab === 'Details' && <View style={styles.tabUnderline} />}
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setTab('Facilities')}
+              style={styles.tab}
+              activeOpacity={0.8}
+            >
+              <Text
+                allowFontScaling={false}
+                style={[
+                  styles.tabText,
+                  tab === 'Facilities' && styles.tabTextActive,
+                ]}
+              >
+                Facilities
+              </Text>
+              {tab === 'Facilities' && <View style={styles.tabUnderline} />}
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -278,7 +294,7 @@ export default function HospitalDetailScreen() {
             <View key={doc.id} style={styles.doctorCardWrapper}>
               <DoctorCard
                 name={doc.name}
-                type={doc.specialties[0]?.name ?? ''}
+                type={doc.specialties.map((s: { name: string }) => s.name).join(', ')}
                 experience={
                   doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''
                 }
@@ -304,6 +320,16 @@ export default function HospitalDetailScreen() {
             {displayClinic.about || 'No details available.'}
           </Text>
         )}
+
+        {!loading && tab === 'Facilities' && (
+          <View style={styles.comingSoonContainer}>
+            <Text allowFontScaling={false} style={styles.comingSoonTitle}>Coming Soon</Text>
+            <Text allowFontScaling={false} style={styles.comingSoonSubtitle}>
+              Facilities information will be available here soon.
+            </Text>
+          </View>
+        )}
+
       </Animated.ScrollView>
     </View>
   );
@@ -446,4 +472,29 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     padding: SIZE(16),
   },
+  comingSoonContainer: {
+    alignItems: 'center',
+    paddingTop: SIZE(40),
+    paddingHorizontal: SIZE(24),
+  },
+  comingSoonEmoji: {
+    fontSize: SIZE(48),
+    marginBottom: SIZE(16),
+  },
+  comingSoonTitle: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(15),
+    color: colors.textPrimary,
+    opacity: 0.6,
+    marginBottom: SIZE(6),
+  },
+  comingSoonSubtitle: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.subText,
+    opacity: 0.6,
+    textAlign: 'center',
+    lineHeight: SIZE(18),
+  },
 });
+

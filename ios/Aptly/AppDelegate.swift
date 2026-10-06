@@ -4,6 +4,8 @@ import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import Firebase
 import FirebaseAuth
+import FirebaseMessaging
+import UserNotifications
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,6 +22,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     #if targetEnvironment(simulator)
     Auth.auth().settings?.isAppVerificationDisabledForTesting = true
     #endif
+
+    // Configure UNUserNotificationCenter for Notifee
+    UNUserNotificationCenter.current().delegate = self
+
+    // Register for remote notifications (required for FCM token)
+    application.registerForRemoteNotifications()
 
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)
@@ -41,6 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     Auth.auth().setAPNSToken(deviceToken, type: .unknown)
+    Messaging.messaging().apnsToken = deviceToken
   }
 
   func application(_ application: UIApplication, didReceiveRemoteNotification notification: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
@@ -72,6 +81,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     // Forward to React Native's Linking API so the JS layer can handle navigation.
     return RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
+  }
+}
+
+// MARK: - UNUserNotificationCenterDelegate (Notifee)
+extension AppDelegate: UNUserNotificationCenterDelegate {
+  // Show notification banners when app is in the foreground
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    completionHandler([.banner, .badge, .sound])
   }
 }
 

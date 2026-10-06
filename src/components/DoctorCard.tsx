@@ -95,7 +95,7 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
             </View>
             <View style={styles.cardTopInfo}>
               <Text allowFontScaling={false} style={styles.primaryText}>{name}</Text>
-              <Text allowFontScaling={false} style={styles.secondaryText}>{type}</Text>
+              <Text allowFontScaling={false} style={styles.secondaryText} numberOfLines={1} ellipsizeMode="tail">{type}</Text>
             </View>
             <ArrowRight width={SIZE(18)} height={SIZE(18)} />
           </View>
@@ -132,7 +132,7 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
           </View>
         </View>
         <View style={styles.cardFooter}>
-          <Text allowFontScaling={false} style={styles.bookingTime}>{label}</Text>
+          <Text allowFontScaling={false} style={styles.bookingTime} numberOfLines={1} ellipsizeMode="tail">{label}</Text>
           <View style={[styles.statusBadge, { backgroundColor: s.bg }]}>
             <View style={[styles.statusDot, { backgroundColor: s.dot }]} />
             <Text allowFontScaling={false} style={[styles.statusText, { color: s.text }]}>{s.label}</Text>
@@ -264,7 +264,6 @@ const styles = StyleSheet.create({
   cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: colors.cardBorder,
     paddingVertical: SIZE(8),
     paddingHorizontal: SIZE(14),
@@ -275,6 +274,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
     color: colors.textPrimary,
+    flex: 1,
+    marginRight: SIZE(8),
   },
   statusBadge: {
     flexDirection: 'row',
@@ -284,6 +285,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(8),
     paddingVertical: SIZE(4),
     borderRadius: SIZE(20),
+    flexShrink: 0,
   },
   statusDot: {
     width: SIZE(6),

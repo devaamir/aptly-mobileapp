@@ -185,7 +185,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
         </View>
         <View style={styles.divider} />
         <View style={styles.statusBar}>
-          <Text allowFontScaling={false} style={styles.bookingTime}>
+          <Text allowFontScaling={false} style={styles.bookingTime} numberOfLines={1} ellipsizeMode="tail">
             {todaySessions.length ? `Available: ${todaySessions.map(s => `${to12h(s.startTime)} - ${to12h(s.stopTime)}`).join(', ')}` : 'No sessions this day'}
           </Text>
           <View style={styles.statusRight}>
@@ -267,24 +267,10 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
         </ScrollView>
 
         <View style={styles.stickyFooter}>
-          {/* <SwipeToBook
-            disabled={!selectedPatient}
-            onSwipeComplete={() => {
-              navigation.navigate('BookingConfirmed', {
-                token: Math.floor(Math.random() * 90) + 10,
-                doctorName: name,
-                hospital,
-                date: DAYS[selectedDay].dateMonth,
-              });
-            }}
-          /> */}
-          <TouchableOpacity
-            style={[styles.getTokenBtn, (!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })) && styles.getTokenBtnDisabled]}
+          <SwipeToBook
             disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
-            activeOpacity={0.8}
-            onPress={handleGetToken}>
-            <Text allowFontScaling={false} style={styles.getTokenBtnText}>{loading ? 'Booking...' : 'Book Appointment'}</Text>
-          </TouchableOpacity>
+            onSwipeComplete={handleGetToken}
+          />
         </View>
       </SafeAreaView>
 
@@ -378,7 +364,6 @@ const styles = StyleSheet.create({
   statusBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: colors.cardBorder,
     paddingHorizontal: SIZE(18),
     paddingVertical: SIZE(10),
@@ -387,11 +372,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(11),
     color: colors.textSecondary,
+    flex: 1,
+    marginRight: SIZE(8),
   },
   statusRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(6),
+    flexShrink: 0,
   },
   statusBadge: {
     flexDirection: 'row',

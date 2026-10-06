@@ -40,13 +40,19 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
     const filterSpecialtyId = allSpecialties.find(s => appliedFilters.specialties?.includes(s.name))?.id;
     const medicalSystemId = medicalSystems.find(s => appliedFilters.type?.includes(s.name))?.id;
     const baseFilters = { specialtyId: filterSpecialtyId ?? id, latitude: location.latitude, longitude: location.longitude, radius: distance };
+    const fallbackFilters = {
+      specialtyId: filterSpecialtyId ?? id,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      ...(medicalSystemId ? { medicalSystemId } : {}),
+    };
     Promise.all([
       getClinics(1, 20, { ...baseFilters, ...(medicalSystemId ? { medicalSystemId } : {}) }),
       getDoctors(1, 20, { ...baseFilters, ...(medicalSystemId ? { medicalSystemId } : {}) }),
     ]).then(([clinicRes, doctorRes]) => {
       setClinics(clinicRes.data);
       if (clinicRes.data.length === 0) {
-        getClinics(1, 20).then(r => setFallbackClinics(r.data)).catch(() => {});
+        getClinics(1, 20, fallbackFilters).then(r => setFallbackClinics(r.data)).catch(() => {});
       } else {
         setFallbackClinics([]);
       }
@@ -54,7 +60,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
     }).then(fullDoctors => {
       setDoctors(fullDoctors);
       if (fullDoctors.length === 0) {
-        getDoctors(1, 20)
+        getDoctors(1, 20, fallbackFilters)
           .then(r => Promise.all(r.data.map(d => getDoctor(d.id).then(x => x.data))))
           .then(setFallbackDoctors)
           .catch(() => {});

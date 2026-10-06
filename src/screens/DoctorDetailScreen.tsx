@@ -109,7 +109,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
   }
 
   const hospital = doctor.medicalCenters[0];
-  const specialty = doctor.specialties[0]?.name ?? '';
+  const specialty = doctor.specialties.map(s => s.name).join(', ');
   const qualifications = doctor.qualifications.map(q => q.name).join(', ');
   const aboutFull = doctor.about ?? '';
   const aboutShort = aboutFull.slice(0, 160) + (aboutFull.length > 160 ? '...' : '');

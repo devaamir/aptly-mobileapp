@@ -49,9 +49,6 @@ import {
   getHomeData,
   IS_DEV,
   getClinics,
-  getClinic,
-  Specialty,
-  Doctor,
   Clinic,
   Appointment,
 } from '../services/api';
@@ -65,9 +62,6 @@ const ListHeader = ({
   onspecialstPress,
   onDoctorsPress,
   onClinicsPress,
-  specialties,
-  doctors,
-  totalDoctorCount,
   spotlightAppt,
   activeAppointments,
   hasNearbyClinics,
@@ -81,9 +75,6 @@ const ListHeader = ({
   onspecialstPress: () => void;
   onDoctorsPress: () => void;
   onClinicsPress: () => void;
-  specialties: Specialty[];
-  doctors: Doctor[];
-  totalDoctorCount: number;
   spotlightAppt: Appointment | null;
   activeAppointments: Appointment[];
   hasNearbyClinics: boolean;
@@ -463,6 +454,38 @@ const ListHeader = ({
           />
         </TouchableOpacity>
       </View>
+      <View style={styles.cardsRow}>
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={1}
+        >
+          <Text allowFontScaling={false} style={styles.cardTitle}>
+            Facilities
+          </Text>
+          <Text allowFontScaling={false} style={styles.comingSoonText}>
+            Coming soon
+          </Text>
+          <Image
+            source={require('../assets/images/facilities-image.png')}
+            style={styles.cardImageShifted}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={1}
+        >
+          <Text allowFontScaling={false} style={styles.cardTitle}>
+            Labs & Scans
+          </Text>
+          <Text allowFontScaling={false} style={styles.comingSoonText}>
+            Coming soon
+          </Text>
+          <Image
+            source={require('../assets/images/labs-icon.png')}
+            style={styles.cardImageShifted}
+          />
+        </TouchableOpacity>
+      </View>
       {/* Recommended for You section — temporarily disabled
       <>
         <View style={styles.sectionHeader}>
@@ -618,10 +641,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
   const { location, ready, loadingLocation, distance } = useLocation();
   const { startTracking, stopTracking, trackData } = useTracking();
-  const [specialties, setSpecialties] = useState<Specialty[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [clinics, setClinics] = useState<Clinic[]>([]);
-  const [totalDoctorCount, setTotalDoctorCount] = useState(0);
   const [spotlightAppt, setSpotlightAppt] = useState<Appointment | null>(null);
   const [activeAppointments, setActiveAppointments] = useState<Appointment[]>(
     [],
@@ -632,44 +652,53 @@ export default function HomeScreen() {
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [fallbackClinics, setFallbackClinics] = useState<Clinic[]>([]);
 
-  const fetchData = (isRefresh = false) => {
+  const fetchData = (isRefresh = false, trigger: string = 'unknown') => {
     if (isRefresh) {
       setRefreshing(true);
       setLoading(true);
     }
+    if (IS_DEV) console.log('[HomeScreen] fetchData START', { trigger, isRefresh, location: location ? { lat: location.latitude, lon: location.longitude } : null, distance });
     const nearbyPromise = location
-      ? getClinics(1, 20, { latitude: location.latitude, longitude: location.longitude, radius: distance })
-          .then(res => Promise.all(res.data.map(c => getClinic(c.id).then(r => r.data))))
+      ? (() => {
+          if (IS_DEV) console.log('[HomeScreen] getClinics (nearby) REQUEST', { lat: location.latitude, lon: location.longitude, radius: distance });
+          return getClinics(1, 20, { latitude: location.latitude, longitude: location.longitude, radius: distance })
+            .then(res => {
+              if (IS_DEV) console.log('[HomeScreen] getClinics (nearby) RESPONSE', { count: res.data.length });
+              return res.data;
+            });
+        })()
       : Promise.resolve([] as Clinic[]);
+    if (IS_DEV) console.log('[HomeScreen] getHomeData REQUEST', { lat: location?.latitude, lon: location?.longitude });
+    if (IS_DEV) console.log('[HomeScreen] getClinics (fallback) REQUEST', { page: 1, limit: 20 });
     Promise.all([
       getHomeData(location?.latitude, location?.longitude),
       nearbyPromise,
-      getClinics(1, 20).then(res =>
-        Promise.all(res.data.map(c => getClinic(c.id).then(r => r.data))),
-      ),
+      getClinics(1, 20).then(res => {
+        if (IS_DEV) console.log('[HomeScreen] getClinics (fallback) RESPONSE', { count: res.data.length });
+        return res.data;
+      }),
     ])
       .then(([homeRes, nearbyClinics, fullClinics]) => {
-        if (IS_DEV) console.log(fullClinics);
-        handleHomeData(homeRes);
+        if (IS_DEV) console.log('[HomeScreen] getHomeData RESPONSE', { appointmentsCount: homeRes.data.appointments?.length });
+        if (IS_DEV) console.log('[HomeScreen] fetchData SUCCESS', { trigger, nearbyClinicsCount: nearbyClinics.length, fallbackClinicsCount: fullClinics.length, appointmentsCount: homeRes.data.appointments?.length });
+        handleAppointments(homeRes.data.appointments ?? []);
         setClinics(nearbyClinics);
         setFallbackClinics(fullClinics);
       })
-      .catch(() => {})
+      .catch(err => {
+        if (IS_DEV) console.error('[HomeScreen] fetchData ERROR', err);
+      })
       .finally(() => {
         setLoading(false);
         setRefreshing(false);
       });
   };
 
-  const handleHomeData = (res: { success: boolean; data: any }) => {
-    if (IS_DEV) console.log(res.data);
-
-    setSpecialties(res.data.specialties);
-    setDoctors(res.data.doctors as Doctor[]);
-    setTotalDoctorCount(res.data.totalDoctorCount);
+  const handleAppointments = (appointments: Appointment[]) => {
+    if (IS_DEV) console.log('[HomeScreen] getHomeData RESPONSE', { appointmentsCount: appointments.length });
     const today = new Date().toISOString().split('T')[0];
     const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-    const active = (res.data.appointments ?? []).filter(
+    const active = (appointments ?? []).filter(
       a => a.tokenStatus === 'pending' || a.tokenStatus === 'ongoing',
     );
     const live = active.find(a => {
@@ -689,7 +718,11 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    if (ready) fetchData();
+    if (!ready) return;
+    const timer = setTimeout(() => {
+      fetchData(false, 'useEffect[ready/location/distance]');
+    }, 300);
+    return () => clearTimeout(timer);
   }, [ready, location?.latitude, location?.longitude, distance]);
 
   useEffect(() => {
@@ -718,21 +751,37 @@ export default function HomeScreen() {
         if (!ready) return;
         const loc = locationRef.current;
         const dist = distanceRef.current;
+        if (IS_DEV) console.log('[HomeScreen] focus refresh START', { location: loc ? { lat: loc.latitude, lon: loc.longitude } : null, distance: dist });
         const nearbyPromise = loc
-          ? getClinics(1, 20, { latitude: loc.latitude, longitude: loc.longitude, radius: dist })
-              .then(res => Promise.all(res.data.map(c => getClinic(c.id).then(r => r.data))))
+          ? (() => {
+              if (IS_DEV) console.log('[HomeScreen] getClinics (nearby/focus) REQUEST', { lat: loc.latitude, lon: loc.longitude, radius: dist });
+              return getClinics(1, 20, { latitude: loc.latitude, longitude: loc.longitude, radius: dist })
+                .then(res => {
+                  if (IS_DEV) console.log('[HomeScreen] getClinics (nearby/focus) RESPONSE', { count: res.data.length });
+                  return res.data;
+                });
+            })()
           : Promise.resolve([] as Clinic[]);
+        if (IS_DEV) console.log('[HomeScreen] getHomeData (focus) REQUEST', { lat: loc?.latitude, lon: loc?.longitude });
+        if (IS_DEV) console.log('[HomeScreen] getClinics (fallback/focus) REQUEST', { page: 1, limit: 20 });
         Promise.all([
           getHomeData(loc?.latitude, loc?.longitude),
           nearbyPromise,
-          getClinics(1, 20),
+          getClinics(1, 20).then(res => {
+            if (IS_DEV) console.log('[HomeScreen] getClinics (fallback/focus) RESPONSE', { count: res.data.length });
+            return res.data;
+          }),
         ])
-          .then(([homeRes, nearbyClinics, clinicsRes]) => {
-            handleHomeData(homeRes);
+          .then(([homeRes, nearbyClinics, fallbackClinicsData]) => {
+            if (IS_DEV) console.log('[HomeScreen] getHomeData (focus) RESPONSE', { appointmentsCount: homeRes.data.appointments?.length });
+            if (IS_DEV) console.log('[HomeScreen] focus refresh SUCCESS', { nearbyClinicsCount: nearbyClinics.length, fallbackClinicsCount: fallbackClinicsData.length });
+            handleAppointments(homeRes.data.appointments ?? []);
             setClinics(nearbyClinics);
-            setFallbackClinics(clinicsRes.data);
+            setFallbackClinics(fallbackClinicsData);
           })
-          .catch(() => {})
+          .catch(err => {
+            if (IS_DEV) console.error('[HomeScreen] focus refresh ERROR', err);
+          })
           .finally(() => {
             setLoading(false);
             setRefreshing(false);
@@ -849,7 +898,7 @@ export default function HomeScreen() {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={() => fetchData(true)}
+              onRefresh={() => fetchData(true, 'pull-to-refresh')}
               colors={[colors.primary]}
               tintColor={colors.primary}
             />
@@ -937,9 +986,6 @@ export default function HomeScreen() {
               onspecialstPress={() => navigation.navigate('specialst')}
               onDoctorsPress={() => navigation.navigate('Doctors')}
               onClinicsPress={() => navigation.navigate('Clinics')}
-              specialties={specialties}
-              doctors={doctors}
-              totalDoctorCount={totalDoctorCount}
               spotlightAppt={spotlightAppt}
               activeAppointments={activeAppointments}
               hasNearbyClinics={clinics.length > 0}
@@ -1591,7 +1637,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: SIZE(18),
     gap: SIZE(12),
-    marginBottom: SIZE(20),
+    marginBottom: SIZE(8),
   },
   card: {
     flex: 1,
@@ -1612,6 +1658,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
   },
+  cardImageShifted: {
+    width: SIZE(92),
+    height: SIZE(92),
+    resizeMode: 'contain',
+    position: 'absolute',
+    bottom: 0,
+    right: -10,
+  },
   leftView: {
     width: '60%',
     justifyContent: 'space-between',
@@ -1628,6 +1682,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(13),
     color: colors.accent,
+  },
+  comingSoonText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(13),
+    color: colors.subText,
+    opacity: 0.5,
   },
   cardTitle: {
     fontFamily: 'Manrope-SemiBold',

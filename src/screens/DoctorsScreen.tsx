@@ -37,7 +37,6 @@ const DAYS = [
   'saturday',
 ];
 
-
 export default function DoctorsScreen({ navigation }: Props) {
   const { location: userLocation, distance, setDistance } = useLocation();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -146,15 +145,24 @@ export default function DoctorsScreen({ navigation }: Props) {
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchDoctors(true)} colors={[colors.primary]} tintColor={colors.primary} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => fetchDoctors(true)}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
           renderItem={({ item }) => {
-            const specialty = item.specialties[0]?.name ?? '';
+            const specialty = item.specialties.map(s => s.name).join(', ');
             const hospital = item.medicalCenters[0]?.name ?? '';
             const clinicType = item.medicalCenters[0]?.type ?? '';
             const location = item.medicalCenters[0]
               ? `${item.medicalCenters[0].address}`
               : '';
-            const allSchedules = item.medicalCenters.flatMap(mc => mc.schedules ?? []);
+            const allSchedules = item.medicalCenters.flatMap(
+              mc => mc.schedules ?? [],
+            );
             const today = DAYS[new Date().getDay()];
             const todaySchedule = allSchedules.find(s => s.dayOfWeek === today);
             const nextSchedule = todaySchedule ?? allSchedules[0];
@@ -183,7 +191,10 @@ export default function DoctorsScreen({ navigation }: Props) {
                   navigation.navigate('DoctorDetail', { doctorId: item.id })
                 }
                 onBookPress={() =>
-                  navigation.navigate('BookAppointment', { doctor: item, clinicId: item.medicalCenters[0]?.id })
+                  navigation.navigate('BookAppointment', {
+                    doctor: item,
+                    clinicId: item.medicalCenters[0]?.id,
+                  })
                 }
               />
             );
@@ -233,15 +244,19 @@ export default function DoctorsScreen({ navigation }: Props) {
                 </Text>
               )}
               {fallbackDoctors.map(item => {
-                const specialty = item.specialties[0]?.name ?? '';
+                const specialty = item.specialties.map(s => s.name).join(', ');
                 const hospital = item.medicalCenters[0]?.name ?? '';
                 const clinicType = item.medicalCenters[0]?.type ?? '';
                 const location = item.medicalCenters[0]
                   ? `${item.medicalCenters[0].address}`
                   : '';
-                const allSchedules = item.medicalCenters.flatMap(mc => mc.schedules ?? []);
+                const allSchedules = item.medicalCenters.flatMap(
+                  mc => mc.schedules ?? [],
+                );
                 const today = DAYS[new Date().getDay()];
-                const todaySchedule = allSchedules.find(s => s.dayOfWeek === today);
+                const todaySchedule = allSchedules.find(
+                  s => s.dayOfWeek === today,
+                );
                 const nextSchedule = todaySchedule ?? allSchedules[0];
                 return (
                   <View key={item.id} style={styles.fallbackItem}>
@@ -266,7 +281,9 @@ export default function DoctorsScreen({ navigation }: Props) {
                       image={item.profilePicture}
                       nextSchedule={nextSchedule}
                       onPress={() =>
-                        navigation.navigate('DoctorDetail', { doctorId: item.id })
+                        navigation.navigate('DoctorDetail', {
+                          doctorId: item.id,
+                        })
                       }
                       onBookPress={() =>
                         navigation.navigate('BookAppointment', {

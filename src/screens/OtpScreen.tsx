@@ -9,6 +9,7 @@ import {
   Alert,
   TouchableWithoutFeedback,
   Keyboard,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -22,6 +23,7 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import { RootStackParamList } from '../navigations/Navigation';
 import { verifyOtp, sendOtp, isBypassPhone } from '../services/api';
+import { registerDevice } from '../services/NotificationService';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -36,8 +38,23 @@ export default function OtpScreen() {
   const [otp, setOtp] = useState<string[]>(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(60);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const { height: screenHeight } = useWindowDimensions();
   const inputs = useRef<(TextInput | null)[]>([]);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (timer === 0) return;
@@ -119,6 +136,7 @@ export default function OtpScreen() {
         dateOfBirth: patient?.dateOfBirth ?? '',
       });
       initLocation();
+      registerDevice(); // non-blocking — fire and forget
       navigation.reset({
         index: 0,
         routes: [
@@ -136,11 +154,15 @@ export default function OtpScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { height: screenHeight - keyboardHeight },
+      ]}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
       <TouchableOpacity
         onPress={() => navigation.goBack()}
-        style={styles.backButton}
+        style={[styles.backButton, keyboardHeight > 0 && styles.backButtonCompact]}
       >
         <BackArrow width={SIZE(24)} height={SIZE(24)} />
       </TouchableOpacity>
@@ -205,14 +227,18 @@ export default function OtpScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.white,
     paddingHorizontal: SIZE(25),
+    overflow: 'hidden',
   },
   backButton: {
     marginTop: SIZE(17),
     marginBottom: SIZE(38),
     alignSelf: 'flex-start',
+  },
+  backButtonCompact: {
+    marginTop: SIZE(10),
+    marginBottom: SIZE(16),
   },
   title: {
     fontFamily: 'Manrope-ExtraBold',

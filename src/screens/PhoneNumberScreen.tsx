@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
+  useWindowDimensions,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { sendOtp } from '../services/api';
@@ -32,9 +33,24 @@ type RootStackParamList = {
 export default function PhoneNumberScreen() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const { height: screenHeight } = useWindowDimensions();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { initLocation } = useLocation();
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleContinue = async () => {
     try {
@@ -50,7 +66,11 @@ export default function PhoneNumberScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView
+        style={[
+          styles.container,
+          { height: screenHeight - keyboardHeight },
+        ]}>
         <StatusBar
           backgroundColor={colors.textPrimary}
           barStyle="dark-content"
@@ -69,7 +89,10 @@ export default function PhoneNumberScreen() {
         </TouchableOpacity>
         <Image
           source={require('../assets/images/aptly-logo2.png')}
-          style={styles.logo}
+          style={[
+            styles.logo,
+            keyboardHeight > 0 && styles.logoCompact,
+          ]}
         />
         <Text allowFontScaling={false} style={styles.title}>
           Welcome Back!
@@ -116,9 +139,9 @@ export default function PhoneNumberScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.white,
     paddingHorizontal: SIZE(25),
+    overflow: 'hidden',
   },
   skipButton: {
     alignSelf: 'flex-end',
@@ -135,6 +158,10 @@ const styles = StyleSheet.create({
     marginTop: SIZE(127),
     marginBottom: SIZE(75),
     alignSelf: 'center',
+  },
+  logoCompact: {
+    marginTop: SIZE(24),
+    marginBottom: SIZE(24),
   },
   title: {
     fontFamily: 'Manrope-ExtraBold',
