@@ -24,7 +24,6 @@ import PatientSelector from '../components/PatientSelector';
 import BottomModal from '../components/BottomModal';
 import AppInput from '../components/AppInput';
 import AppDropdown from '../components/AppDropdown';
-import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
 import { createAppointment, getPatients, addPatient, getDoctorSchedule, Patient } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -32,16 +31,6 @@ import { Schedule } from '../services/api';
 
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookAppointment'>;
-
-const DAYS = Array.from({ length: 30 }, (_, i) => {
-  const d = new Date();
-  d.setDate(d.getDate() + i);
-  return {
-    weekday: d.toLocaleDateString('en-US', { weekday: 'short' }),
-    dateMonth: `${d.getDate()} ${d.toLocaleDateString('en-US', { month: 'short' })}`,
-    full: d,
-  };
-});
 
 const WEEK_DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 const to12h = (time: string) => {
@@ -54,6 +43,15 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
   const relevantCenters = clinicId
     ? doctor.medicalCenters.filter(mc => mc.id === clinicId)
     : doctor.medicalCenters;
+  const DAYS = Array.from({ length: doctor.advanceBookingLimit || 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return {
+      weekday: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      dateMonth: `${d.getDate()} ${d.toLocaleDateString('en-US', { month: 'short' })}`,
+      full: d,
+    };
+  });
   const { user } = useAuth();
   const [selectedDay, setSelectedDay] = useState(0);
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
@@ -71,19 +69,20 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
   const [memberName, setMemberName] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
   const [memberGender, setMemberGender] = useState('');
-  const [memberDob, setMemberDob] = useState<Date | null>(null);
+  const [memberAge, setMemberAge] = useState('');
   const [addingMember, setAddingMember] = useState(false);
 
   const handleAddMember = async () => {
-    if (!memberName || !memberPhone || !memberGender || !memberDob) return;
+    if (!memberName || !memberPhone || !memberGender || !(parseInt(memberAge) > 0 && parseInt(memberAge) < 120)) return;
     try {
       setAddingMember(true);
-      await addPatient(memberName, memberPhone, memberGender.toLowerCase(), memberDob.toISOString().split('T')[0]);
+      const dateOfBirth = `${new Date().getFullYear() - parseInt(memberAge)}-01-01`;
+      await addPatient(memberName, memberPhone, memberGender.toLowerCase(), dateOfBirth);
       const res = await getPatients();
       const valid = res.data.filter(p => !!p.name);
       setPatients(valid);
       setShowAddMember(false);
-      setMemberName(''); setMemberPhone(''); setMemberGender(''); setMemberDob(null);
+      setMemberName(''); setMemberPhone(''); setMemberGender(''); setMemberAge('');
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to add member');
     } finally {
@@ -311,13 +310,13 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             <AppInput value={memberPhone} onChangeText={setMemberPhone} placeholder="Phone number" keyboardType="phone-pad" prefix="+91" />
             <View style={styles.memberRow}>
               <View style={{ flex: 1 }}><AppDropdown options={['Male', 'Female']} value={memberGender} onSelect={setMemberGender} placeholder="Gender" /></View>
-              <View style={{ flex: 1 }}><AppDatePicker value={memberDob} onChange={setMemberDob} placeholder="Date of birth" disableFuture /></View>
+              <View style={{ flex: 1 }}><AppInput value={memberAge} onChangeText={text => setMemberAge(text.replace(/[^0-9]/g, ''))} placeholder="Age" keyboardType="numeric" maxLength={3} /></View>
             </View>
           </View>
           <PrimaryButton
             label="Continue"
             onPress={handleAddMember}
-            disabled={!memberName || !memberPhone || !memberGender || !memberDob || addingMember}
+            disabled={!memberName || !memberPhone || !memberGender || !(parseInt(memberAge) > 0 && parseInt(memberAge) < 120) || addingMember}
             loading={addingMember}
           />
         </KeyboardAvoidingView>

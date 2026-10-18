@@ -21,6 +21,8 @@ import {
   LinearGradient as SvgLinearGradient,
   Stop,
   Rect,
+  Circle,
+  Path,
 } from 'react-native-svg';
 import Geolocation from '@react-native-community/geolocation';
 import { useLocation } from '../context/LocationContext';
@@ -85,14 +87,39 @@ const ListHeader = ({
   userLocation: { latitude: number; longitude: number } | null;
 }) => {
   const { currentToken, prevToken, nextToken } = useTracking();
-  const today = new Date().toISOString().split('T')[0];
-  const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+  const { width: screenWidth } = useWindowDimensions();
+  const [completedAt, setCompletedAt] = useState<Record<string, number>>({});
+  const _now = new Date();
+  const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
+  const nowMins = _now.getHours() * 60 + _now.getMinutes();
   const to12h = (t: string) => {
     const [h, m] = t.split(':').map(Number);
     return `${h % 12 || 12}:${String(m).padStart(2, '0')}${
       h >= 12 ? 'pm' : 'am'
     }`;
   };
+
+  useEffect(() => {
+    activeAppointments.forEach(appt => {
+      const live = trackData?.appointments.find(
+        t => t.tokenNumber === appt.tokenNumber,
+      );
+      const status = live?.tokenStatus ?? appt.tokenStatus;
+      if (status === 'completed' || status === 'done') {
+        setCompletedAt(prev => {
+          if (prev[appt.id] !== undefined) return prev;
+          setTimeout(() => {
+            setCompletedAt(p => {
+              const next = { ...p };
+              delete next[appt.id];
+              return next;
+            });
+          }, 10000);
+          return { ...prev, [appt.id]: Date.now() };
+        });
+      }
+    });
+  }, [trackData, activeAppointments]);
 
   const renderBannerCard = (appt: Appointment) => {
     const sseToken = trackData?.appointments.find(
@@ -108,6 +135,15 @@ const ListHeader = ({
           .map(Number);
         return nowMins >= sh * 60 + sm;
       })();
+
+    const isMyTurn =
+      apptIsLive &&
+      currentToken !== null &&
+      currentToken === appt.tokenNumber;
+    const sseStatus = sseToken?.tokenStatus ?? appt.tokenStatus;
+    const isRecentlyCompleted =
+      (sseStatus === 'completed' || sseStatus === 'done') &&
+      completedAt[appt.id] !== undefined;
     const apptToken = appt.tokenNumber ?? 0;
     const apptConsultMins = appt.doctor?.estimateConsultationTime ?? 15;
     const tokensAhead = apptIsLive
@@ -137,7 +173,7 @@ const ListHeader = ({
           activeAppointments.length > 1 && styles.bannerCardMulti,
         ]}
       >
-        {apptIsLive && (
+        {apptIsLive && !isMyTurn && !isRecentlyCompleted && (
           <Video
             source={require('../assets/images/background-video.mp4')}
             style={StyleSheet.absoluteFill}
@@ -147,6 +183,32 @@ const ListHeader = ({
             disableFocus
             pointerEvents="none"
           />
+        )}
+        {(isMyTurn || isRecentlyCompleted) && (
+          <Svg
+            style={StyleSheet.absoluteFill}
+            width={screenWidth}
+            height={323}
+            pointerEvents="none"
+          >
+            <Defs>
+              <SvgLinearGradient
+                id={`turn-${appt.id}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <Stop offset="0" stopColor="#4EAD5C" stopOpacity="1" />
+                <Stop offset="1" stopColor="#256B3A" stopOpacity="1" />
+              </SvgLinearGradient>
+            </Defs>
+            <Rect
+              width={screenWidth}
+              height={323}
+              fill={`url(#turn-${appt.id})`}
+            />
+          </Svg>
         )}
         {isSkipped && (
           <Image
@@ -159,94 +221,130 @@ const ListHeader = ({
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => onTokenPress(appt)}
+          style={isRecentlyCompleted ? styles.completedTouchable : undefined}
         >
           <View
             style={[
               styles.livebadge,
-              !apptIsLive && { backgroundColor: colors.badgeBg },
+              isSkipped && { backgroundColor: '#F23838' },
             ]}
           >
             <View
               style={[
                 styles.greenDot,
                 !apptIsLive && { backgroundColor: colors.primaryAccent },
+                isSkipped && { backgroundColor: colors.white },
               ]}
             />
             <Text
               allowFontScaling={false}
               style={[
                 styles.liveText,
-                !apptIsLive && { color: colors.textPrimary },
+                isSkipped && { color: colors.white },
               ]}
             >
-              {isSkipped ? 'Skipped' : apptIsLive ? 'Live' : 'Upcoming'}
+              {isSkipped ? 'Skipped' : isRecentlyCompleted ? 'Completed' : apptIsLive ? 'Live' : 'Upcoming'}
             </Text>
           </View>
-          <View style={styles.tokenCenter}>
-            <Text
-              allowFontScaling={false}
-              style={[
-                styles.tokenLabel,
-                !apptIsLive && {
-                  color: colors.textPrimary,
-                  marginTop: SIZE(20),
-                },
-              ]}
-            >
-              Your Token
-            </Text>
-            <Text
-              allowFontScaling={false}
-              style={[
-                styles.tokenNumber,
-                !apptIsLive && { color: colors.black },
-              ]}
-            >
-              {apptToken || '--'}
-            </Text>
-            {apptEstTime && (
-              <Text
-                allowFontScaling={false}
-                style={[
-                  styles.tokenEst,
-                  !apptIsLive && { color: colors.textSecondary },
-                ]}
-              >
-                {apptIsLive ? `Estimated ${apptEstTime}` : 'Scheduled for'}
-              </Text>
-            )}
-            {!apptIsLive && appt.appointmentDate && (
-              <Text allowFontScaling={false} style={styles.scheduledDate}>
-                {new Date(appt.appointmentDate).toLocaleDateString('en-US', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-                {appt.schedule
-                  ? `, ${to12h(appt.schedule.startTime)} - ${to12h(
-                      appt.schedule.stopTime,
-                    )}`
-                  : ''}
-              </Text>
-            )}
-            {apptIsLive && (
-              <View style={styles.tokenRow}>
-                <View style={styles.tokenSide}>
-                  <Text allowFontScaling={false} style={styles.tokenSideNum}>
-                    {prevToken ?? ''}
+          <View style={[styles.tokenCenter, isRecentlyCompleted && styles.tokenCenterCompleted]}>
+            {isRecentlyCompleted ? (
+              <>
+                <Svg
+                  width={SIZE(60)}
+                  height={SIZE(60)}
+                  viewBox="0 0 60 60"
+                  pointerEvents="none"
+                >
+                  <Circle
+                    cx="30"
+                    cy="30"
+                    r="30"
+                    fill="rgba(255,255,255,0.2)"
+                  />
+                  <Path
+                    d="M18 30 L26 38 L42 22"
+                    stroke="#FFFFFF"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </Svg>
+                <Text
+                  allowFontScaling={false}
+                  style={styles.completedText}
+                >
+                  Consultation Completed
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.tokenLabel,
+                    !apptIsLive && {
+                      color: colors.textPrimary,
+                      marginTop: SIZE(20),
+                    },
+                  ]}
+                >
+                  Your Token
+                </Text>
+                <Text
+                  allowFontScaling={false}
+                  style={[
+                    styles.tokenNumber,
+                    !apptIsLive && { color: colors.black },
+                  ]}
+                >
+                  {apptToken || '--'}
+                </Text>
+                {apptEstTime && (
+                  <Text
+                    allowFontScaling={false}
+                    style={[
+                      styles.tokenEst,
+                      !apptIsLive && { color: colors.textSecondary },
+                    ]}
+                  >
+                    {apptIsLive ? `Estimated ${apptEstTime}` : 'Scheduled for'}
                   </Text>
-                </View>
-                <View style={styles.tokenCurrent}>
-                  <Text allowFontScaling={false} style={styles.tokenCurrentNum}>
-                    {currentToken ?? ''}
+                )}
+                {!apptIsLive && appt.appointmentDate && (
+                  <Text allowFontScaling={false} style={styles.scheduledDate}>
+                    {new Date(appt.appointmentDate).toLocaleDateString('en-US', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                    {appt.schedule
+                      ? `, ${to12h(appt.schedule.startTime)} - ${to12h(
+                          appt.schedule.stopTime,
+                        )}`
+                      : ''}
                   </Text>
-                </View>
-                <View style={styles.tokenSide}>
-                  <Text allowFontScaling={false} style={styles.tokenSideNum}>
-                    {nextToken ?? ''}
-                  </Text>
-                </View>
-              </View>
+                )}
+                {apptIsLive && (
+                  <View style={styles.tokenRow}>
+                    <View style={styles.tokenSide}>
+                      <Text allowFontScaling={false} style={styles.tokenSideNum}>
+                        {prevToken ?? ''}
+                      </Text>
+                    </View>
+                    <View style={styles.tokenCurrent}>
+                      <Text allowFontScaling={false} style={styles.tokenCurrentNum}>
+                        {currentToken ?? ''}
+                      </Text>
+                    </View>
+                    <View style={styles.tokenSide}>
+                      <Text allowFontScaling={false} style={styles.tokenSideNum}>
+                        {nextToken ?? ''}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </>
             )}
           </View>
         </TouchableOpacity>
@@ -382,9 +480,20 @@ const ListHeader = ({
     );
   };
 
-  const visibleAppointments = activeAppointments.filter(a => !isDone(a));
-  const visibleSpotlight =
-    spotlightAppt && !isDone(spotlightAppt) ? spotlightAppt : null;
+  const now = Date.now();
+  const visibleAppointments = activeAppointments.filter(a => {
+    if (!isDone(a)) return true;
+    const doneAt = completedAt[a.id];
+    return doneAt !== undefined && now - doneAt < 10000;
+  });
+  const visibleSpotlight = spotlightAppt
+    ? isDone(spotlightAppt)
+      ? completedAt[spotlightAppt.id] !== undefined &&
+        now - completedAt[spotlightAppt.id] < 10000
+        ? spotlightAppt
+        : null
+      : spotlightAppt
+    : null;
 
   return (
     <>
@@ -398,6 +507,8 @@ const ListHeader = ({
         >
           {visibleAppointments.map(renderBannerCard)}
         </ScrollView>
+      ) : visibleAppointments.length === 1 ? (
+        renderBannerCard(visibleAppointments[0])
       ) : (
         visibleSpotlight && renderBannerCard(visibleSpotlight)
       )}
@@ -696,8 +807,9 @@ export default function HomeScreen() {
 
   const handleAppointments = (appointments: Appointment[]) => {
     if (IS_DEV) console.log('[HomeScreen] getHomeData RESPONSE', { appointmentsCount: appointments.length });
-    const today = new Date().toISOString().split('T')[0];
-    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+    const _nt = new Date();
+    const today = `${_nt.getFullYear()}-${String(_nt.getMonth() + 1).padStart(2, '0')}-${String(_nt.getDate()).padStart(2, '0')}`;
+    const nowMins = _nt.getHours() * 60 + _nt.getMinutes();
     const active = (appointments ?? []).filter(
       a => a.tokenStatus === 'pending' || a.tokenStatus === 'ongoing',
     );
@@ -730,8 +842,9 @@ export default function HomeScreen() {
       stopTracking();
       return;
     }
-    const today = new Date().toISOString().split('T')[0];
-    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+    const _ns = new Date();
+    const today = `${_ns.getFullYear()}-${String(_ns.getMonth() + 1).padStart(2, '0')}-${String(_ns.getDate()).padStart(2, '0')}`;
+    const nowMins = _ns.getHours() * 60 + _ns.getMinutes();
     const [sh, sm] = (spotlightAppt.schedule?.startTime ?? '')
       .split(':')
       .map(Number);
@@ -1488,7 +1601,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: colors.white20,
+    backgroundColor: colors.white,
     borderRadius: SIZE(20),
     paddingHorizontal: SIZE(10),
     paddingVertical: SIZE(4),
@@ -1503,7 +1616,7 @@ const styles = StyleSheet.create({
   liveText: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(12),
-    color: colors.white,
+    color: colors.black,
   },
   tokenCenter: {
     alignItems: 'center',
@@ -1511,10 +1624,25 @@ const styles = StyleSheet.create({
     gap: SIZE(6),
     paddingVertical: SIZE(8),
   },
+  completedTouchable: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  tokenCenterCompleted: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: 0,
+  },
   tokenLabel: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(12),
     color: colors.borderMuted,
+  },
+  completedText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.white,
+    marginTop: SIZE(8),
   },
   tokenNumber: {
     fontFamily: 'Manrope-SemiBold',

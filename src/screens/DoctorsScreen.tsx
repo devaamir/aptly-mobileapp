@@ -21,7 +21,7 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
-import { getDoctors, getDoctor, Doctor } from '../services/api';
+import { getDoctors, Doctor } from '../services/api';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
 
@@ -43,15 +43,30 @@ export default function DoctorsScreen({ navigation }: Props) {
   const [fallbackDoctors, setFallbackDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState<
     Record<string, string[]>
   >({ specialties: [], availability: [], type: [] });
 
-  const fetchDoctors = (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
+  const fetchDoctors = (pageNum: number, isRefresh = false) => {
+    console.log('[DoctorsScreen] fetchDoctors called', {
+      pageNum,
+      isRefresh,
+      userLocation: userLocation
+        ? { latitude: userLocation.latitude, longitude: userLocation.longitude }
+        : null,
+      distance,
+    });
+    if (pageNum === 1) {
+      if (isRefresh) setRefreshing(true);
+      else setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
     getDoctors(
-      1,
+      pageNum,
       20,
       userLocation
         ? {
@@ -61,32 +76,56 @@ export default function DoctorsScreen({ navigation }: Props) {
           }
         : undefined,
     )
-      .then(res =>
-        Promise.all(res.data.map(d => getDoctor(d.id).then(r => r.data))),
-      )
-      .then(results => {
-        setDoctors(results);
-        if (results.length === 0) {
-          // Fetch all doctors without location filter as fallback
-          getDoctors(1, 20)
-            .then(res =>
-              Promise.all(res.data.map(d => getDoctor(d.id).then(r => r.data))),
-            )
-            .then(setFallbackDoctors)
-            .catch(() => {});
+      .then(res => {
+        console.log('[DoctorsScreen] getDoctors response — count:', res.data.length, 'page:', pageNum);
+        if (pageNum === 1) {
+          setDoctors(res.data);
         } else {
+          setDoctors(prev => [...prev, ...res.data]);
+        }
+        setHasMore(res.pagination.hasNextPage);
+        setPage(pageNum);
+        if (pageNum === 1 && res.data.length === 0) {
+          console.log('[DoctorsScreen] no doctors in radius, fetching fallback list');
+          getDoctors(1, 10)
+            .then(fb => {
+              console.log('[DoctorsScreen] fallback getDoctors response — count:', fb.data.length);
+              setFallbackDoctors(fb.data);
+            })
+            .catch(err => {
+              console.warn('[DoctorsScreen] fallback fetch error:', err);
+            });
+        } else if (pageNum === 1) {
           setFallbackDoctors([]);
         }
       })
-      .catch(() => {})
+      .catch(err => {
+        console.warn('[DoctorsScreen] fetchDoctors error:', err);
+      })
       .finally(() => {
+        console.log('[DoctorsScreen] fetchDoctors complete');
         setLoading(false);
         setRefreshing(false);
+        setLoadingMore(false);
       });
   };
 
+  const handleLoadMore = () => {
+    if (!loadingMore && !loading && hasMore && doctors.length > 0) {
+      fetchDoctors(page + 1);
+    }
+  };
+
   useEffect(() => {
-    fetchDoctors();
+    console.log('[DoctorsScreen] location/distance changed — re-fetching', {
+      userLocation: userLocation
+        ? { latitude: userLocation.latitude, longitude: userLocation.longitude }
+        : null,
+      distance,
+    });
+    setPage(1);
+    setHasMore(true);
+    fetchDoctors(1);
   }, [userLocation, distance]);
 
   return (
@@ -148,10 +187,24 @@ export default function DoctorsScreen({ navigation }: Props) {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={() => fetchDoctors(true)}
+              onRefresh={() => {
+                setPage(1);
+                setHasMore(true);
+                fetchDoctors(1, true);
+              }}
               colors={[colors.primary]}
               tintColor={colors.primary}
             />
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator
+                style={{ marginVertical: SIZE(16) }}
+                color={colors.primary}
+              />
+            ) : null
           }
           renderItem={({ item }) => {
             const specialty = item.specialties.map(s => s.name).join(', ');

@@ -1,6 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import Video from 'react-native-video';
+import {
+  Svg,
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Stop,
+  Rect,
+} from 'react-native-svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import ArrowRight from '../assets/icons/arrow-right.svg';
@@ -39,6 +46,7 @@ export default function AppointmentCard({
   clinicAvatar,
 }: Props) {
   const { currentToken, prevToken, nextToken } = useTracking();
+  const isMyTurn = status === 'Live' && currentToken !== null && currentToken === token;
   const s = statusColors[status];
   return (
     <View style={styles.card}>
@@ -91,22 +99,40 @@ export default function AppointmentCard({
       </View>
       {status === 'Live' && (
         <View style={styles.tokenCard}>
-          <Video
-            source={require('../assets/images/background-video.mp4')}
-            style={{
-              width: SIZE(580),
-              height: SIZE(100),
-              borderRadius: SIZE(10),
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              bottom: 0,
-              right: 0,
-            }}
-            resizeMode="cover"
-            repeat
-            muted
-          />
+          {!isMyTurn && (
+            <Video
+              source={require('../assets/images/background-video.mp4')}
+              style={{
+                width: SIZE(580),
+                height: SIZE(100),
+                borderRadius: SIZE(10),
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                bottom: 0,
+                right: 0,
+              }}
+              resizeMode="cover"
+              repeat
+              muted
+            />
+          )}
+          {isMyTurn && (
+            <Svg
+              style={StyleSheet.absoluteFill}
+              width={SIZE(580)}
+              height={SIZE(100)}
+              pointerEvents="none"
+            >
+              <Defs>
+                <SvgLinearGradient id="turn-card" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor="#4EAD5C" stopOpacity="1" />
+                  <Stop offset="1" stopColor="#256B3A" stopOpacity="1" />
+                </SvgLinearGradient>
+              </Defs>
+              <Rect width={SIZE(580)} height={SIZE(100)} fill="url(#turn-card)" />
+            </Svg>
+          )}
           <Text
             allowFontScaling={false}
             style={[styles.tokenLabel, styles.tokenLabelLive]}

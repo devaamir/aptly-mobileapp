@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppDropdown from '../components/AppDropdown';
-import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
 import BottomModal from '../components/BottomModal';
 import BackArrow from '../assets/icons/back-arrows.svg';
@@ -15,7 +14,6 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import AppInput from '../components/AppInput';
 import { createPatient, updatePatient } from '../services/api';
-import dayjs from 'dayjs';
 import { useAuth } from '../context/AuthContext';
 
 export default function CreateProfileScreen() {
@@ -26,10 +24,10 @@ export default function CreateProfileScreen() {
   const { initLocation } = useLocation();
   const [name, setName] = useState(isEdit ? (user?.name ?? '') : '');
   const [gender, setGender] = useState(isEdit ? (user?.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : '') : '');
-  const [dob, setDob] = useState<Date | null>(() => {
-    if (!isEdit || !user?.dateOfBirth) return null;
-    const [y, m, d] = user.dateOfBirth.split('-').map(Number);
-    return new Date(y, m - 1, d);
+  const [age, setAge] = useState(() => {
+    if (!isEdit || !user?.dateOfBirth) return '';
+    const birthYear = parseInt(user.dateOfBirth.split('-')[0]);
+    return String(new Date().getFullYear() - birthYear);
   });
   const [loading, setLoading] = useState(false);
   const [activeField, setActiveField] = useState<'name' | 'gender' | 'dob' | null>(null);
@@ -40,12 +38,12 @@ export default function CreateProfileScreen() {
     setCancelVisible(true);
   };
 
-  const isValid = !!name && !!gender && !!dob;
+  const isValid = !!name && !!gender && (!!age && parseInt(age) > 0 && parseInt(age) < 120);
 
   const handleContinue = async () => {
     try {
       setLoading(true);
-      const dateOfBirth = dayjs(dob).format('YYYY-MM-DD');
+      const dateOfBirth = `${new Date().getFullYear() - parseInt(age)}-01-01`;
       const genderLower = gender.toLowerCase();
       let patientId: string;
       if (isEdit && user?.patientId) {
@@ -75,7 +73,7 @@ export default function CreateProfileScreen() {
       </TouchableOpacity>
 
       <Text allowFontScaling={false} style={styles.title}>{isEdit ? 'Edit Profile' : 'Welcome to APTLY'}</Text>
-      <Text allowFontScaling={false} style={styles.subtitle}>{isEdit ? 'Update your name, gender and date of birth.' : 'Create your profile to book appointments, track tokens, and manage your clinic visits easily.'}</Text>
+      <Text allowFontScaling={false} style={styles.subtitle}>{isEdit ? 'Update your name, gender and age.' : 'Create your profile to book appointments, track tokens, and manage your clinic visits easily.'}</Text>
 
       <AppInput
         value={name}
@@ -97,14 +95,15 @@ export default function CreateProfileScreen() {
           />
         </View>
         <View style={styles.rowItem}>
-          <AppDatePicker
-            value={dob}
-            onChange={setDob}
-            placeholder="Date of birth"
+          <AppInput
+            value={age}
+            onChangeText={(text) => setAge(text.replace(/[^0-9]/g, ''))}
+            placeholder="Age"
+            keyboardType="numeric"
+            maxLength={3}
             focused={activeField === 'dob'}
-            onOpen={() => setActiveField('dob')}
-            onClose={() => setActiveField(null)}
-            disableFuture
+            onFocus={() => setActiveField('dob')}
+            onBlur={() => setActiveField(null)}
           />
         </View>
       </View>

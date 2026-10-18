@@ -5,8 +5,16 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
+  useWindowDimensions,
 } from 'react-native';
 import Video from 'react-native-video';
+import {
+  Svg,
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Stop,
+  Rect,
+} from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -40,21 +48,23 @@ const to12h = (t: string) => {
 export default function TokenDetailScreen({ navigation, route }: Props) {
   const { appointment: appt } = route.params;
   const { trackData, currentToken, prevToken, nextToken } = useTracking();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [cancelVisible, setCancelVisible] = useState(false);
 
   const isLive = appt
     ? (() => {
-        const today = new Date().toISOString().split('T')[0];
-        if (appt.appointmentDate !== today || appt.tokenStatus !== 'pending')
-          return false;
-        const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-        const [sh, sm] = (appt.schedule?.startTime ?? '')
-          .split(':')
-          .map(Number);
+        const _n = new Date();
+        const today = `${_n.getFullYear()}-${String(_n.getMonth() + 1).padStart(2, '0')}-${String(_n.getDate()).padStart(2, '0')}`;
+        if (appt.appointmentDate.split('T')[0] !== today) return false;
+        const nowMins = _n.getHours() * 60 + _n.getMinutes();
+        const [sh, sm] = (appt.schedule?.startTime ?? '').split(':').map(Number);
         const [eh, em] = (appt.schedule?.stopTime ?? '').split(':').map(Number);
         return nowMins >= sh * 60 + sm && nowMins <= eh * 60 + em;
       })()
     : false;
+
+  const isMyTurn =
+    isLive && currentToken !== null && currentToken === appt?.tokenNumber;
 
   // Use live SSE data when available
   const liveAppt = trackData?.appointments.find(a => a.id === appt.id);
@@ -89,14 +99,15 @@ export default function TokenDetailScreen({ navigation, route }: Props) {
       style={[
         styles.container,
         !isLive && { backgroundColor: colors.upcomingCardBg },
+        isMyTurn && { backgroundColor: '#256B3A' },
       ]}
       edges={['top', 'bottom']}
     >
       <StatusBar
         barStyle={isLive ? 'light-content' : 'dark-content'}
-        backgroundColor={isLive ? colors.primary : colors.upcomingCardBg}
+        backgroundColor={isMyTurn ? '#256B3A' : isLive ? colors.primary : colors.upcomingCardBg}
       />
-      {isLive && (
+      {isLive && !isMyTurn && (
         <Video
           source={require('../assets/images/background-video.mp4')}
           style={StyleSheet.absoluteFill}
@@ -106,6 +117,22 @@ export default function TokenDetailScreen({ navigation, route }: Props) {
           disableFocus
           pointerEvents="none"
         />
+      )}
+      {isMyTurn && (
+        <Svg
+          style={StyleSheet.absoluteFill}
+          width={screenWidth}
+          height={screenHeight}
+          pointerEvents="none"
+        >
+          <Defs>
+            <SvgLinearGradient id="turn-detail" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#4EAD5C" stopOpacity="1" />
+              <Stop offset="1" stopColor="#256B3A" stopOpacity="1" />
+            </SvgLinearGradient>
+          </Defs>
+          <Rect width={screenWidth} height={screenHeight} fill="url(#turn-detail)" />
+        </Svg>
       )}
 
       {/* TOP */}

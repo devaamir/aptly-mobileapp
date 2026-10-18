@@ -17,11 +17,9 @@ import PatientSelector from '../components/PatientSelector';
 import BottomModal from '../components/BottomModal';
 import AppInput from '../components/AppInput';
 import AppDropdown from '../components/AppDropdown';
-import AppDatePicker from '../components/AppDatePicker';
 import PrimaryButton from '../components/PrimaryButton';
 import { addPatient, updatePatient, deletePatient, getPatients, Patient } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import dayjs from 'dayjs';
 
 export default function FamilyMembersScreen() {
   const navigation = useNavigation();
@@ -31,14 +29,14 @@ export default function FamilyMembersScreen() {
   const [memberPhone, setMemberPhone] = useState('');
   const [memberPhoneTouched, setMemberPhoneTouched] = useState(false);
   const [memberGender, setMemberGender] = useState('');
-  const [memberDob, setMemberDob] = useState<Date | null>(null);
+  const [memberAge, setMemberAge] = useState('');
   const [addingMember, setAddingMember] = useState(false);
 
   const [showEditMember, setShowEditMember] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [editName, setEditName] = useState('');
   const [editGender, setEditGender] = useState('');
-  const [editDob, setEditDob] = useState<Date | null>(null);
+  const [editAge, setEditAge] = useState('');
   const [savingMember, setSavingMember] = useState(false);
 
   const openEdit = (id: string) => {
@@ -47,7 +45,7 @@ export default function FamilyMembersScreen() {
     setEditingPatient(patient);
     setEditName(patient.name);
     setEditGender(patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : '');
-    setEditDob(patient.dateOfBirth ? new Date(patient.dateOfBirth) : null);
+    setEditAge(patient.dateOfBirth ? String(new Date().getFullYear() - parseInt(patient.dateOfBirth.split('-')[0])) : '');
     setShowEditMember(true);
   };
 
@@ -68,10 +66,11 @@ export default function FamilyMembersScreen() {
   };
 
   const handleEditMember = async () => {
-    if (!editingPatient || !editName || !editGender || !editDob) return;
+    if (!editingPatient || !editName || !editGender || !editAge) return;
     try {
       setSavingMember(true);
-      await updatePatient(editingPatient.id, editName, editGender.toLowerCase(), dayjs(editDob).format('YYYY-MM-DD'));
+      const dateOfBirth = `${new Date().getFullYear() - parseInt(editAge)}-01-01`;
+      await updatePatient(editingPatient.id, editName, editGender.toLowerCase(), dateOfBirth);
       const res = await getPatients();
       setPatients(res.data.filter(p => !!p.name));
       setShowEditMember(false);
@@ -96,14 +95,15 @@ export default function FamilyMembersScreen() {
   }, []));
 
   const handleAddMember = async () => {
-    if (!memberName || !memberPhone || !memberGender || !memberDob) return;
+    if (!memberName || !memberPhone || !memberGender || !memberAge) return;
     try {
       setAddingMember(true);
-      await addPatient(memberName, memberPhone, memberGender.toLowerCase(), dayjs(memberDob).format('YYYY-MM-DD'));
+      const dateOfBirth = `${new Date().getFullYear() - parseInt(memberAge)}-01-01`;
+      await addPatient(memberName, memberPhone, memberGender.toLowerCase(), dateOfBirth);
       const res = await getPatients();
       setPatients(res.data.filter(p => !!p.name));
       setShowAddMember(false);
-      setMemberName(''); setMemberPhone(''); setMemberPhoneTouched(false); setMemberGender(''); setMemberDob(null);
+      setMemberName(''); setMemberPhone(''); setMemberPhoneTouched(false); setMemberGender(''); setMemberAge('');
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to add member');
     } finally {
@@ -177,14 +177,20 @@ export default function FamilyMembersScreen() {
                 <AppDropdown options={['Male', 'Female']} value={memberGender} onSelect={setMemberGender} placeholder="Gender" />
               </View>
               <View style={{ flex: 1 }}>
-                <AppDatePicker value={memberDob} onChange={setMemberDob} placeholder="Date of birth" disableFuture />
+                <AppInput
+                  value={memberAge}
+                  onChangeText={(text) => setMemberAge(text.replace(/[^0-9]/g, ''))}
+                  placeholder="Age"
+                  keyboardType="numeric"
+                  maxLength={3}
+                />
               </View>
             </View>
           </View>
           <PrimaryButton
             label="Continue"
             onPress={handleAddMember}
-            disabled={!memberName || !isPhoneValid || !memberGender || !memberDob || addingMember}
+            disabled={!memberName || !isPhoneValid || !memberGender || !(parseInt(memberAge) > 0 && parseInt(memberAge) < 120) || addingMember}
             loading={addingMember}
           />
         </KeyboardAvoidingView>
@@ -199,14 +205,20 @@ export default function FamilyMembersScreen() {
                 <AppDropdown options={['Male', 'Female']} value={editGender} onSelect={setEditGender} placeholder="Gender" />
               </View>
               <View style={{ flex: 1 }}>
-                <AppDatePicker value={editDob} onChange={setEditDob} placeholder="Date of birth" disableFuture />
+                <AppInput
+                  value={editAge}
+                  onChangeText={(text) => setEditAge(text.replace(/[^0-9]/g, ''))}
+                  placeholder="Age"
+                  keyboardType="numeric"
+                  maxLength={3}
+                />
               </View>
             </View>
           </View>
           <PrimaryButton
             label="Save"
             onPress={handleEditMember}
-            disabled={!editName || !editGender || !editDob || savingMember}
+            disabled={!editName || !editGender || !(parseInt(editAge) > 0 && parseInt(editAge) < 120) || savingMember}
             loading={savingMember}
           />
         </KeyboardAvoidingView>

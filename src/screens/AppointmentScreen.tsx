@@ -91,14 +91,12 @@ export default function AppointmentScreen() {
     }, []),
   );
 
-  const today = new Date().toISOString().split('T')[0];
+  const _td = new Date();
+  const today = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`;
   const filtered = appointments.filter(a => {
     const mapped = statusMap[a.tokenStatus] ?? 'Upcoming';
     if (tab === 'Upcoming') {
-      return (
-        (mapped === 'Upcoming' || mapped === 'Live') &&
-        a.appointmentDate >= today
-      );
+      return (mapped === 'Upcoming' || mapped === 'Live') && a.appointmentDate.split('T')[0] >= today;
     }
     return mapped === tab;
   });
@@ -174,9 +172,10 @@ export default function AppointmentScreen() {
               a => a.id === item.id,
             );
             const isLive = () => {
-              const today = new Date().toISOString().split('T')[0];
+              const _n = new Date();
+              const todayLocal = `${_n.getFullYear()}-${String(_n.getMonth() + 1).padStart(2, '0')}-${String(_n.getDate()).padStart(2, '0')}`;
               if (
-                item.appointmentDate !== today ||
+                item.appointmentDate.split('T')[0] !== todayLocal ||
                 item.tokenStatus !== 'pending'
               )
                 return false;
