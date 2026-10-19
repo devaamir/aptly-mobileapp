@@ -61,6 +61,12 @@ export const setTokenRefreshCallback = (cb: typeof onTokenRefreshed) => {
   onTokenRefreshed = cb;
 };
 
+// Called when refresh token is expired/invalid — app should force logout
+let onSessionExpired: (() => void) | null = null;
+export const setSessionExpiredCallback = (cb: () => void) => {
+  onSessionExpired = cb;
+};
+
 // Queue for requests that arrive while a token refresh is in progress
 let isRefreshing = false;
 let refreshPromise: Promise<string> | null = null;
@@ -128,6 +134,7 @@ api.interceptors.response.use(
         if (!refreshToken) {
           if (IS_DEV)
             console.log('[Token] No refresh token found — cannot refresh');
+          onSessionExpired?.();
           throw error?.response?.data || error;
         }
 
@@ -157,6 +164,7 @@ api.interceptors.response.use(
       })()
         .catch(refreshError => {
           processQueue(refreshError, null);
+          onSessionExpired?.();
           throw refreshError;
         })
         .finally(() => {

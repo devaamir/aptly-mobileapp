@@ -781,7 +781,7 @@ export default function HomeScreen() {
       : Promise.resolve([] as Clinic[]);
     if (IS_DEV) console.log('[HomeScreen] getHomeData REQUEST', { lat: location?.latitude, lon: location?.longitude });
     if (IS_DEV) console.log('[HomeScreen] getClinics (fallback) REQUEST', { page: 1, limit: 20 });
-    Promise.all([
+    Promise.allSettled([
       getHomeData(location?.latitude, location?.longitude),
       nearbyPromise,
       getClinics(1, 20).then(res => {
@@ -789,15 +789,24 @@ export default function HomeScreen() {
         return res.data;
       }),
     ])
-      .then(([homeRes, nearbyClinics, fullClinics]) => {
-        if (IS_DEV) console.log('[HomeScreen] getHomeData RESPONSE', { appointmentsCount: homeRes.data.appointments?.length });
-        if (IS_DEV) console.log('[HomeScreen] fetchData SUCCESS', { trigger, nearbyClinicsCount: nearbyClinics.length, fallbackClinicsCount: fullClinics.length, appointmentsCount: homeRes.data.appointments?.length });
-        handleAppointments(homeRes.data.appointments ?? []);
-        setClinics(nearbyClinics);
-        setFallbackClinics(fullClinics);
-      })
-      .catch(err => {
-        if (IS_DEV) console.error('[HomeScreen] fetchData ERROR', err);
+      .then(([homeResult, nearbyResult, fallbackResult]) => {
+        if (homeResult.status === 'fulfilled') {
+          if (IS_DEV) console.log('[HomeScreen] getHomeData RESPONSE', { appointmentsCount: homeResult.value.data.appointments?.length });
+          handleAppointments(homeResult.value.data.appointments ?? []);
+        } else {
+          if (IS_DEV) console.error('[HomeScreen] getHomeData ERROR', homeResult.reason);
+        }
+        if (nearbyResult.status === 'fulfilled') {
+          setClinics(nearbyResult.value);
+        } else {
+          if (IS_DEV) console.error('[HomeScreen] getClinics (nearby) ERROR', nearbyResult.reason);
+        }
+        if (fallbackResult.status === 'fulfilled') {
+          setFallbackClinics(fallbackResult.value);
+        } else {
+          if (IS_DEV) console.error('[HomeScreen] getClinics (fallback) ERROR', fallbackResult.reason);
+        }
+        if (IS_DEV) console.log('[HomeScreen] fetchData SETTLED', { trigger, homeOk: homeResult.status === 'fulfilled', nearbyOk: nearbyResult.status === 'fulfilled', fallbackOk: fallbackResult.status === 'fulfilled' });
       })
       .finally(() => {
         setLoading(false);
@@ -877,7 +886,7 @@ export default function HomeScreen() {
           : Promise.resolve([] as Clinic[]);
         if (IS_DEV) console.log('[HomeScreen] getHomeData (focus) REQUEST', { lat: loc?.latitude, lon: loc?.longitude });
         if (IS_DEV) console.log('[HomeScreen] getClinics (fallback/focus) REQUEST', { page: 1, limit: 20 });
-        Promise.all([
+        Promise.allSettled([
           getHomeData(loc?.latitude, loc?.longitude),
           nearbyPromise,
           getClinics(1, 20).then(res => {
@@ -885,15 +894,24 @@ export default function HomeScreen() {
             return res.data;
           }),
         ])
-          .then(([homeRes, nearbyClinics, fallbackClinicsData]) => {
-            if (IS_DEV) console.log('[HomeScreen] getHomeData (focus) RESPONSE', { appointmentsCount: homeRes.data.appointments?.length });
-            if (IS_DEV) console.log('[HomeScreen] focus refresh SUCCESS', { nearbyClinicsCount: nearbyClinics.length, fallbackClinicsCount: fallbackClinicsData.length });
-            handleAppointments(homeRes.data.appointments ?? []);
-            setClinics(nearbyClinics);
-            setFallbackClinics(fallbackClinicsData);
-          })
-          .catch(err => {
-            if (IS_DEV) console.error('[HomeScreen] focus refresh ERROR', err);
+          .then(([homeResult, nearbyResult, fallbackResult]) => {
+            if (homeResult.status === 'fulfilled') {
+              if (IS_DEV) console.log('[HomeScreen] getHomeData (focus) RESPONSE', { appointmentsCount: homeResult.value.data.appointments?.length });
+              handleAppointments(homeResult.value.data.appointments ?? []);
+            } else {
+              if (IS_DEV) console.error('[HomeScreen] getHomeData (focus) ERROR', homeResult.reason);
+            }
+            if (nearbyResult.status === 'fulfilled') {
+              setClinics(nearbyResult.value);
+            } else {
+              if (IS_DEV) console.error('[HomeScreen] getClinics (nearby/focus) ERROR', nearbyResult.reason);
+            }
+            if (fallbackResult.status === 'fulfilled') {
+              setFallbackClinics(fallbackResult.value);
+            } else {
+              if (IS_DEV) console.error('[HomeScreen] getClinics (fallback/focus) ERROR', fallbackResult.reason);
+            }
+            if (IS_DEV) console.log('[HomeScreen] focus refresh SETTLED', { homeOk: homeResult.status === 'fulfilled', nearbyOk: nearbyResult.status === 'fulfilled', fallbackOk: fallbackResult.status === 'fulfilled' });
           })
           .finally(() => {
             setLoading(false);

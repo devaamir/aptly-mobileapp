@@ -341,7 +341,7 @@
 				CODE_SIGN_ENTITLEMENTS = Aptly/Aptly.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_TEAM = 4MMGBFP3KS;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Aptly/Info.plist;
@@ -352,7 +352,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.6;
+				MARKETING_VERSION = 1.1.7;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -381,7 +381,7 @@
 				CODE_SIGN_ENTITLEMENTS = Aptly/Aptly.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_TEAM = 4MMGBFP3KS;
 				INFOPLIST_FILE = Aptly/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Aptly Care";
@@ -391,7 +391,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.6;
+				MARKETING_VERSION = 1.1.7;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
