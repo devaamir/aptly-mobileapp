@@ -83,8 +83,8 @@ android {
         applicationId "com.aptly.aptlycareapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode project.hasProperty('versionCode') ? project.versionCode.toInteger() : 8
-        versionName "1.1.4"
+        versionCode project.hasProperty('versionCode') ? project.versionCode.toInteger() : 9
+        versionName "1.1.6"
     }
     signingConfigs {
         release 
