@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, Platform } from 'react-native';
+import { Image, Platform, useWindowDimensions } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import AppointmentScreen from '../screens/AppointmentScreen';
@@ -22,6 +22,8 @@ const ICON_SIZE = SIZE(24);
 export default function BottomTabNavigator() {
   const { user } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const { width: screenWidth } = useWindowDimensions();
+  const isDesktop = screenWidth >= 768;
 
   return (
     <>
@@ -31,7 +33,13 @@ export default function BottomTabNavigator() {
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.textSecondary,
           tabBarLabelStyle: { fontFamily: 'Manrope-Medium', fontSize: SIZE(11) },
-          tabBarStyle: { borderTopColor: colors.border, backgroundColor: colors.white, ...(Platform.OS === 'web' && { height: 80, paddingBottom: 8 }) },
+          tabBarStyle: isDesktop
+            ? { display: 'none' }
+            : {
+                borderTopColor: colors.border,
+                backgroundColor: colors.white,
+                ...(Platform.OS === 'web' && { height: 80, paddingBottom: 8 }),
+              },
         }}>
         <Tab.Screen
           name="Home"
@@ -49,7 +57,6 @@ export default function BottomTabNavigator() {
           listeners={{
             tabPress: e => {
               if (!user) {
-                // Block navigation and show the login modal instead
                 e.preventDefault();
                 setShowLoginModal(true);
               }

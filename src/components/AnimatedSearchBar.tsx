@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Animated, StyleSheet } from 'react-native';
+import { View, Text, Animated, StyleSheet, ViewStyle } from 'react-native';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
@@ -15,7 +15,7 @@ const SEARCH_TERMS = [
   '"orthopedic"',
 ];
 
-export default function AnimatedSearchBar() {
+export default function AnimatedSearchBar({ style }: { style?: ViewStyle }) {
   const [displayTerm, setDisplayTerm] = useState(SEARCH_TERMS[0]);
   const currentIndexRef = useRef(0);
   const letterOpacitiesRef = useRef<Animated.Value[]>(
@@ -50,7 +50,7 @@ export default function AnimatedSearchBar() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <View style={styles.textRow}>
         <Text allowFontScaling={false} style={styles.staticText}>Search </Text>
         {displayTerm.split('').map((letter, i) => (

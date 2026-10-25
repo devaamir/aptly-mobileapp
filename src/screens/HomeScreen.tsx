@@ -29,8 +29,9 @@ import { getDistance } from '../utils/getDistance';
 import { useTracking } from '../context/TrackingContext';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useNavigationState } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList } from '../navigations/Navigation';
 import SearchBar from '../components/SearchBar';
 import AnimatedSearchBar from '../components/AnimatedSearchBar';
@@ -56,6 +57,8 @@ import {
 } from '../services/api';
 import PrimaryButton from '../components/PrimaryButton';
 import { usePWAInstall } from '../utils/usePWAInstall';
+import { useAuth } from '../context/AuthContext';
+import LoginModal from '../components/LoginModal';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -522,6 +525,44 @@ const ListHeader = ({
         </ScrollView>
       ) : visibleAppointments.length === 1 ? (
         renderBannerCard(visibleAppointments[0])
+      ) : screenWidth < 768 ? (
+        <View style={styles.mobilePromoBanner}>
+          <View style={styles.promoBadge}>
+            <View style={styles.promoGreenDot} />
+            <Text allowFontScaling={false} style={styles.promoBadgeText}>
+              Live token
+            </Text>
+          </View>
+          <Text allowFontScaling={false} style={styles.promoTitle}>
+            Track your token{'\n'}live in the Aptly app
+          </Text>
+          <Text allowFontScaling={false} style={styles.promoDesc}>
+            Your token number, estimated time and queue status update in real
+            time, and they are accurate only in the mobile app.
+          </Text>
+          <View style={styles.promoButtons}>
+            <TouchableOpacity
+              style={styles.promoBtn}
+              activeOpacity={0.8}
+              onPress={() => Linking.openURL('https://apps.apple.com/in/app/aptly-care/id6798915670')}
+            >
+              <AppStoreIcon width={20} height={20} />
+              <Text allowFontScaling={false} style={styles.promoBtnText}>
+                App Store
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.promoBtn}
+              activeOpacity={0.8}
+              onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.aptly.aptlycareapp')}
+            >
+              <GooglePlayIcon width={20} height={20} />
+              <Text allowFontScaling={false} style={styles.promoBtnText}>
+                Google Play
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       ) : (
         visibleSpotlight && renderBannerCard(visibleSpotlight)
       )}
@@ -623,13 +664,21 @@ const ListHeader = ({
               time, and they are accurate only in the mobile app.
             </Text>
             <View style={styles.promoButtons}>
-              <TouchableOpacity style={styles.promoBtn} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.promoBtn}
+                activeOpacity={0.8}
+                onPress={() => Linking.openURL('https://apps.apple.com/in/app/aptly-care/id6798915670')}
+              >
                 <AppStoreIcon width={20} height={20} />
                 <Text allowFontScaling={false} style={styles.promoBtnText}>
                   App Store
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.promoBtn} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.promoBtn}
+                activeOpacity={0.8}
+                onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.aptly.aptlycareapp')}
+              >
                 <GooglePlayIcon width={20} height={20} />
                 <Text allowFontScaling={false} style={styles.promoBtnText}>
                   Google Play
@@ -805,6 +854,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<HomeNavProp>();
   const { location, ready, loadingLocation, distance } = useLocation();
   const { startTracking, stopTracking, trackData } = useTracking();
+  const { user } = useAuth();
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [spotlightAppt, setSpotlightAppt] = useState<Appointment | null>(null);
   const [activeAppointments, setActiveAppointments] = useState<Appointment[]>(
@@ -814,8 +864,15 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { canInstall, isInstalled, install } = usePWAInstall();
   const [showInstallModal, setShowInstallModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [fallbackClinics, setFallbackClinics] = useState<Clinic[]>([]);
-
+  const activeTabName = useNavigationState(state => {
+    const mainRoute = state?.routes?.find(r => r.name === 'Main');
+    const tabState = mainRoute?.state;
+    if (!tabState) return 'Home';
+    const idx = tabState.index ?? 0;
+    return (tabState.routes[idx]?.name as string) ?? 'Home';
+  });
   const fetchData = (isRefresh = false, trigger: string = 'unknown') => {
     if (isRefresh) {
       setRefreshing(true);
@@ -1086,7 +1143,8 @@ export default function HomeScreen() {
     return <SkeletonScreen />;
   } else {
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <>
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <Svg
           style={StyleSheet.absoluteFill}
           width={screenWidth}
@@ -1104,49 +1162,99 @@ export default function HomeScreen() {
         <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.locationBtn}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('LocationSearch')}
-          >
-            <LocationIcon
-              width={SIZE(19)}
-              height={SIZE(19)}
-              style={styles.locationIcon}
-            />
-            <View style={{ maxWidth: SIZE(150) }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: SIZE(4),
-                }}
-              >
-                <Text
-                  allowFontScaling={false}
-                  style={styles.locationText}
-                  numberOfLines={1}
+          <View style={styles.headerLeft}>
+            {screenWidth >= 768 && (
+              <Image
+                source={require('../assets/images/aptly-logo3.png')}
+                style={styles.headerLogo}
+                resizeMode="contain"
+              />
+            )}
+            <TouchableOpacity
+              style={styles.locationBtn}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('LocationSearch')}
+            >
+              <LocationIcon
+                width={SIZE(19)}
+                height={SIZE(19)}
+                style={styles.locationIcon}
+              />
+              <View style={{ maxWidth: SIZE(150) }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: SIZE(4),
+                  }}
                 >
-                  {loadingLocation
-                    ? 'Loading...'
-                    : location
-                    ? location.mainText
-                    : 'Select your location'}
-                </Text>
-                <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
+                  <Text
+                    allowFontScaling={false}
+                    style={styles.locationText}
+                    numberOfLines={1}
+                  >
+                    {loadingLocation
+                      ? 'Loading...'
+                      : location
+                      ? location.mainText
+                      : 'Select your location'}
+                  </Text>
+                  <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
+                </View>
+                {location?.secondaryText ? (
+                  <Text
+                    allowFontScaling={false}
+                    style={styles.locationSub}
+                    numberOfLines={1}
+                  >
+                    {location.secondaryText}
+                  </Text>
+                ) : null}
               </View>
-              {location?.secondaryText ? (
-                <Text
-                  allowFontScaling={false}
-                  style={styles.locationSub}
-                  numberOfLines={1}
-                >
-                  {location.secondaryText}
-                </Text>
-              ) : null}
+            </TouchableOpacity>
+          </View>
+          {screenWidth >= 768 && (
+            <View style={styles.headerCenter}>
+              {(['Home', 'Appointments', 'Profile'] as const).map(tab => {
+                const isActive = activeTabName === tab;
+                return (
+                  <TouchableOpacity
+                    key={tab}
+                    activeOpacity={0.7}
+                    style={styles.headerTab}
+                    onPress={() => {
+                      if (tab === 'Appointments' && !user) {
+                        setShowLoginModal(true);
+                        return;
+                      }
+                      (navigation as any).navigate('Main', { screen: tab });
+                    }}
+                  >
+                    <Text
+                      allowFontScaling={false}
+                      style={[
+                        styles.headerTabText,
+                        isActive && styles.headerTabTextActive,
+                      ]}
+                    >
+                      {tab}
+                    </Text>
+                    {isActive && <View style={styles.headerTabIndicator} />}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          </TouchableOpacity>
+          )}
           <View style={styles.headerRight}>
+            {screenWidth >= 768 && (
+              <TouchableOpacity
+                style={styles.headerSearchWrapper}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('Search')}
+              >
+                <AnimatedSearchBar style={{ height: SIZE(34) }} />
+              </TouchableOpacity>
+            )}
             {Platform.OS === 'web' && !isInstalled && (
               <TouchableOpacity
                 style={styles.installBtn}
@@ -1163,15 +1271,17 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Search - stays fixed */}
-        <View style={styles.searchWrapper}>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate('Search')}
-          >
-            <AnimatedSearchBar />
-          </TouchableOpacity>
-        </View>
+        {/* Search - mobile only */}
+        {screenWidth < 768 && (
+          <View style={styles.searchWrapper}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('Search')}
+            >
+              <AnimatedSearchBar />
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Everything below scrolls */}
         {screenWidth >= 768 ? (
@@ -1761,6 +1871,11 @@ export default function HomeScreen() {
             );
           })()}
       </SafeAreaView>
+      <LoginModal
+        visible={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
+      </>
     );
   }
 }
@@ -1777,6 +1892,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(24),
     paddingVertical: SIZE(8),
     marginBottom: SIZE(10),
+    width: '100%',
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(16),
+  },
+  headerCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(4),
+    position: 'absolute',
+    left: '50%',
+    transform: [{ translateX: -100 }],
+  },
+  headerTab: {
+    paddingHorizontal: SIZE(14),
+    paddingVertical: SIZE(8),
+    alignItems: 'center',
+    position: 'relative',
+  },
+  headerTabText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(14),
+    color: colors.textSecondary,
+  },
+  headerTabTextActive: {
+    fontFamily: 'Manrope-SemiBold',
+    color: colors.primary,
+  },
+  headerTabIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: SIZE(14),
+    right: SIZE(14),
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: colors.primary,
+  },
+  headerLogo: {
+    height: 38,
+    width: 100,
   },
   logo: {
     width: 94,
@@ -1807,9 +1964,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SIZE(8),
   },
+  headerSearchWrapper: {
+    width: 412,
+    height: SIZE(34),
+  },
   installBtn: {
+    height: SIZE(34),
     paddingHorizontal: SIZE(10),
-    paddingVertical: SIZE(6),
     borderWidth: 1,
     borderColor: colors.primary,
     borderRadius: 8,
@@ -2120,10 +2281,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B5BDB',
     borderRadius: SIZE(22),
     padding: SIZE(20),
-    // marginBottom: SIZE(8),
     justifyContent: 'space-between',
-    // gap: SIZE(14),
-    // alignSelf: 'stretch',
+  },
+  mobilePromoBanner: {
+    marginHorizontal: SIZE(18),
+    marginBottom: SIZE(18),
+    backgroundColor: '#3B5BDB',
+    borderRadius: SIZE(18),
+    padding: SIZE(20),
+    gap: SIZE(12),
   },
   promoBadge: {
     flexDirection: 'row',
@@ -2308,6 +2474,9 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: SIZE(24),
     gap: SIZE(12),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
   },
   listContentDesktop: {
     flexDirection: 'row',
