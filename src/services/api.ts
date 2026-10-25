@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   SendOtpResponse,
   VerifyOtpResponse,
-  VerifyFirebaseTokenResponse,
   CreatePatientResponse,
   Specialty,
   MedicalSystem,
@@ -19,7 +18,6 @@ import type {
 export type {
   SendOtpResponse,
   VerifyOtpResponse,
-  VerifyFirebaseTokenResponse,
   CreatePatientResponse,
   Specialty,
   MedicalSystem,
@@ -197,11 +195,6 @@ export const verifyOtp = (
 ): Promise<VerifyOtpResponse> =>
   api.post('/auth/verify-otp', { phoneNumber, code });
 
-export const verifyFirebaseToken = (
-  idToken: string,
-): Promise<VerifyFirebaseTokenResponse> =>
-  api.post('/auth/verify-firebase-token', { idToken });
-
 export const deleteAccount = (): Promise<{
   success: boolean;
   message: string;
@@ -373,16 +366,6 @@ export const createAppointment = (
 
 export const cancelAppointment = (id: string): Promise<{ success: boolean }> =>
   api.patch(`/appointments/${id}/status`, { tokenStatus: 'cancelled' });
-
-export const registerDeviceToken = (
-  token: string,
-  platform: 'ios' | 'android',
-): Promise<{ success: boolean }> => api.post('/devices', { token, platform });
-
-export const unregisterDeviceToken = (
-  token: string,
-): Promise<{ success: boolean }> =>
-  api.delete(`/devices/${encodeURIComponent(token)}`);
 
 export type TrackData = {
   appointments: {

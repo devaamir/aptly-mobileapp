@@ -39,7 +39,6 @@ import {
   getPatients,
   Patient,
 } from '../services/api';
-import { unregisterDevice } from '../services/NotificationService';
 
 const MENU_ITEMS: { section: string; items: string[] }[] = [];
 
@@ -89,7 +88,6 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = async () => {
-    await unregisterDevice(); // must run before clearing the access token
     await AsyncStorage.multiRemove([
       'accessToken',
       'refreshToken',

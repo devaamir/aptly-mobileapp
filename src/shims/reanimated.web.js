@@ -1,1 +1,1 @@
-export * from 'react-native-reanimated/src/reanimated2/index';
+export * from 'react-native-reanimated/lib/module/index';

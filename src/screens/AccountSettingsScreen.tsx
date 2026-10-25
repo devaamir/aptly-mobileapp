@@ -10,7 +10,6 @@ import DeleteIcon from '../assets/icons/delete-icon.svg';
 import BottomModal from '../components/BottomModal';
 import PrimaryButton from '../components/PrimaryButton';
 import { deleteAccount } from '../services/api';
-import { unregisterDevice } from '../services/NotificationService';
 import { useAuth } from '../context/AuthContext';
 
 export default function AccountSettingsScreen() {
@@ -29,7 +28,6 @@ export default function AccountSettingsScreen() {
 
   const confirmDeleteAccount = async () => {
     try {
-      await unregisterDevice(); // must run before clearing the access token
       const response = await deleteAccount();
       Alert.alert('Success', response.message);
       setShowDeleteModal(false);

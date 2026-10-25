@@ -5,10 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  Platform,
-  BackHandler,
 } from 'react-native';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import Sound from 'react-native-sound';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -26,13 +23,6 @@ export default function BookingConfirmedScreen({ navigation, route }: Props) {
     navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
 
   useEffect(() => {
-    // Haptic feedback on booking confirmation
-    const hapticOptions = {
-      enableVibrateFallback: true,
-      ignoreAndroidSystemSettings: false,
-    };
-    ReactNativeHapticFeedback.trigger('notificationSuccess', hapticOptions);
-
     // Play success chime sound
     Sound.setCategory('Playback');
     const chime = new Sound(
@@ -45,14 +35,6 @@ export default function BookingConfirmedScreen({ navigation, route }: Props) {
       },
     );
   }, []);
-
-  useEffect(() => {
-    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      goHome();
-      return true;
-    });
-    return () => sub.remove();
-  }, [navigation]);
 
   return (
     <SafeAreaView style={styles.container}>

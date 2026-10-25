@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
 
 const babelConfig = {
   presets: [
@@ -31,10 +32,10 @@ module.exports = {
       '@react-native-community/geolocation': path.resolve(__dirname, 'src/shims/geolocation.web.js'),
       '@react-native-community/datetimepicker': path.resolve(__dirname, 'src/shims/datetimepicker.web.js'),
       'react-native-svg': path.resolve(__dirname, 'src/shims/svg.web.js'),
-      '@react-native-firebase/app': path.resolve(__dirname, 'src/shims/firebase-app.web.js'),
-      '@react-native-firebase/auth': path.resolve(__dirname, 'src/shims/firebase-auth.web.js'),
       'react-native-video': path.resolve(__dirname, 'src/shims/video.web.js'),
-      'react-native-reanimated': path.resolve(__dirname, 'src/shims/reanimated.web.js'),
+      'react-native-reanimated$': path.resolve(__dirname, 'node_modules/react-native-reanimated/lib/module/index'),
+      'react-native-worklets$': path.resolve(__dirname, 'node_modules/react-native-worklets/lib/module/mock.js'),
+      'react-native-sound': path.resolve(__dirname, 'src/shims/sound.web.js'),
       'react-native-gesture-handler': path.resolve(__dirname, 'src/shims/gesture-handler.web.js'),
       '@react-native-async-storage/async-storage': path.resolve(__dirname, 'node_modules/@react-native-async-storage/async-storage/lib/commonjs/index.js'),
     },
@@ -45,6 +46,13 @@ module.exports = {
       {
         test: /\.js$/,
         include: /node_modules\/@react-navigation/,
+        type: 'javascript/auto',
+        use: { loader: 'babel-loader', options: babelConfig },
+      },
+      // Force CJS modules that use require() to be treated as plain JS
+      {
+        test: /\.js$/,
+        include: /node_modules\/@lottiefiles/,
         type: 'javascript/auto',
         use: { loader: 'babel-loader', options: babelConfig },
       },
@@ -87,6 +95,11 @@ module.exports = {
     ],
   },
   plugins: [
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify({}),
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+      '__DEV__': JSON.stringify(true),
+    }),
     new HtmlWebpackPlugin({ template: './public/index.html' }),
     new CopyWebpackPlugin({
       patterns: [

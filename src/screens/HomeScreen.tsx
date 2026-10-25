@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import LottieView from 'lottie-react-native';
 import {
   View,
   Image,
@@ -38,7 +37,6 @@ import AnimatedSearchBar from '../components/AnimatedSearchBar';
 import ClinicCard from '../components/ClinicCard';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
-import NotificationIcon from '../assets/icons/notification-icon-grey.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import PhoneIcon from '../assets/icons/phone-icon.svg';
@@ -544,17 +542,6 @@ const ListHeader = ({
             <Text allowFontScaling={false} style={styles.cardTitle}>
               Doctors
             </Text>
-            {Platform.OS !== 'ios' && (
-              <LottieView
-                source={require('../assets/images/simple-animation.json')}
-                autoPlay
-                loop
-                style={{
-                  width: SIZE(25),
-                  height: SIZE(25),
-                }}
-              />
-            )}
           </View>
           <Text allowFontScaling={false} style={styles.viewAllText}>
             View all
@@ -999,13 +986,6 @@ export default function HomeScreen() {
                 </Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity
-              style={styles.notifBtn}
-              activeOpacity={0.7}
-              onPress={() => navigation.navigate('Notifications')}
-            >
-              <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -1473,16 +1453,6 @@ const styles = StyleSheet.create({
     fontSize: SIZE(11),
     color: colors.textSecondary,
     marginTop: SIZE(1),
-  },
-  notifBtn: {
-    width: SIZE(22) + 12,
-    height: SIZE(22) + 12,
-    padding: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   headerRight: {
     flexDirection: 'row',

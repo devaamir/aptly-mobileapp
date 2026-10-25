@@ -23,7 +23,6 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import { RootStackParamList } from '../navigations/Navigation';
 import { verifyOtp, sendOtp, isBypassPhone } from '../services/api';
-import { registerDevice } from '../services/NotificationService';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -136,7 +135,6 @@ export default function OtpScreen() {
         dateOfBirth: patient?.dateOfBirth ?? '',
       });
       initLocation();
-      registerDevice(); // non-blocking — fire and forget
       navigation.reset({
         index: 0,
         routes: [
