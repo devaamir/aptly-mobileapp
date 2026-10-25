@@ -4,6 +4,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 
 const babelConfig = {
+  configFile: false,
+  babelrc: false,
   presets: [
     ['@babel/preset-env', { targets: { browsers: ['last 2 versions'] }, modules: 'commonjs' }],
     '@babel/preset-typescript',
