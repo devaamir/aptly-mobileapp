@@ -43,8 +43,10 @@ import PhoneIcon from '../assets/icons/phone-icon.svg';
 import PhoneIconBlue from '../assets/icons/phone-icon-blue.svg';
 import MapIcon from '../assets/icons/map-icon.svg';
 import MapIconBlue from '../assets/icons/map-icon-blue.svg';
-import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
+import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
+import GooglePlayIcon from '../assets/icons/googleplay-icon.svg';
+import AppStoreIcon from '../assets/icons/appstore-icon.svg';
 import {
   getHomeData,
   IS_DEV,
@@ -88,7 +90,10 @@ const ListHeader = ({
   const { width: screenWidth } = useWindowDimensions();
   const [completedAt, setCompletedAt] = useState<Record<string, number>>({});
   const _now = new Date();
-  const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
+  const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(
+    2,
+    '0',
+  )}-${String(_now.getDate()).padStart(2, '0')}`;
   const nowMins = _now.getHours() * 60 + _now.getMinutes();
   const to12h = (t: string) => {
     const [h, m] = t.split(':').map(Number);
@@ -135,9 +140,7 @@ const ListHeader = ({
       })();
 
     const isMyTurn =
-      apptIsLive &&
-      currentToken !== null &&
-      currentToken === appt.tokenNumber;
+      apptIsLive && currentToken !== null && currentToken === appt.tokenNumber;
     const sseStatus = sseToken?.tokenStatus ?? appt.tokenStatus;
     const isRecentlyCompleted =
       (sseStatus === 'completed' || sseStatus === 'done') &&
@@ -236,15 +239,23 @@ const ListHeader = ({
             />
             <Text
               allowFontScaling={false}
-              style={[
-                styles.liveText,
-                isSkipped && { color: colors.white },
-              ]}
+              style={[styles.liveText, isSkipped && { color: colors.white }]}
             >
-              {isSkipped ? 'Skipped' : isRecentlyCompleted ? 'Completed' : apptIsLive ? 'Live' : 'Upcoming'}
+              {isSkipped
+                ? 'Skipped'
+                : isRecentlyCompleted
+                ? 'Completed'
+                : apptIsLive
+                ? 'Live'
+                : 'Upcoming'}
             </Text>
           </View>
-          <View style={[styles.tokenCenter, isRecentlyCompleted && styles.tokenCenterCompleted]}>
+          <View
+            style={[
+              styles.tokenCenter,
+              isRecentlyCompleted && styles.tokenCenterCompleted,
+            ]}
+          >
             {isRecentlyCompleted ? (
               <>
                 <Svg
@@ -253,12 +264,7 @@ const ListHeader = ({
                   viewBox="0 0 60 60"
                   pointerEvents="none"
                 >
-                  <Circle
-                    cx="30"
-                    cy="30"
-                    r="30"
-                    fill="rgba(255,255,255,0.2)"
-                  />
+                  <Circle cx="30" cy="30" r="30" fill="rgba(255,255,255,0.2)" />
                   <Path
                     d="M18 30 L26 38 L42 22"
                     stroke="#FFFFFF"
@@ -268,10 +274,7 @@ const ListHeader = ({
                     fill="none"
                   />
                 </Svg>
-                <Text
-                  allowFontScaling={false}
-                  style={styles.completedText}
-                >
+                <Text allowFontScaling={false} style={styles.completedText}>
                   Consultation Completed
                 </Text>
               </>
@@ -311,11 +314,14 @@ const ListHeader = ({
                 )}
                 {!apptIsLive && appt.appointmentDate && (
                   <Text allowFontScaling={false} style={styles.scheduledDate}>
-                    {new Date(appt.appointmentDate).toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                    {new Date(appt.appointmentDate).toLocaleDateString(
+                      'en-US',
+                      {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      },
+                    )}
                     {appt.schedule
                       ? `, ${to12h(appt.schedule.startTime)} - ${to12h(
                           appt.schedule.stopTime,
@@ -326,17 +332,26 @@ const ListHeader = ({
                 {apptIsLive && (
                   <View style={styles.tokenRow}>
                     <View style={styles.tokenSide}>
-                      <Text allowFontScaling={false} style={styles.tokenSideNum}>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.tokenSideNum}
+                      >
                         {prevToken ?? ''}
                       </Text>
                     </View>
                     <View style={styles.tokenCurrent}>
-                      <Text allowFontScaling={false} style={styles.tokenCurrentNum}>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.tokenCurrentNum}
+                      >
                         {currentToken ?? ''}
                       </Text>
                     </View>
                     <View style={styles.tokenSide}>
-                      <Text allowFontScaling={false} style={styles.tokenSideNum}>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.tokenSideNum}
+                      >
                         {nextToken ?? ''}
                       </Text>
                     </View>
@@ -510,79 +525,119 @@ const ListHeader = ({
       ) : (
         visibleSpotlight && renderBannerCard(visibleSpotlight)
       )}
-      <View style={styles.cardsRow}>
-        <TouchableOpacity
-          style={styles.card}
-          activeOpacity={0.7}
-          onPress={onspecialstPress}
-        >
-          <Text allowFontScaling={false} style={styles.cardTitle}>
-            Specialties
-          </Text>
-          <Text allowFontScaling={false} style={styles.viewAllText}>
-            View all
-          </Text>
-          <Image
-            source={require('../assets/images/specialties-image.png')}
-            style={styles.cardImage}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.card}
-          activeOpacity={0.7}
-          onPress={onDoctorsPress}
-        >
+      <View style={screenWidth >= 768 ? styles.desktopLayout : undefined}>
+        <View style={screenWidth >= 768 ? styles.desktopCardsGrid : undefined}>
           <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: SIZE(4),
-            }}
+            style={[
+              styles.cardsRow,
+              screenWidth >= 768 && { paddingHorizontal: 0 },
+            ]}
           >
-            <Text allowFontScaling={false} style={styles.cardTitle}>
-              Doctors
-            </Text>
+            <TouchableOpacity
+              style={styles.card}
+              activeOpacity={0.7}
+              onPress={onspecialstPress}
+            >
+              <Text allowFontScaling={false} style={styles.cardTitle}>
+                Specialties
+              </Text>
+              <Text allowFontScaling={false} style={styles.viewAllText}>
+                View all
+              </Text>
+              <Image
+                source={require('../assets/images/specialties-image.png')}
+                style={styles.cardImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.card}
+              activeOpacity={0.7}
+              onPress={onDoctorsPress}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: SIZE(4),
+                }}
+              >
+                <Text allowFontScaling={false} style={styles.cardTitle}>
+                  Doctors
+                </Text>
+              </View>
+              <Text allowFontScaling={false} style={styles.viewAllText}>
+                View all
+              </Text>
+              <Image
+                source={require('../assets/images/doctor-image.png')}
+                style={styles.cardImage}
+              />
+            </TouchableOpacity>
           </View>
-          <Text allowFontScaling={false} style={styles.viewAllText}>
-            View all
-          </Text>
-          <Image
-            source={require('../assets/images/doctor-image.png')}
-            style={styles.cardImage}
-          />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.cardsRow}>
-        <TouchableOpacity
-          style={styles.card}
-          activeOpacity={1}
-        >
-          <Text allowFontScaling={false} style={styles.cardTitle}>
-            Facilities
-          </Text>
-          <Text allowFontScaling={false} style={styles.comingSoonText}>
-            Coming soon
-          </Text>
-          <Image
-            source={require('../assets/images/facilities-image.png')}
-            style={styles.cardImageShifted}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.card}
-          activeOpacity={1}
-        >
-          <Text allowFontScaling={false} style={styles.cardTitle}>
-            Labs & Scans
-          </Text>
-          <Text allowFontScaling={false} style={styles.comingSoonText}>
-            Coming soon
-          </Text>
-          <Image
-            source={require('../assets/images/labs-icon.png')}
-            style={styles.cardImageShifted}
-          />
-        </TouchableOpacity>
+          <View
+            style={[
+              styles.cardsRow,
+              { marginBottom: 0 },
+              screenWidth >= 768 && { paddingHorizontal: 0 },
+            ]}
+          >
+            <TouchableOpacity style={styles.card} activeOpacity={1}>
+              <Text allowFontScaling={false} style={styles.cardTitle}>
+                Facilities
+              </Text>
+              <Text allowFontScaling={false} style={styles.comingSoonText}>
+                Coming soon
+              </Text>
+              <Image
+                source={require('../assets/images/facilities-image.png')}
+                style={styles.cardImageShifted}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.card} activeOpacity={1}>
+              <Text allowFontScaling={false} style={styles.cardTitle}>
+                Labs & Scans
+              </Text>
+              <Text allowFontScaling={false} style={styles.comingSoonText}>
+                Coming soon
+              </Text>
+              <Image
+                source={require('../assets/images/labs-icon.png')}
+                style={styles.cardImageShifted}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+        {screenWidth >= 768 && (
+          <View style={styles.desktopPromoBanner}>
+            <View style={styles.promoBadge}>
+              <View style={styles.promoGreenDot} />
+              <Text allowFontScaling={false} style={styles.promoBadgeText}>
+                Live token
+              </Text>
+            </View>
+            <Text allowFontScaling={false} style={styles.promoTitle}>
+              Track your token{'\n'}live in the Aptly app
+            </Text>
+            <Text allowFontScaling={false} style={styles.promoDesc}>
+              Your token number, estimated time and queue status update in real
+              time, and they are accurate only in the mobile app.
+            </Text>
+            <View style={styles.promoButtons}>
+              <TouchableOpacity style={styles.promoBtn} activeOpacity={0.8}>
+                <AppStoreIcon width={20} height={20} />
+                <Text allowFontScaling={false} style={styles.promoBtnText}>
+                  App Store
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.promoBtn} activeOpacity={0.8}>
+                <GooglePlayIcon width={20} height={20} />
+                <Text allowFontScaling={false} style={styles.promoBtnText}>
+                  Google Play
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
       {/* Recommended for You section — temporarily disabled
       <>
@@ -664,8 +719,19 @@ const ListHeader = ({
       </>
       */}
       {hasLocation && (
-        <View style={styles.sectionHeader}>
-          <Text allowFontScaling={false} style={styles.sectionTitle}>
+        <View
+          style={[
+            styles.sectionHeader,
+            screenWidth >= 768 && styles.sectionHeaderDesktop,
+          ]}
+        >
+          <Text
+            allowFontScaling={false}
+            style={[
+              styles.sectionTitle,
+              screenWidth >= 768 && styles.sectionTitleDesktop,
+            ]}
+          >
             Near by Clinics
           </Text>
           <TouchableOpacity activeOpacity={0.7} onPress={onClinicsPress}>
@@ -755,45 +821,93 @@ export default function HomeScreen() {
       setRefreshing(true);
       setLoading(true);
     }
-    if (IS_DEV) console.log('[HomeScreen] fetchData START', { trigger, isRefresh, location: location ? { lat: location.latitude, lon: location.longitude } : null, distance });
+    if (IS_DEV)
+      console.log('[HomeScreen] fetchData START', {
+        trigger,
+        isRefresh,
+        location: location
+          ? { lat: location.latitude, lon: location.longitude }
+          : null,
+        distance,
+      });
     const nearbyPromise = location
       ? (() => {
-          if (IS_DEV) console.log('[HomeScreen] getClinics (nearby) REQUEST', { lat: location.latitude, lon: location.longitude, radius: distance });
-          return getClinics(1, 20, { latitude: location.latitude, longitude: location.longitude, radius: distance })
-            .then(res => {
-              if (IS_DEV) console.log('[HomeScreen] getClinics (nearby) RESPONSE', { count: res.data.length });
-              return res.data;
+          if (IS_DEV)
+            console.log('[HomeScreen] getClinics (nearby) REQUEST', {
+              lat: location.latitude,
+              lon: location.longitude,
+              radius: distance,
             });
+          return getClinics(1, 20, {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            radius: distance,
+          }).then(res => {
+            if (IS_DEV)
+              console.log('[HomeScreen] getClinics (nearby) RESPONSE', {
+                count: res.data.length,
+              });
+            return res.data;
+          });
         })()
       : Promise.resolve([] as Clinic[]);
-    if (IS_DEV) console.log('[HomeScreen] getHomeData REQUEST', { lat: location?.latitude, lon: location?.longitude });
-    if (IS_DEV) console.log('[HomeScreen] getClinics (fallback) REQUEST', { page: 1, limit: 20 });
+    if (IS_DEV)
+      console.log('[HomeScreen] getHomeData REQUEST', {
+        lat: location?.latitude,
+        lon: location?.longitude,
+      });
+    if (IS_DEV)
+      console.log('[HomeScreen] getClinics (fallback) REQUEST', {
+        page: 1,
+        limit: 20,
+      });
     Promise.allSettled([
       getHomeData(location?.latitude, location?.longitude),
       nearbyPromise,
       getClinics(1, 20).then(res => {
-        if (IS_DEV) console.log('[HomeScreen] getClinics (fallback) RESPONSE', { count: res.data.length });
+        if (IS_DEV)
+          console.log('[HomeScreen] getClinics (fallback) RESPONSE', {
+            count: res.data.length,
+          });
         return res.data;
       }),
     ])
       .then(([homeResult, nearbyResult, fallbackResult]) => {
         if (homeResult.status === 'fulfilled') {
-          if (IS_DEV) console.log('[HomeScreen] getHomeData RESPONSE', { appointmentsCount: homeResult.value.data.appointments?.length });
+          if (IS_DEV)
+            console.log('[HomeScreen] getHomeData RESPONSE', {
+              appointmentsCount: homeResult.value.data.appointments?.length,
+            });
           handleAppointments(homeResult.value.data.appointments ?? []);
         } else {
-          if (IS_DEV) console.error('[HomeScreen] getHomeData ERROR', homeResult.reason);
+          if (IS_DEV)
+            console.error('[HomeScreen] getHomeData ERROR', homeResult.reason);
         }
         if (nearbyResult.status === 'fulfilled') {
           setClinics(nearbyResult.value);
         } else {
-          if (IS_DEV) console.error('[HomeScreen] getClinics (nearby) ERROR', nearbyResult.reason);
+          if (IS_DEV)
+            console.error(
+              '[HomeScreen] getClinics (nearby) ERROR',
+              nearbyResult.reason,
+            );
         }
         if (fallbackResult.status === 'fulfilled') {
           setFallbackClinics(fallbackResult.value);
         } else {
-          if (IS_DEV) console.error('[HomeScreen] getClinics (fallback) ERROR', fallbackResult.reason);
+          if (IS_DEV)
+            console.error(
+              '[HomeScreen] getClinics (fallback) ERROR',
+              fallbackResult.reason,
+            );
         }
-        if (IS_DEV) console.log('[HomeScreen] fetchData SETTLED', { trigger, homeOk: homeResult.status === 'fulfilled', nearbyOk: nearbyResult.status === 'fulfilled', fallbackOk: fallbackResult.status === 'fulfilled' });
+        if (IS_DEV)
+          console.log('[HomeScreen] fetchData SETTLED', {
+            trigger,
+            homeOk: homeResult.status === 'fulfilled',
+            nearbyOk: nearbyResult.status === 'fulfilled',
+            fallbackOk: fallbackResult.status === 'fulfilled',
+          });
       })
       .finally(() => {
         setLoading(false);
@@ -802,9 +916,15 @@ export default function HomeScreen() {
   };
 
   const handleAppointments = (appointments: Appointment[]) => {
-    if (IS_DEV) console.log('[HomeScreen] getHomeData RESPONSE', { appointmentsCount: appointments.length });
+    if (IS_DEV)
+      console.log('[HomeScreen] getHomeData RESPONSE', {
+        appointmentsCount: appointments.length,
+      });
     const _nt = new Date();
-    const today = `${_nt.getFullYear()}-${String(_nt.getMonth() + 1).padStart(2, '0')}-${String(_nt.getDate()).padStart(2, '0')}`;
+    const today = `${_nt.getFullYear()}-${String(_nt.getMonth() + 1).padStart(
+      2,
+      '0',
+    )}-${String(_nt.getDate()).padStart(2, '0')}`;
     const nowMins = _nt.getHours() * 60 + _nt.getMinutes();
     const active = (appointments ?? []).filter(
       a => a.tokenStatus === 'pending' || a.tokenStatus === 'ongoing',
@@ -839,7 +959,10 @@ export default function HomeScreen() {
       return;
     }
     const _ns = new Date();
-    const today = `${_ns.getFullYear()}-${String(_ns.getMonth() + 1).padStart(2, '0')}-${String(_ns.getDate()).padStart(2, '0')}`;
+    const today = `${_ns.getFullYear()}-${String(_ns.getMonth() + 1).padStart(
+      2,
+      '0',
+    )}-${String(_ns.getDate()).padStart(2, '0')}`;
     const nowMins = _ns.getHours() * 60 + _ns.getMinutes();
     const [sh, sm] = (spotlightAppt.schedule?.startTime ?? '')
       .split(':')
@@ -850,9 +973,13 @@ export default function HomeScreen() {
     else stopTracking();
   }, [spotlightAppt]);
   const locationRef = useRef(location);
-  useEffect(() => { locationRef.current = location; }, [location]);
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
   const distanceRef = useRef(distance);
-  useEffect(() => { distanceRef.current = distance; }, [distance]);
+  useEffect(() => {
+    distanceRef.current = distance;
+  }, [distance]);
 
   useEffect(
     () =>
@@ -860,45 +987,92 @@ export default function HomeScreen() {
         if (!ready) return;
         const loc = locationRef.current;
         const dist = distanceRef.current;
-        if (IS_DEV) console.log('[HomeScreen] focus refresh START', { location: loc ? { lat: loc.latitude, lon: loc.longitude } : null, distance: dist });
+        if (IS_DEV)
+          console.log('[HomeScreen] focus refresh START', {
+            location: loc ? { lat: loc.latitude, lon: loc.longitude } : null,
+            distance: dist,
+          });
         const nearbyPromise = loc
           ? (() => {
-              if (IS_DEV) console.log('[HomeScreen] getClinics (nearby/focus) REQUEST', { lat: loc.latitude, lon: loc.longitude, radius: dist });
-              return getClinics(1, 20, { latitude: loc.latitude, longitude: loc.longitude, radius: dist })
-                .then(res => {
-                  if (IS_DEV) console.log('[HomeScreen] getClinics (nearby/focus) RESPONSE', { count: res.data.length });
-                  return res.data;
+              if (IS_DEV)
+                console.log('[HomeScreen] getClinics (nearby/focus) REQUEST', {
+                  lat: loc.latitude,
+                  lon: loc.longitude,
+                  radius: dist,
                 });
+              return getClinics(1, 20, {
+                latitude: loc.latitude,
+                longitude: loc.longitude,
+                radius: dist,
+              }).then(res => {
+                if (IS_DEV)
+                  console.log(
+                    '[HomeScreen] getClinics (nearby/focus) RESPONSE',
+                    { count: res.data.length },
+                  );
+                return res.data;
+              });
             })()
           : Promise.resolve([] as Clinic[]);
-        if (IS_DEV) console.log('[HomeScreen] getHomeData (focus) REQUEST', { lat: loc?.latitude, lon: loc?.longitude });
-        if (IS_DEV) console.log('[HomeScreen] getClinics (fallback/focus) REQUEST', { page: 1, limit: 20 });
+        if (IS_DEV)
+          console.log('[HomeScreen] getHomeData (focus) REQUEST', {
+            lat: loc?.latitude,
+            lon: loc?.longitude,
+          });
+        if (IS_DEV)
+          console.log('[HomeScreen] getClinics (fallback/focus) REQUEST', {
+            page: 1,
+            limit: 20,
+          });
         Promise.allSettled([
           getHomeData(loc?.latitude, loc?.longitude),
           nearbyPromise,
           getClinics(1, 20).then(res => {
-            if (IS_DEV) console.log('[HomeScreen] getClinics (fallback/focus) RESPONSE', { count: res.data.length });
+            if (IS_DEV)
+              console.log('[HomeScreen] getClinics (fallback/focus) RESPONSE', {
+                count: res.data.length,
+              });
             return res.data;
           }),
         ])
           .then(([homeResult, nearbyResult, fallbackResult]) => {
             if (homeResult.status === 'fulfilled') {
-              if (IS_DEV) console.log('[HomeScreen] getHomeData (focus) RESPONSE', { appointmentsCount: homeResult.value.data.appointments?.length });
+              if (IS_DEV)
+                console.log('[HomeScreen] getHomeData (focus) RESPONSE', {
+                  appointmentsCount: homeResult.value.data.appointments?.length,
+                });
               handleAppointments(homeResult.value.data.appointments ?? []);
             } else {
-              if (IS_DEV) console.error('[HomeScreen] getHomeData (focus) ERROR', homeResult.reason);
+              if (IS_DEV)
+                console.error(
+                  '[HomeScreen] getHomeData (focus) ERROR',
+                  homeResult.reason,
+                );
             }
             if (nearbyResult.status === 'fulfilled') {
               setClinics(nearbyResult.value);
             } else {
-              if (IS_DEV) console.error('[HomeScreen] getClinics (nearby/focus) ERROR', nearbyResult.reason);
+              if (IS_DEV)
+                console.error(
+                  '[HomeScreen] getClinics (nearby/focus) ERROR',
+                  nearbyResult.reason,
+                );
             }
             if (fallbackResult.status === 'fulfilled') {
               setFallbackClinics(fallbackResult.value);
             } else {
-              if (IS_DEV) console.error('[HomeScreen] getClinics (fallback/focus) ERROR', fallbackResult.reason);
+              if (IS_DEV)
+                console.error(
+                  '[HomeScreen] getClinics (fallback/focus) ERROR',
+                  fallbackResult.reason,
+                );
             }
-            if (IS_DEV) console.log('[HomeScreen] focus refresh SETTLED', { homeOk: homeResult.status === 'fulfilled', nearbyOk: nearbyResult.status === 'fulfilled', fallbackOk: fallbackResult.status === 'fulfilled' });
+            if (IS_DEV)
+              console.log('[HomeScreen] focus refresh SETTLED', {
+                homeOk: homeResult.status === 'fulfilled',
+                nearbyOk: nearbyResult.status === 'fulfilled',
+                fallbackOk: fallbackResult.status === 'fulfilled',
+              });
           })
           .finally(() => {
             setLoading(false);
@@ -1000,96 +1174,20 @@ export default function HomeScreen() {
         </View>
 
         {/* Everything below scrolls */}
-        <FlatList
-          data={location ? clinics : []}
-          keyExtractor={item => item.id}
-          extraData={trackData}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => fetchData(true, 'pull-to-refresh')}
-              colors={[colors.primary]}
-              tintColor={colors.primary}
-            />
-          }
-          ListFooterComponent={null}
-          ListEmptyComponent={
-            <View>
-              <View style={styles.emptyContainer}>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={styles.emptyCard}
-                  onPress={() => navigation.navigate('LocationSearch')}
-                >
-                  <Image
-                    source={require('../assets/images/location-image.png')}
-                    style={styles.emptyCardImage}
-                  />
-                  <View style={styles.emptyCardInfo}>
-                    <Text
-                      allowFontScaling={false}
-                      style={styles.emptyCardTitle}
-                      numberOfLines={2}
-                    >
-                      We're Still Growing Here
-                    </Text>
-                    <Text
-                      allowFontScaling={false}
-                      style={styles.emptyCardSubtitle}
-                      numberOfLines={2}
-                    >
-                      No clinics within {distance} km. Explore the nearest available
-                      clinics below
-                    </Text>
-                    <View style={styles.emptyCardBtn}>
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.emptyCardBtnText}
-                      >
-                        Use another location
-                      </Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              </View>
-              {fallbackClinics.map(item => {
-                return (
-                  <ClinicCard
-                    key={item.id}
-                    name={item.name}
-                    subType={item.medicalSystem?.name ?? item.type}
-                    specialties={item.specialties.map(
-                      (s: { name: string }) => s.name,
-                    )}
-                    location={item.address}
-                    image={item.profilePicture}
-                    distance={
-                      location
-                        ? getDistance(
-                            location.latitude,
-                            location.longitude,
-                            item.latitude,
-                            item.longitude,
-                          )
-                        : undefined
-                    }
-                    onPress={() =>
-                      navigation.navigate('HospitalDetail', {
-                        id: item.id,
-                        name: item.name,
-                        specialty: item.specialties[0]?.name ?? '',
-                        location: item.address,
-                      })
-                    }
-                    style={styles.clinicCard}
-                  />
-                );
-              })}
-            </View>
-          }
-          ListHeaderComponent={
+        {screenWidth >= 768 ? (
+          // Desktop: custom 2-column grid with ScrollView
+          <ScrollView
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => fetchData(true, 'pull-to-refresh')}
+                colors={[colors.primary]}
+                tintColor={colors.primary}
+              />
+            }
+          >
             <ListHeader
               onTokenPress={appt =>
                 navigation.navigate('TokenDetail', { appointment: appt })
@@ -1120,33 +1218,243 @@ export default function HomeScreen() {
                   : null
               }
             />
-          }
-          renderItem={({ item }) => {
-            if (IS_DEV)
-              console.log(
-                '[ClinicCard - nearby]',
-                JSON.stringify(item, null, 2),
-              );
-            return (
-              <ClinicCard
-                name={item.name}
-                subType={item.medicalSystem?.name ?? item.type}
-                specialties={item.specialties.map(
-                  (s: { name: string }) => s.name,
-                )}
-                location={item.address}
-                image={item.profilePicture}
-                distance={
-                  location
-                    ? getDistance(
-                        location.latitude,
-                        location.longitude,
-                        item.latitude,
-                        item.longitude,
-                      )
-                    : undefined
+            {/* Clinic grid */}
+            {(location ? clinics : []).length === 0 ? (
+              // Empty state
+              <View style={styles.desktopClinicSection}>
+                <View style={[styles.emptyContainer, { paddingHorizontal: 0 }]}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.emptyCard}
+                    onPress={() => navigation.navigate('LocationSearch')}
+                  >
+                    <Image
+                      source={require('../assets/images/location-image.png')}
+                      style={styles.emptyCardImage}
+                    />
+                    <View style={styles.emptyCardInfo}>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.emptyCardTitle}
+                        numberOfLines={2}
+                      >
+                        We're Still Growing Here
+                      </Text>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.emptyCardSubtitle}
+                        numberOfLines={2}
+                      >
+                        No clinics within {distance} km. Explore the nearest
+                        available clinics below
+                      </Text>
+                      <View style={styles.emptyCardBtn}>
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.emptyCardBtnText}
+                        >
+                          Use another location
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                {(() => {
+                  const rows: Clinic[][] = [];
+                  for (let i = 0; i < fallbackClinics.length; i += 2)
+                    rows.push(fallbackClinics.slice(i, i + 2));
+                  return rows.map((row, ri) => (
+                    <View key={ri} style={styles.clinicGridRow}>
+                      {row.map(item => (
+                        <ClinicCard
+                          key={item.id}
+                          name={item.name}
+                          subType={item.medicalSystem?.name ?? item.type}
+                          specialties={item.specialties.map(
+                            (s: { name: string }) => s.name,
+                          )}
+                          location={item.address}
+                          image={item.profilePicture}
+                          distance={
+                            location
+                              ? getDistance(
+                                  location.latitude,
+                                  location.longitude,
+                                  item.latitude,
+                                  item.longitude,
+                                )
+                              : undefined
+                          }
+                          onPress={() =>
+                            navigation.navigate('HospitalDetail', {
+                              id: item.id,
+                              name: item.name,
+                              specialty: item.specialties[0]?.name ?? '',
+                              location: item.address,
+                            })
+                          }
+                          style={styles.clinicGridCard}
+                        />
+                      ))}
+                      {row.length === 1 && (
+                        <View style={styles.clinicGridCardEmpty} />
+                      )}
+                    </View>
+                  ));
+                })()}
+              </View>
+            ) : (
+              // Nearby clinics 2-column grid
+              <View style={styles.desktopClinicSection}>
+                {(() => {
+                  const rows: Clinic[][] = [];
+                  for (let i = 0; i < clinics.length; i += 2)
+                    rows.push(clinics.slice(i, i + 2));
+                  return rows.map((row, ri) => (
+                    <View key={ri} style={styles.clinicGridRow}>
+                      {row.map(item => (
+                        <ClinicCard
+                          key={item.id}
+                          name={item.name}
+                          subType={item.medicalSystem?.name ?? item.type}
+                          specialties={item.specialties.map(
+                            (s: { name: string }) => s.name,
+                          )}
+                          location={item.address}
+                          image={item.profilePicture}
+                          distance={
+                            location
+                              ? getDistance(
+                                  location.latitude,
+                                  location.longitude,
+                                  item.latitude,
+                                  item.longitude,
+                                )
+                              : undefined
+                          }
+                          onPress={() =>
+                            navigation.navigate('HospitalDetail', {
+                              id: item.id,
+                              name: item.name,
+                              specialty: item.specialties[0]?.name ?? '',
+                              location: item.address,
+                            })
+                          }
+                          style={styles.clinicGridCard}
+                        />
+                      ))}
+                      {row.length === 1 && (
+                        <View style={styles.clinicGridCardEmpty} />
+                      )}
+                    </View>
+                  ));
+                })()}
+              </View>
+            )}
+          </ScrollView>
+        ) : (
+          <FlatList
+            data={location ? clinics : []}
+            keyExtractor={item => item.id}
+            extraData={trackData}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => fetchData(true, 'pull-to-refresh')}
+                colors={[colors.primary]}
+                tintColor={colors.primary}
+              />
+            }
+            ListFooterComponent={null}
+            ListEmptyComponent={
+              <View>
+                <View style={styles.emptyContainer}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.emptyCard}
+                    onPress={() => navigation.navigate('LocationSearch')}
+                  >
+                    <Image
+                      source={require('../assets/images/location-image.png')}
+                      style={styles.emptyCardImage}
+                    />
+                    <View style={styles.emptyCardInfo}>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.emptyCardTitle}
+                        numberOfLines={2}
+                      >
+                        We're Still Growing Here
+                      </Text>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.emptyCardSubtitle}
+                        numberOfLines={2}
+                      >
+                        No clinics within {distance} km. Explore the nearest
+                        available clinics below
+                      </Text>
+                      <View style={styles.emptyCardBtn}>
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.emptyCardBtnText}
+                        >
+                          Use another location
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                {fallbackClinics.map(item => (
+                  <ClinicCard
+                    key={item.id}
+                    name={item.name}
+                    subType={item.medicalSystem?.name ?? item.type}
+                    specialties={item.specialties.map(
+                      (s: { name: string }) => s.name,
+                    )}
+                    location={item.address}
+                    image={item.profilePicture}
+                    distance={
+                      location
+                        ? getDistance(
+                            location.latitude,
+                            location.longitude,
+                            item.latitude,
+                            item.longitude,
+                          )
+                        : undefined
+                    }
+                    onPress={() =>
+                      navigation.navigate('HospitalDetail', {
+                        id: item.id,
+                        name: item.name,
+                        specialty: item.specialties[0]?.name ?? '',
+                        location: item.address,
+                      })
+                    }
+                    style={styles.clinicCard}
+                  />
+                ))}
+              </View>
+            }
+            ListHeaderComponent={
+              <ListHeader
+                onTokenPress={appt =>
+                  navigation.navigate('TokenDetail', { appointment: appt })
                 }
-                onPress={() =>
+                onspecialstPress={() => navigation.navigate('specialst')}
+                onDoctorsPress={() => navigation.navigate('Doctors')}
+                onClinicsPress={() => navigation.navigate('Clinics')}
+                spotlightAppt={spotlightAppt}
+                activeAppointments={activeAppointments}
+                hasNearbyClinics={clinics.length > 0}
+                hasLocation={!!location}
+                trackData={trackData}
+                recommendedClinics={location ? clinics : fallbackClinics}
+                onClinicPress={item =>
                   navigation.navigate('HospitalDetail', {
                     id: item.id,
                     name: item.name,
@@ -1154,10 +1462,50 @@ export default function HomeScreen() {
                     location: item.address,
                   })
                 }
+                userLocation={
+                  location
+                    ? {
+                        latitude: location.latitude,
+                        longitude: location.longitude,
+                      }
+                    : null
+                }
               />
-            );
-          }}
-        />
+            }
+            renderItem={({ item }) => {
+              return (
+                <ClinicCard
+                  name={item.name}
+                  subType={item.medicalSystem?.name ?? item.type}
+                  specialties={item.specialties.map(
+                    (s: { name: string }) => s.name,
+                  )}
+                  location={item.address}
+                  image={item.profilePicture}
+                  distance={
+                    location
+                      ? getDistance(
+                          location.latitude,
+                          location.longitude,
+                          item.latitude,
+                          item.longitude,
+                        )
+                      : undefined
+                  }
+                  onPress={() =>
+                    navigation.navigate('HospitalDetail', {
+                      id: item.id,
+                      name: item.name,
+                      specialty: item.specialties[0]?.name ?? '',
+                      location: item.address,
+                    })
+                  }
+                  style={screenWidth >= 768 ? styles.clinicGridCard : undefined}
+                />
+              );
+            }}
+          />
+        )}
 
         {/* PWA Install Instructions Modal */}
         {showInstallModal &&
@@ -1755,6 +2103,80 @@ const styles = StyleSheet.create({
     gap: SIZE(12),
     marginBottom: SIZE(8),
   },
+  desktopLayout: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    paddingHorizontal: SIZE(20),
+    // gap: SIZE(16),
+    marginBottom: SIZE(8),
+    justifyContent: 'space-between',
+  },
+  desktopCardsGrid: {
+    // flex: 1,
+    width: '59%',
+  },
+  desktopPromoBanner: {
+    width: '39%',
+    backgroundColor: '#3B5BDB',
+    borderRadius: SIZE(22),
+    padding: SIZE(20),
+    // marginBottom: SIZE(8),
+    justifyContent: 'space-between',
+    // gap: SIZE(14),
+    // alignSelf: 'stretch',
+  },
+  promoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: colors.white,
+    borderRadius: SIZE(20),
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(5),
+    gap: SIZE(6),
+  },
+  promoGreenDot: {
+    width: SIZE(8),
+    height: SIZE(8),
+    borderRadius: SIZE(4),
+    backgroundColor: '#22C55E',
+  },
+  promoBadgeText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(12),
+    color: colors.textPrimary,
+  },
+  promoTitle: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(20),
+    color: colors.white,
+    lineHeight: SIZE(28),
+  },
+  promoDesc: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: 'rgba(255,255,255,0.8)',
+    lineHeight: SIZE(20),
+  },
+  promoButtons: {
+    flexDirection: 'row',
+    gap: SIZE(10),
+    flexWrap: 'wrap',
+  },
+  promoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(8),
+    backgroundColor: colors.white,
+    borderRadius: SIZE(12),
+    paddingHorizontal: SIZE(18),
+    paddingVertical: SIZE(12),
+  },
+  promoBtnText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(13),
+    color: colors.textPrimary,
+  },
   card: {
     flex: 1,
     height: SIZE(116),
@@ -1859,14 +2281,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SIZE(18),
     marginTop: SIZE(12),
-    // paddingVertical: SIZE(12),
-    // marginBottom: SIZE(12),
     backgroundColor: colors.surfaceLightFaded,
+  },
+  sectionHeaderDesktop: {
+    paddingHorizontal: SIZE(18),
+    paddingTop: SIZE(20),
+    // paddingBottom: SIZE(12),
+    marginBottom: SIZE(4),
+    marginTop: 0,
+    backgroundColor: 'transparent',
   },
   sectionTitle: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(14),
     color: colors.textPrimary,
+  },
+  sectionTitleDesktop: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(20),
   },
   viewAll: {
     fontFamily: 'Manrope-Medium',
@@ -1876,6 +2308,26 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: SIZE(24),
     gap: SIZE(12),
+  },
+  listContentDesktop: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: SIZE(12),
+  },
+  desktopClinicSection: {
+    paddingHorizontal: SIZE(18),
+  },
+  clinicGridRow: {
+    flexDirection: 'row',
+    gap: SIZE(12),
+    marginBottom: SIZE(12),
+  },
+  clinicGridCard: {
+    flex: 1,
+    marginHorizontal: 0,
+  },
+  clinicGridCardEmpty: {
+    width: '50%',
   },
   emptyContainer: {
     paddingHorizontal: SIZE(18),
