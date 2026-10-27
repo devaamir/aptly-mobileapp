@@ -9,6 +9,7 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
+import SearchIcon from '../assets/icons/search-icon.svg';
 import { useMetadata } from '../context/MetadataContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'specialst'>;
@@ -16,6 +17,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'specialst'>;
 export default function SpecialstScreen({ navigation }: Props) {
   const { specialties } = useMetadata();
   const [query, setQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
   const filtered = specialties.filter(s =>
     s.name.toLowerCase().includes(query.toLowerCase())
@@ -27,16 +29,42 @@ export default function SpecialstScreen({ navigation }: Props) {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
-          <BackArrow width={SIZE(22)} height={SIZE(22)} />
-        </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.title}>All specialsts</Text>
-        <View style={styles.backBtn} />
-      </View>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+            activeOpacity={0.7}
+          >
+            <BackArrow width={SIZE(22)} height={SIZE(22)} />
+          </TouchableOpacity>
+          {!showSearch && (
+            <Text allowFontScaling={false} style={styles.title}>All Specialties</Text>
+          )}
+        </View>
 
-      {/* Search */}
-      <View style={styles.searchWrapper}>
-        <SearchBar placeholder="Search specialsts..." value={query} onChangeText={setQuery} />
+        {showSearch && (
+          <SearchBar
+            placeholder="Search specialties..."
+            value={query}
+            onChangeText={setQuery}
+            autoFocus
+            style={styles.headerSearch}
+          />
+        )}
+
+        <TouchableOpacity
+          style={styles.searchBtn}
+          activeOpacity={0.7}
+          onPress={() => {
+            setShowSearch(v => !v);
+            if (showSearch) setQuery('');
+          }}
+        >
+          {showSearch
+            ? <Text allowFontScaling={false} style={styles.cancelText}>Cancel</Text>
+            : <SearchIcon width={SIZE(22)} height={SIZE(22)} />
+          }
+        </TouchableOpacity>
       </View>
 
       {/* List */}
@@ -49,7 +77,17 @@ export default function SpecialstScreen({ navigation }: Props) {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('SpecialstDetail', { name: item.name, id: item.id, desc: item.description, clinics: 0, doctors: 0 })}>
+            <TouchableOpacity
+              style={styles.card}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('SpecialstDetail', {
+                name: item.name,
+                id: item.id,
+                desc: item.description,
+                clinics: 0,
+                doctors: 0,
+              })}
+            >
               {item.icon?.toLowerCase().endsWith('.svg') ? (
                 <SvgUri uri={item.icon} width={SIZE(52)} height={SIZE(52)} style={styles.avatar} />
               ) : (
@@ -73,30 +111,49 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SIZE(20),
-    paddingVertical: SIZE(12),
+    paddingHorizontal: SIZE(18),
+    paddingVertical: SIZE(10),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    gap: SIZE(8),
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(8),
+    flex: 1,
   },
   backBtn: {
-    width: SIZE(36),
-    height: SIZE(36),
+    width: SIZE(32),
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headerSearch: {
+    flex: 1,
+    height: SIZE(48),
+  },
+  searchBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(14),
+    color: colors.primary,
+  },
   title: {
     fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(16),
+    fontSize: SIZE(18),
     color: colors.textPrimary,
   },
-  searchWrapper: {
-    paddingHorizontal: SIZE(18),
-    marginBottom: SIZE(12),
-    backgroundColor: colors.white,
-  },
   listContent: {
-    paddingHorizontal: SIZE(18),
+    paddingHorizontal: SIZE(20),
+    paddingTop: SIZE(12),
     paddingBottom: SIZE(24),
     gap: SIZE(12),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
   },
   card: {
     flexDirection: 'row',

@@ -30,11 +30,11 @@ export default function SwipeToBook({ onSwipeComplete, disabled }: Props) {
 
   const thumbStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translationX.value }],
-  }));
+  }), [translationX]);
 
   const labelOpacity = useAnimatedStyle(() => ({
     opacity: 1 - translationX.value / maxX,
-  }));
+  }), [translationX, maxX]);
 
   const pan = Gesture.Pan()
     .minDistance(1)

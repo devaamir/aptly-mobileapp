@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert, KeyboardAvoidingView, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert, KeyboardAvoidingView, Modal, useWindowDimensions } from 'react-native';
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -40,6 +40,8 @@ const to12h = (time: string) => {
 
 export default function BookAppointmentScreen({ navigation, route }: Props) {
   const { doctor, clinicId } = route.params;
+  const { width: screenWidth } = useWindowDimensions();
+  const isDesktop = screenWidth >= 768;
   const relevantCenters = clinicId
     ? doctor.medicalCenters.filter(mc => mc.id === clinicId)
     : doctor.medicalCenters;
@@ -161,12 +163,127 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
     }
   };
 
+  // Derived values for the booking summary card
+  const selectedSession_obj = todaySessions.find(s => s.id === selectedSession);
+  const selectedPatient_obj = patients.find(p => p.id === selectedPatient);
+
+  // The left-column form content (shared between mobile and desktop)
+  const formContent = (
+    <>
+      {/* Date picker */}
+      <View style={styles.sectionHeader}>
+        <Text allowFontScaling={false} style={styles.sectionTitle}>Select Date</Text>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => setShowCalendar(true)}>
+          <CalendarIcon width={SIZE(20)} height={SIZE(20)} />
+        </TouchableOpacity>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysRow}>
+        {DAYS.map((d, i) => (
+          <TouchableOpacity
+            key={i}
+            style={[styles.dayChip, selectedDay === i && styles.dayChipActive]}
+            onPress={() => setSelectedDay(i)}
+            activeOpacity={0.8}>
+            <Text allowFontScaling={false} style={[styles.dayLabel, selectedDay === i && styles.dayLabelActive]}>{d.weekday}</Text>
+            <Text allowFontScaling={false} style={[styles.dayDate, selectedDay === i && styles.dayLabelActive]}>{d.dateMonth}</Text>
+            {i === 0 && <View style={styles.todayDot} />}
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {scheduleFetching ? (
+        <View style={styles.slotCard}>
+          <Text allowFontScaling={false} style={styles.slotTime}>Loading sessions...</Text>
+        </View>
+      ) : todaySessions.length > 0 ? (
+        todaySessions.length === 1 ? (
+          <View style={styles.slotCard}>
+            <Text allowFontScaling={false} style={styles.slotTime}>{to12h(todaySessions[0].startTime)} - {to12h(todaySessions[0].stopTime)}</Text>
+            <Text allowFontScaling={false} style={[styles.slotTickets, isSessionExpired(todaySessions[0]) && { color: colors.danger }]}>
+              {isSessionExpired(todaySessions[0]) ? 'Session Expired' : `${todaySessions[0].remainingTokenCount ?? todaySessions[0].tokenLimit} tokens remaining`}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.sessionList}>
+            {todaySessions.map(s => (
+              <TouchableOpacity key={s.id} style={styles.sessionRow} activeOpacity={0.8} onPress={() => setSelectedSession(s.id)}>
+                <View style={[styles.radio, selectedSession === s.id && styles.radioActive]}>
+                  {selectedSession === s.id && <View style={styles.radioDot} />}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={styles.sessionRowInner}>
+                    <Text allowFontScaling={false} style={styles.slotTime}>{to12h(s.startTime)} - {to12h(s.stopTime)}</Text>
+                    <Text allowFontScaling={false} style={[styles.slotTickets, isSessionExpired(s) && { color: colors.danger }]}>
+                      {isSessionExpired(s) ? 'Session Expired' : `${s.remainingTokenCount ?? s.tokenLimit} tokens available`}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )
+      ) : (
+        <View style={styles.slotCard}>
+          <Text allowFontScaling={false} style={styles.slotTime}>No sessions</Text>
+          <Text allowFontScaling={false} style={[styles.slotTickets, { color: colors.danger }]}>Doctor is not available</Text>
+        </View>
+      )}
+
+      {/* Select patient */}
+      <Text allowFontScaling={false} style={styles.sectionTitle}>Select Patient</Text>
+      <PatientSelector
+        patients={patients.map(p => ({ id: p.id, name: p.name, phone: p.phoneNumber, age: p.dateOfBirth ? formatAge(p.dateOfBirth) : '—', gender: p.gender }))}
+        selectedId={selectedPatient}
+        onSelect={setSelectedPatient}
+        showRadio
+        onAddMember={() => setShowAddMember(true)}
+      />
+    </>
+  );
+
+  // Desktop right-column booking summary card
+  const summaryCard = (
+    <View style={styles.summaryCard}>
+      <Text allowFontScaling={false} style={styles.summaryTitle}>Your booking</Text>
+      <View style={styles.summaryDivider} />
+      <View style={styles.summaryRow}>
+        <Text allowFontScaling={false} style={styles.summaryLabel}>Doctor</Text>
+        <Text allowFontScaling={false} style={styles.summaryValue}>{doctor.name}</Text>
+      </View>
+      <View style={styles.summaryRow}>
+        <Text allowFontScaling={false} style={styles.summaryLabel}>Date</Text>
+        <Text allowFontScaling={false} style={styles.summaryValue}>
+          {DAYS[selectedDay].full.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+        </Text>
+      </View>
+      <View style={styles.summaryRow}>
+        <Text allowFontScaling={false} style={styles.summaryLabel}>Session</Text>
+        <Text allowFontScaling={false} style={styles.summaryValue}>
+          {selectedSession_obj ? `${to12h(selectedSession_obj.startTime)} - ${to12h(selectedSession_obj.stopTime)}` : '—'}
+        </Text>
+      </View>
+      <View style={styles.summaryRow}>
+        <Text allowFontScaling={false} style={styles.summaryLabel}>Patient</Text>
+        <Text allowFontScaling={false} style={styles.summaryValue}>{selectedPatient_obj?.name ?? '—'}</Text>
+      </View>
+      <View style={styles.summaryDivider} />
+      <TouchableOpacity
+        style={[styles.getTokenBtn, (!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(selectedSession_obj ?? { stopTime: '00:00:00' })) && styles.getTokenBtnDisabled]}
+        activeOpacity={0.8}
+        disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(selectedSession_obj ?? { stopTime: '00:00:00' })}
+        onPress={handleGetToken}
+      >
+        <Text allowFontScaling={false} style={styles.getTokenBtnText}>{loading ? 'Booking...' : 'Get Token'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
-        {/* Header */}
+        {/* Header — full width */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
             <BackArrow width={SIZE(26)} height={SIZE(26)} />
@@ -177,100 +294,59 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
               style={styles.avatarImg}
             />
           </View>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text allowFontScaling={false} style={styles.title}>{doctor.name}</Text>
-            {relevantCenters[0]?.name ? <Text allowFontScaling={false} style={styles.headerSubtitle}>{relevantCenters[0].name}</Text> : null}
+            {relevantCenters[0]?.name
+              ? <Text allowFontScaling={false} style={styles.headerSubtitle}>
+                  {doctor.specialties?.[0]?.name ? `${doctor.specialties[0].name} • ` : ''}{relevantCenters[0].name}
+                </Text>
+              : null}
           </View>
         </View>
         <View style={styles.divider} />
-        <View style={styles.statusBar}>
-          <Text allowFontScaling={false} style={styles.bookingTime} numberOfLines={1} ellipsizeMode="tail">
-            {todaySessions.length ? `Available: ${todaySessions.map(s => `${to12h(s.startTime)} - ${to12h(s.stopTime)}`).join(', ')}` : 'No sessions this day'}
-          </Text>
-          <View style={styles.statusRight}>
-            <View style={[styles.statusBadge, !isOpen && { backgroundColor: colors.warningLight }]}>
-              <View style={[styles.statusDot, !isOpen && { backgroundColor: colors.warningDot }]} />
-              <Text allowFontScaling={false} style={[styles.statusText, !isOpen && { color: colors.warningText }]}>{isOpen ? 'Booking Opened' : 'Not Started'}</Text>
-            </View>
-            <DownArrowGrey width={SIZE(20)} height={SIZE(20)} />
-          </View>
-        </View>
 
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-          {/* Date picker */}
-          <View style={styles.sectionHeader}>
-            <Text allowFontScaling={false} style={styles.sectionTitle}>Select Date</Text>
-            <TouchableOpacity activeOpacity={0.7} onPress={() => setShowCalendar(true)}>
-              <CalendarIcon width={SIZE(20)} height={SIZE(20)} />
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysRow}>
-            {DAYS.map((d, i) => (
-              <TouchableOpacity
-                key={i}
-                style={[styles.dayChip, selectedDay === i && styles.dayChipActive]}
-                onPress={() => setSelectedDay(i)}
-                activeOpacity={0.8}>
-                <Text allowFontScaling={false} style={[styles.dayLabel, selectedDay === i && styles.dayLabelActive]}>{d.weekday}</Text>
-                <Text allowFontScaling={false} style={[styles.dayDate, selectedDay === i && styles.dayLabelActive]}>{d.dateMonth}</Text>
-                {i === 0 && <View style={styles.todayDot} />}
-              </TouchableOpacity>
-            ))}
+        {isDesktop ? (
+          // Desktop: 2-column layout inside a centred scroll
+          <ScrollView contentContainerStyle={styles.desktopScrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <View style={styles.desktopLayout}>
+              <View style={styles.desktopLeft}>
+                {formContent}
+              </View>
+              <View style={styles.desktopRight}>
+                {summaryCard}
+              </View>
+            </View>
           </ScrollView>
-
-          {scheduleFetching ? (
-            <View style={styles.slotCard}>
-              <Text allowFontScaling={false} style={styles.slotTime}>Loading sessions...</Text>
-            </View>
-          ) : todaySessions.length > 0 ? (
-            todaySessions.length === 1 ? (
-              <View style={styles.slotCard}>
-                <Text allowFontScaling={false} style={styles.slotTime}>{to12h(todaySessions[0].startTime)} - {to12h(todaySessions[0].stopTime)}</Text>
-                <Text allowFontScaling={false} style={[styles.slotTickets, isSessionExpired(todaySessions[0]) && { color: colors.danger }]}>
-                  {isSessionExpired(todaySessions[0]) ? 'Session Expired' : `${todaySessions[0].remainingTokenCount ?? todaySessions[0].tokenLimit} tokens remaining`}
-                </Text>
+        ) : (
+          // Mobile: single column + swipe footer
+          <>
+            <View style={styles.statusBar}>
+              <Text allowFontScaling={false} style={styles.bookingTime} numberOfLines={1} ellipsizeMode="tail">
+                {todaySessions.length ? `Available: ${todaySessions.map(s => `${to12h(s.startTime)} - ${to12h(s.stopTime)}`).join(', ')}` : 'No sessions this day'}
+              </Text>
+              <View style={styles.statusRight}>
+                <View style={[styles.statusBadge, !isOpen && { backgroundColor: colors.warningLight }]}>
+                  <View style={[styles.statusDot, !isOpen && { backgroundColor: colors.warningDot }]} />
+                  <Text allowFontScaling={false} style={[styles.statusText, !isOpen && { color: colors.warningText }]}>{isOpen ? 'Booking Opened' : 'Not Started'}</Text>
+                </View>
+                <DownArrowGrey width={SIZE(20)} height={SIZE(20)} />
               </View>
-            ) : (
-              <View style={styles.sessionList}>
-                {todaySessions.map(s => (
-                  <TouchableOpacity key={s.id} style={styles.sessionRow} activeOpacity={0.8} onPress={() => setSelectedSession(s.id)}>
-                    <View style={[styles.radio, selectedSession === s.id && styles.radioActive]}>
-                      {selectedSession === s.id && <View style={styles.radioDot} />}
-                    </View>
-                    <View>
-                      <Text allowFontScaling={false} style={styles.slotTime}>{to12h(s.startTime)} - {to12h(s.stopTime)}</Text>
-                      <Text allowFontScaling={false} style={[styles.slotTickets, isSessionExpired(s) && { color: colors.danger }]}>
-                        {isSessionExpired(s) ? 'Session Expired' : `${s.remainingTokenCount ?? s.tokenLimit} tokens remaining`}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )
-          ) : (
-            <View style={styles.slotCard}>
-              <Text allowFontScaling={false} style={styles.slotTime}>No sessions</Text>
-              <Text allowFontScaling={false} style={[styles.slotTickets, { color: colors.danger }]}>Doctor is not available</Text>
             </View>
-          )}
-
-          {/* Select patient */}
-          <Text allowFontScaling={false} style={styles.sectionTitle}>Select Patient</Text>
-          <PatientSelector
-            patients={patients.map(p => ({ id: p.id, name: p.name, phone: p.phoneNumber, age: p.dateOfBirth ? formatAge(p.dateOfBirth) : '—', gender: p.gender }))}
-            selectedId={selectedPatient}
-            onSelect={setSelectedPatient}
-            showRadio
-            onAddMember={() => setShowAddMember(true)}
-          />
-        </ScrollView>
-
-        <View style={styles.stickyFooter}>
-          <SwipeToBook
-            disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
-            onSwipeComplete={handleGetToken}
-          />
-        </View>
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+              <View style={styles.content}>
+                {formContent}
+              </View>
+            </ScrollView>
+            <View style={styles.stickyFooter}>
+              <View style={styles.centeredContainer}>
+                <SwipeToBook
+                  disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
+                  onSwipeComplete={handleGetToken}
+                />
+              </View>
+            </View>
+          </>
+        )}
       </SafeAreaView>
 
       <Modal visible={showCalendar} transparent animationType="slide" onRequestClose={() => setShowCalendar(false)}>
@@ -400,7 +476,77 @@ const styles = StyleSheet.create({
     fontSize: SIZE(11),
     color: colors.successText,
   },
-  content: { padding: SIZE(18), gap: SIZE(16) },
+  scrollContent: {
+    alignItems: 'center',
+  },
+  content: {
+    padding: SIZE(18),
+    gap: SIZE(16),
+    width: '100%',
+    maxWidth: 1240,
+  },
+  centeredContainer: {
+    width: '100%',
+    maxWidth: 1240,
+    alignSelf: 'center',
+  },
+  // Desktop 2-column layout
+  desktopScrollContent: {
+    alignItems: 'center',
+    paddingVertical: SIZE(24),
+    paddingHorizontal: SIZE(24),
+  },
+  desktopLayout: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SIZE(24),
+    width: '100%',
+    maxWidth: 1240,
+  },
+  desktopLeft: {
+    flex: 1,
+    gap: SIZE(16),
+  },
+  desktopRight: {
+    width: SIZE(300),
+    flexShrink: 0,
+  },
+  summaryCard: {
+    borderRadius: SIZE(16),
+    borderWidth: 1,
+    borderColor: colors.cardBorderLight,
+    backgroundColor: colors.white,
+    padding: SIZE(20),
+    gap: SIZE(12),
+  },
+  summaryTitle: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(16),
+    color: colors.textPrimary,
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  summaryRow: {
+    gap: SIZE(2),
+  },
+  summaryLabel: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: colors.textSecondary,
+  },
+  summaryValue: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.textPrimary,
+  },
+  sessionRowInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
+  },
   doctorRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -623,6 +769,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.white,
+    alignItems: 'center',
   },
   getTokenBtn: {
     backgroundColor: colors.primary,

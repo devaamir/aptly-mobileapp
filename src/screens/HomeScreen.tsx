@@ -527,6 +527,25 @@ const ListHeader = ({
         renderBannerCard(visibleAppointments[0])
       ) : screenWidth < 768 ? (
         <View style={styles.mobilePromoBanner}>
+          <Svg
+            style={StyleSheet.absoluteFill}
+            width="100%"
+            height="100%"
+            pointerEvents="none"
+          >
+            <Defs>
+              <SvgLinearGradient id="promo-mobile" x1="0" y1="0" x2="1" y2="1">
+                <Stop offset="0" stopColor="#4C6EF5" stopOpacity="1" />
+                <Stop offset="1" stopColor="#1E3A8A" stopOpacity="1" />
+              </SvgLinearGradient>
+            </Defs>
+            <Rect
+              width="100%"
+              height="100%"
+              fill="url(#promo-mobile)"
+              rx={18}
+            />
+          </Svg>
           <View style={styles.promoBadge}>
             <View style={styles.promoGreenDot} />
             <Text allowFontScaling={false} style={styles.promoBadgeText}>
@@ -544,7 +563,11 @@ const ListHeader = ({
             <TouchableOpacity
               style={styles.promoBtn}
               activeOpacity={0.8}
-              onPress={() => Linking.openURL('https://apps.apple.com/in/app/aptly-care/id6798915670')}
+              onPress={() =>
+                Linking.openURL(
+                  'https://apps.apple.com/in/app/aptly-care/id6798915670',
+                )
+              }
             >
               <AppStoreIcon width={20} height={20} />
               <Text allowFontScaling={false} style={styles.promoBtnText}>
@@ -554,7 +577,11 @@ const ListHeader = ({
             <TouchableOpacity
               style={styles.promoBtn}
               activeOpacity={0.8}
-              onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.aptly.aptlycareapp')}
+              onPress={() =>
+                Linking.openURL(
+                  'https://play.google.com/store/apps/details?id=com.aptly.aptlycareapp',
+                )
+              }
             >
               <GooglePlayIcon width={20} height={20} />
               <Text allowFontScaling={false} style={styles.promoBtnText}>
@@ -563,9 +590,9 @@ const ListHeader = ({
             </TouchableOpacity>
           </View>
         </View>
-      ) : (
-        visibleSpotlight && renderBannerCard(visibleSpotlight)
-      )}
+      ) : visibleSpotlight ? (
+        renderBannerCard(visibleSpotlight)
+      ) : null}
       <View style={screenWidth >= 768 ? styles.desktopLayout : undefined}>
         <View style={screenWidth >= 768 ? styles.desktopCardsGrid : undefined}>
           <View
@@ -650,6 +677,31 @@ const ListHeader = ({
         </View>
         {screenWidth >= 768 && (
           <View style={styles.desktopPromoBanner}>
+            <Svg
+              style={StyleSheet.absoluteFill}
+              width="100%"
+              height="100%"
+              pointerEvents="none"
+            >
+              <Defs>
+                <SvgLinearGradient
+                  id="promo-desktop"
+                  x1="0"
+                  y1="0"
+                  x2="1"
+                  y2="1"
+                >
+                  <Stop offset="0" stopColor="#4C6EF5" stopOpacity="1" />
+                  <Stop offset="1" stopColor="#1E3A8A" stopOpacity="1" />
+                </SvgLinearGradient>
+              </Defs>
+              <Rect
+                width="100%"
+                height="100%"
+                fill="url(#promo-desktop)"
+                rx={22}
+              />
+            </Svg>
             <View style={styles.promoBadge}>
               <View style={styles.promoGreenDot} />
               <Text allowFontScaling={false} style={styles.promoBadgeText}>
@@ -667,7 +719,11 @@ const ListHeader = ({
               <TouchableOpacity
                 style={styles.promoBtn}
                 activeOpacity={0.8}
-                onPress={() => Linking.openURL('https://apps.apple.com/in/app/aptly-care/id6798915670')}
+                onPress={() =>
+                  Linking.openURL(
+                    'https://apps.apple.com/in/app/aptly-care/id6798915670',
+                  )
+                }
               >
                 <AppStoreIcon width={20} height={20} />
                 <Text allowFontScaling={false} style={styles.promoBtnText}>
@@ -677,7 +733,11 @@ const ListHeader = ({
               <TouchableOpacity
                 style={styles.promoBtn}
                 activeOpacity={0.8}
-                onPress={() => Linking.openURL('https://play.google.com/store/apps/details?id=com.aptly.aptlycareapp')}
+                onPress={() =>
+                  Linking.openURL(
+                    'https://play.google.com/store/apps/details?id=com.aptly.aptlycareapp',
+                  )
+                }
               >
                 <GooglePlayIcon width={20} height={20} />
                 <Text allowFontScaling={false} style={styles.promoBtnText}>
@@ -1145,412 +1205,159 @@ export default function HomeScreen() {
     return (
       <>
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-        <Svg
-          style={StyleSheet.absoluteFill}
-          width={screenWidth}
-          height={screenHeight}
-          pointerEvents="none"
-        >
-          <Defs>
-            <SvgLinearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#FFFFFF" stopOpacity="1" />
-              <Stop offset="1" stopColor="#F5F5F6" stopOpacity="1" />
-            </SvgLinearGradient>
-          </Defs>
-          <Rect width={screenWidth} height={screenHeight} fill="url(#bg)" />
-        </Svg>
-        <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            {screenWidth >= 768 && (
-              <Image
-                source={require('../assets/images/aptly-logo3.png')}
-                style={styles.headerLogo}
-                resizeMode="contain"
-              />
-            )}
-            <TouchableOpacity
-              style={styles.locationBtn}
-              activeOpacity={0.7}
-              onPress={() => navigation.navigate('LocationSearch')}
-            >
-              <LocationIcon
-                width={SIZE(19)}
-                height={SIZE(19)}
-                style={styles.locationIcon}
-              />
-              <View style={{ maxWidth: SIZE(150) }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: SIZE(4),
-                  }}
-                >
-                  <Text
-                    allowFontScaling={false}
-                    style={styles.locationText}
-                    numberOfLines={1}
-                  >
-                    {loadingLocation
-                      ? 'Loading...'
-                      : location
-                      ? location.mainText
-                      : 'Select your location'}
-                  </Text>
-                  <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
-                </View>
-                {location?.secondaryText ? (
-                  <Text
-                    allowFontScaling={false}
-                    style={styles.locationSub}
-                    numberOfLines={1}
-                  >
-                    {location.secondaryText}
-                  </Text>
-                ) : null}
-              </View>
-            </TouchableOpacity>
-          </View>
-          {screenWidth >= 768 && (
-            <View style={styles.headerCenter}>
-              {(['Home', 'Appointments', 'Profile'] as const).map(tab => {
-                const isActive = activeTabName === tab;
-                return (
-                  <TouchableOpacity
-                    key={tab}
-                    activeOpacity={0.7}
-                    style={styles.headerTab}
-                    onPress={() => {
-                      if (tab === 'Appointments' && !user) {
-                        setShowLoginModal(true);
-                        return;
-                      }
-                      (navigation as any).navigate('Main', { screen: tab });
+          <Svg
+            style={StyleSheet.absoluteFill}
+            width={screenWidth}
+            height={screenHeight}
+            pointerEvents="none"
+          >
+            <Defs>
+              <SvgLinearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor="#FFFFFF" stopOpacity="1" />
+                <Stop offset="1" stopColor="#F5F5F6" stopOpacity="1" />
+              </SvgLinearGradient>
+            </Defs>
+            <Rect width={screenWidth} height={screenHeight} fill="url(#bg)" />
+          </Svg>
+          <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              {screenWidth >= 768 && (
+                <Image
+                  source={require('../assets/images/aptly-logo3.png')}
+                  style={styles.headerLogo}
+                  resizeMode="contain"
+                />
+              )}
+              <TouchableOpacity
+                style={styles.locationBtn}
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('LocationSearch')}
+              >
+                <LocationIcon
+                  width={SIZE(19)}
+                  height={SIZE(19)}
+                  style={styles.locationIcon}
+                />
+                <View style={{ maxWidth: SIZE(150) }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: SIZE(4),
                     }}
                   >
                     <Text
                       allowFontScaling={false}
-                      style={[
-                        styles.headerTabText,
-                        isActive && styles.headerTabTextActive,
-                      ]}
+                      style={styles.locationText}
+                      numberOfLines={1}
                     >
-                      {tab}
+                      {loadingLocation
+                        ? 'Loading...'
+                        : location
+                        ? location.mainText
+                        : 'Select your location'}
                     </Text>
-                    {isActive && <View style={styles.headerTabIndicator} />}
-                  </TouchableOpacity>
-                );
-              })}
+                    <DownArrowGrey width={SIZE(16)} height={SIZE(16)} />
+                  </View>
+                  {location?.secondaryText ? (
+                    <Text
+                      allowFontScaling={false}
+                      style={styles.locationSub}
+                      numberOfLines={1}
+                    >
+                      {location.secondaryText}
+                    </Text>
+                  ) : null}
+                </View>
+              </TouchableOpacity>
             </View>
-          )}
-          <View style={styles.headerRight}>
             {screenWidth >= 768 && (
+              <View style={styles.headerCenter}>
+                {(['Home', 'Appointments'] as const).map(tab => {
+                  const isActive = activeTabName === tab;
+                  return (
+                    <TouchableOpacity
+                      key={tab}
+                      activeOpacity={0.7}
+                      style={styles.headerTab}
+                      onPress={() => {
+                        if (tab === 'Appointments' && !user) {
+                          setShowLoginModal(true);
+                          return;
+                        }
+                        (navigation as any).navigate('Main', { screen: tab });
+                      }}
+                    >
+                      <Text
+                        allowFontScaling={false}
+                        style={[
+                          styles.headerTabText,
+                          isActive && styles.headerTabTextActive,
+                        ]}
+                      >
+                        {tab}
+                      </Text>
+                      {isActive && <View style={styles.headerTabIndicator} />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+            <View style={styles.headerRight}>
+              {screenWidth >= 768 && (
+                <TouchableOpacity
+                  style={styles.headerSearchWrapper}
+                  activeOpacity={0.8}
+                  onPress={() => navigation.navigate('Search')}
+                >
+                  <AnimatedSearchBar style={{ height: SIZE(34) }} />
+                </TouchableOpacity>
+              )}
+              {Platform.OS === 'web' && !isInstalled && (
+                <TouchableOpacity
+                  style={styles.installBtn}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    canInstall ? install() : setShowInstallModal(true)
+                  }
+                >
+                  <Text allowFontScaling={false} style={styles.installBtnText}>
+                    Install App
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          {/* Search - mobile only */}
+          {screenWidth < 768 && (
+            <View style={styles.searchWrapper}>
               <TouchableOpacity
-                style={styles.headerSearchWrapper}
                 activeOpacity={0.8}
                 onPress={() => navigation.navigate('Search')}
               >
-                <AnimatedSearchBar style={{ height: SIZE(34) }} />
+                <AnimatedSearchBar />
               </TouchableOpacity>
-            )}
-            {Platform.OS === 'web' && !isInstalled && (
-              <TouchableOpacity
-                style={styles.installBtn}
-                activeOpacity={0.7}
-                onPress={() =>
-                  canInstall ? install() : setShowInstallModal(true)
-                }
-              >
-                <Text allowFontScaling={false} style={styles.installBtnText}>
-                  Install App
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
+            </View>
+          )}
 
-        {/* Search - mobile only */}
-        {screenWidth < 768 && (
-          <View style={styles.searchWrapper}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate('Search')}
+          {/* Everything below scrolls */}
+          {screenWidth >= 768 ? (
+            // Desktop: custom 2-column grid with ScrollView
+            <ScrollView
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={() => fetchData(true, 'pull-to-refresh')}
+                  colors={[colors.primary]}
+                  tintColor={colors.primary}
+                />
+              }
             >
-              <AnimatedSearchBar />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Everything below scrolls */}
-        {screenWidth >= 768 ? (
-          // Desktop: custom 2-column grid with ScrollView
-          <ScrollView
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={() => fetchData(true, 'pull-to-refresh')}
-                colors={[colors.primary]}
-                tintColor={colors.primary}
-              />
-            }
-          >
-            <ListHeader
-              onTokenPress={appt =>
-                navigation.navigate('TokenDetail', { appointment: appt })
-              }
-              onspecialstPress={() => navigation.navigate('specialst')}
-              onDoctorsPress={() => navigation.navigate('Doctors')}
-              onClinicsPress={() => navigation.navigate('Clinics')}
-              spotlightAppt={spotlightAppt}
-              activeAppointments={activeAppointments}
-              hasNearbyClinics={clinics.length > 0}
-              hasLocation={!!location}
-              trackData={trackData}
-              recommendedClinics={location ? clinics : fallbackClinics}
-              onClinicPress={item =>
-                navigation.navigate('HospitalDetail', {
-                  id: item.id,
-                  name: item.name,
-                  specialty: item.specialties[0]?.name ?? '',
-                  location: item.address,
-                })
-              }
-              userLocation={
-                location
-                  ? {
-                      latitude: location.latitude,
-                      longitude: location.longitude,
-                    }
-                  : null
-              }
-            />
-            {/* Clinic grid */}
-            {(location ? clinics : []).length === 0 ? (
-              // Empty state
-              <View style={styles.desktopClinicSection}>
-                <View style={[styles.emptyContainer, { paddingHorizontal: 0 }]}>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    style={styles.emptyCard}
-                    onPress={() => navigation.navigate('LocationSearch')}
-                  >
-                    <Image
-                      source={require('../assets/images/location-image.png')}
-                      style={styles.emptyCardImage}
-                    />
-                    <View style={styles.emptyCardInfo}>
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.emptyCardTitle}
-                        numberOfLines={2}
-                      >
-                        We're Still Growing Here
-                      </Text>
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.emptyCardSubtitle}
-                        numberOfLines={2}
-                      >
-                        No clinics within {distance} km. Explore the nearest
-                        available clinics below
-                      </Text>
-                      <View style={styles.emptyCardBtn}>
-                        <Text
-                          allowFontScaling={false}
-                          style={styles.emptyCardBtnText}
-                        >
-                          Use another location
-                        </Text>
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-                {(() => {
-                  const rows: Clinic[][] = [];
-                  for (let i = 0; i < fallbackClinics.length; i += 2)
-                    rows.push(fallbackClinics.slice(i, i + 2));
-                  return rows.map((row, ri) => (
-                    <View key={ri} style={styles.clinicGridRow}>
-                      {row.map(item => (
-                        <ClinicCard
-                          key={item.id}
-                          name={item.name}
-                          subType={item.medicalSystem?.name ?? item.type}
-                          specialties={item.specialties.map(
-                            (s: { name: string }) => s.name,
-                          )}
-                          location={item.address}
-                          image={item.profilePicture}
-                          distance={
-                            location
-                              ? getDistance(
-                                  location.latitude,
-                                  location.longitude,
-                                  item.latitude,
-                                  item.longitude,
-                                )
-                              : undefined
-                          }
-                          onPress={() =>
-                            navigation.navigate('HospitalDetail', {
-                              id: item.id,
-                              name: item.name,
-                              specialty: item.specialties[0]?.name ?? '',
-                              location: item.address,
-                            })
-                          }
-                          style={styles.clinicGridCard}
-                        />
-                      ))}
-                      {row.length === 1 && (
-                        <View style={styles.clinicGridCardEmpty} />
-                      )}
-                    </View>
-                  ));
-                })()}
-              </View>
-            ) : (
-              // Nearby clinics 2-column grid
-              <View style={styles.desktopClinicSection}>
-                {(() => {
-                  const rows: Clinic[][] = [];
-                  for (let i = 0; i < clinics.length; i += 2)
-                    rows.push(clinics.slice(i, i + 2));
-                  return rows.map((row, ri) => (
-                    <View key={ri} style={styles.clinicGridRow}>
-                      {row.map(item => (
-                        <ClinicCard
-                          key={item.id}
-                          name={item.name}
-                          subType={item.medicalSystem?.name ?? item.type}
-                          specialties={item.specialties.map(
-                            (s: { name: string }) => s.name,
-                          )}
-                          location={item.address}
-                          image={item.profilePicture}
-                          distance={
-                            location
-                              ? getDistance(
-                                  location.latitude,
-                                  location.longitude,
-                                  item.latitude,
-                                  item.longitude,
-                                )
-                              : undefined
-                          }
-                          onPress={() =>
-                            navigation.navigate('HospitalDetail', {
-                              id: item.id,
-                              name: item.name,
-                              specialty: item.specialties[0]?.name ?? '',
-                              location: item.address,
-                            })
-                          }
-                          style={styles.clinicGridCard}
-                        />
-                      ))}
-                      {row.length === 1 && (
-                        <View style={styles.clinicGridCardEmpty} />
-                      )}
-                    </View>
-                  ));
-                })()}
-              </View>
-            )}
-          </ScrollView>
-        ) : (
-          <FlatList
-            data={location ? clinics : []}
-            keyExtractor={item => item.id}
-            extraData={trackData}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={() => fetchData(true, 'pull-to-refresh')}
-                colors={[colors.primary]}
-                tintColor={colors.primary}
-              />
-            }
-            ListFooterComponent={null}
-            ListEmptyComponent={
-              <View>
-                <View style={styles.emptyContainer}>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    style={styles.emptyCard}
-                    onPress={() => navigation.navigate('LocationSearch')}
-                  >
-                    <Image
-                      source={require('../assets/images/location-image.png')}
-                      style={styles.emptyCardImage}
-                    />
-                    <View style={styles.emptyCardInfo}>
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.emptyCardTitle}
-                        numberOfLines={2}
-                      >
-                        We're Still Growing Here
-                      </Text>
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.emptyCardSubtitle}
-                        numberOfLines={2}
-                      >
-                        No clinics within {distance} km. Explore the nearest
-                        available clinics below
-                      </Text>
-                      <View style={styles.emptyCardBtn}>
-                        <Text
-                          allowFontScaling={false}
-                          style={styles.emptyCardBtnText}
-                        >
-                          Use another location
-                        </Text>
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-                {fallbackClinics.map(item => (
-                  <ClinicCard
-                    key={item.id}
-                    name={item.name}
-                    subType={item.medicalSystem?.name ?? item.type}
-                    specialties={item.specialties.map(
-                      (s: { name: string }) => s.name,
-                    )}
-                    location={item.address}
-                    image={item.profilePicture}
-                    distance={
-                      location
-                        ? getDistance(
-                            location.latitude,
-                            location.longitude,
-                            item.latitude,
-                            item.longitude,
-                          )
-                        : undefined
-                    }
-                    onPress={() =>
-                      navigation.navigate('HospitalDetail', {
-                        id: item.id,
-                        name: item.name,
-                        specialty: item.specialties[0]?.name ?? '',
-                        location: item.address,
-                      })
-                    }
-                    style={styles.clinicCard}
-                  />
-                ))}
-              </View>
-            }
-            ListHeaderComponent={
               <ListHeader
                 onTokenPress={appt =>
                   navigation.navigate('TokenDetail', { appointment: appt })
@@ -1581,28 +1388,245 @@ export default function HomeScreen() {
                     : null
                 }
               />
-            }
-            renderItem={({ item }) => {
-              return (
-                <ClinicCard
-                  name={item.name}
-                  subType={item.medicalSystem?.name ?? item.type}
-                  specialties={item.specialties.map(
-                    (s: { name: string }) => s.name,
-                  )}
-                  location={item.address}
-                  image={item.profilePicture}
-                  distance={
-                    location
-                      ? getDistance(
-                          location.latitude,
-                          location.longitude,
-                          item.latitude,
-                          item.longitude,
-                        )
-                      : undefined
+              {/* Clinic grid */}
+              {(location ? clinics : []).length === 0 ? (
+                // Empty state
+                <View style={styles.desktopClinicSection}>
+                  <View
+                    style={[styles.emptyContainer, { paddingHorizontal: 0 }]}
+                  >
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      style={styles.emptyCard}
+                      onPress={() => navigation.navigate('LocationSearch')}
+                    >
+                      <Image
+                        source={require('../assets/images/location-image.png')}
+                        style={styles.emptyCardImage}
+                      />
+                      <View style={styles.emptyCardInfo}>
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.emptyCardTitle}
+                          numberOfLines={2}
+                        >
+                          We're Still Growing Here
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.emptyCardSubtitle}
+                          numberOfLines={2}
+                        >
+                          No clinics within {distance} km. Explore the nearest
+                          available clinics below
+                        </Text>
+                        <View style={styles.emptyCardBtn}>
+                          <Text
+                            allowFontScaling={false}
+                            style={styles.emptyCardBtnText}
+                          >
+                            Use another location
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                  {(() => {
+                    const rows: Clinic[][] = [];
+                    for (let i = 0; i < fallbackClinics.length; i += 2)
+                      rows.push(fallbackClinics.slice(i, i + 2));
+                    return rows.map((row, ri) => (
+                      <View key={ri} style={styles.clinicGridRow}>
+                        {row.map(item => (
+                          <ClinicCard
+                            key={item.id}
+                            name={item.name}
+                            subType={item.medicalSystem?.name ?? item.type}
+                            specialties={item.specialties.map(
+                              (s: { name: string }) => s.name,
+                            )}
+                            location={item.address}
+                            image={item.profilePicture}
+                            distance={
+                              location
+                                ? getDistance(
+                                    location.latitude,
+                                    location.longitude,
+                                    item.latitude,
+                                    item.longitude,
+                                  )
+                                : undefined
+                            }
+                            onPress={() =>
+                              navigation.navigate('HospitalDetail', {
+                                id: item.id,
+                                name: item.name,
+                                specialty: item.specialties[0]?.name ?? '',
+                                location: item.address,
+                              })
+                            }
+                            style={styles.clinicGridCard}
+                          />
+                        ))}
+                        {row.length === 1 && (
+                          <View style={styles.clinicGridCardEmpty} />
+                        )}
+                      </View>
+                    ));
+                  })()}
+                </View>
+              ) : (
+                // Nearby clinics 2-column grid
+                <View style={styles.desktopClinicSection}>
+                  {(() => {
+                    const rows: Clinic[][] = [];
+                    for (let i = 0; i < clinics.length; i += 2)
+                      rows.push(clinics.slice(i, i + 2));
+                    return rows.map((row, ri) => (
+                      <View key={ri} style={styles.clinicGridRow}>
+                        {row.map(item => (
+                          <ClinicCard
+                            key={item.id}
+                            name={item.name}
+                            subType={item.medicalSystem?.name ?? item.type}
+                            specialties={item.specialties.map(
+                              (s: { name: string }) => s.name,
+                            )}
+                            location={item.address}
+                            image={item.profilePicture}
+                            distance={
+                              location
+                                ? getDistance(
+                                    location.latitude,
+                                    location.longitude,
+                                    item.latitude,
+                                    item.longitude,
+                                  )
+                                : undefined
+                            }
+                            onPress={() =>
+                              navigation.navigate('HospitalDetail', {
+                                id: item.id,
+                                name: item.name,
+                                specialty: item.specialties[0]?.name ?? '',
+                                location: item.address,
+                              })
+                            }
+                            style={styles.clinicGridCard}
+                          />
+                        ))}
+                        {row.length === 1 && (
+                          <View style={styles.clinicGridCardEmpty} />
+                        )}
+                      </View>
+                    ));
+                  })()}
+                </View>
+              )}
+            </ScrollView>
+          ) : (
+            <FlatList
+              data={location ? clinics : []}
+              keyExtractor={item => item.id}
+              extraData={trackData}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={() => fetchData(true, 'pull-to-refresh')}
+                  colors={[colors.primary]}
+                  tintColor={colors.primary}
+                />
+              }
+              ListFooterComponent={null}
+              ListEmptyComponent={
+                <View>
+                  <View style={styles.emptyContainer}>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      style={styles.emptyCard}
+                      onPress={() => navigation.navigate('LocationSearch')}
+                    >
+                      <Image
+                        source={require('../assets/images/location-image.png')}
+                        style={styles.emptyCardImage}
+                      />
+                      <View style={styles.emptyCardInfo}>
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.emptyCardTitle}
+                          numberOfLines={2}
+                        >
+                          We're Still Growing Here
+                        </Text>
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.emptyCardSubtitle}
+                          numberOfLines={2}
+                        >
+                          No clinics within {distance} km. Explore the nearest
+                          available clinics below
+                        </Text>
+                        <View style={styles.emptyCardBtn}>
+                          <Text
+                            allowFontScaling={false}
+                            style={styles.emptyCardBtnText}
+                          >
+                            Use another location
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                  {fallbackClinics.map(item => (
+                    <ClinicCard
+                      key={item.id}
+                      name={item.name}
+                      subType={item.medicalSystem?.name ?? item.type}
+                      specialties={item.specialties.map(
+                        (s: { name: string }) => s.name,
+                      )}
+                      location={item.address}
+                      image={item.profilePicture}
+                      distance={
+                        location
+                          ? getDistance(
+                              location.latitude,
+                              location.longitude,
+                              item.latitude,
+                              item.longitude,
+                            )
+                          : undefined
+                      }
+                      onPress={() =>
+                        navigation.navigate('HospitalDetail', {
+                          id: item.id,
+                          name: item.name,
+                          specialty: item.specialties[0]?.name ?? '',
+                          location: item.address,
+                        })
+                      }
+                      style={styles.clinicCard}
+                    />
+                  ))}
+                </View>
+              }
+              ListHeaderComponent={
+                <ListHeader
+                  onTokenPress={appt =>
+                    navigation.navigate('TokenDetail', { appointment: appt })
                   }
-                  onPress={() =>
+                  onspecialstPress={() => navigation.navigate('specialst')}
+                  onDoctorsPress={() => navigation.navigate('Doctors')}
+                  onClinicsPress={() => navigation.navigate('Clinics')}
+                  spotlightAppt={spotlightAppt}
+                  activeAppointments={activeAppointments}
+                  hasNearbyClinics={clinics.length > 0}
+                  hasLocation={!!location}
+                  trackData={trackData}
+                  recommendedClinics={location ? clinics : fallbackClinics}
+                  onClinicPress={item =>
                     navigation.navigate('HospitalDetail', {
                       id: item.id,
                       name: item.name,
@@ -1610,271 +1634,313 @@ export default function HomeScreen() {
                       location: item.address,
                     })
                   }
-                  style={screenWidth >= 768 ? styles.clinicGridCard : undefined}
+                  userLocation={
+                    location
+                      ? {
+                          latitude: location.latitude,
+                          longitude: location.longitude,
+                        }
+                      : null
+                  }
                 />
-              );
-            }}
-          />
-        )}
+              }
+              renderItem={({ item }) => {
+                return (
+                  <ClinicCard
+                    name={item.name}
+                    subType={item.medicalSystem?.name ?? item.type}
+                    specialties={item.specialties.map(
+                      (s: { name: string }) => s.name,
+                    )}
+                    location={item.address}
+                    image={item.profilePicture}
+                    distance={
+                      location
+                        ? getDistance(
+                            location.latitude,
+                            location.longitude,
+                            item.latitude,
+                            item.longitude,
+                          )
+                        : undefined
+                    }
+                    onPress={() =>
+                      navigation.navigate('HospitalDetail', {
+                        id: item.id,
+                        name: item.name,
+                        specialty: item.specialties[0]?.name ?? '',
+                        location: item.address,
+                      })
+                    }
+                    style={
+                      screenWidth >= 768 ? styles.clinicGridCard : undefined
+                    }
+                  />
+                );
+              }}
+            />
+          )}
 
-        {/* PWA Install Instructions Modal */}
-        {showInstallModal &&
-          (() => {
-            const ua =
-              typeof navigator !== 'undefined' ? navigator.userAgent : '';
-            const isSafari =
-              /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS/i.test(ua);
-            const isFirefox = /Firefox|FxiOS/i.test(ua);
-            const isChromeiOS = /CriOS/i.test(ua);
+          {/* PWA Install Instructions Modal */}
+          {showInstallModal &&
+            (() => {
+              const ua =
+                typeof navigator !== 'undefined' ? navigator.userAgent : '';
+              const isSafari =
+                /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS/i.test(ua);
+              const isFirefox = /Firefox|FxiOS/i.test(ua);
+              const isChromeiOS = /CriOS/i.test(ua);
 
-            type Step = { icon: string; text: React.ReactNode };
-            const steps: Step[] = isSafari
-              ? [
-                  {
-                    icon: '1',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap the{' '}
-                        <Text style={styles.installStepBold}>Share</Text> button{' '}
-                        <Text style={styles.installStepBold}>⎙</Text> at the
-                        bottom of Safari
-                      </Text>
-                    ),
-                  },
-                  {
-                    icon: '2',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Scroll down and tap{' '}
-                        <Text style={styles.installStepBold}>
-                          "Add to Home Screen"
-                        </Text>
-                      </Text>
-                    ),
-                  },
-                  {
-                    icon: '3',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap <Text style={styles.installStepBold}>Add</Text> in
-                        the top-right corner
-                      </Text>
-                    ),
-                  },
-                ]
-              : isFirefox
-              ? [
-                  {
-                    icon: '1',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap the{' '}
-                        <Text style={styles.installStepBold}>⋮ menu</Text> at
-                        the top-right
-                      </Text>
-                    ),
-                  },
-                  {
-                    icon: '2',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap{' '}
-                        <Text style={styles.installStepBold}>"Install"</Text> or{' '}
-                        <Text style={styles.installStepBold}>
-                          "Add to Home Screen"
-                        </Text>
-                      </Text>
-                    ),
-                  },
-                  {
-                    icon: '3',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap <Text style={styles.installStepBold}>Add</Text> to
-                        confirm
-                      </Text>
-                    ),
-                  },
-                ]
-              : isChromeiOS
-              ? [
-                  {
-                    icon: '1',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap the{' '}
-                        <Text style={styles.installStepBold}>Share</Text> button{' '}
-                        <Text style={styles.installStepBold}>⎙</Text> at the
-                        bottom
-                      </Text>
-                    ),
-                  },
-                  {
-                    icon: '2',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap{' '}
-                        <Text style={styles.installStepBold}>
-                          "Add to Home Screen"
-                        </Text>
-                      </Text>
-                    ),
-                  },
-                  {
-                    icon: '3',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap <Text style={styles.installStepBold}>Add</Text> to
-                        confirm
-                      </Text>
-                    ),
-                  },
-                ]
-              : [
-                  // Chrome / Edge on Android or desktop
-                  {
-                    icon: '1',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap the{' '}
-                        <Text style={styles.installStepBold}>⋮ menu</Text> at
-                        the top-right of Chrome
-                      </Text>
-                    ),
-                  },
-                  {
-                    icon: '2',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap{' '}
-                        <Text style={styles.installStepBold}>
-                          "Add to Home Screen"
-                        </Text>{' '}
-                        or{' '}
-                        <Text style={styles.installStepBold}>
-                          "Install App"
-                        </Text>
-                      </Text>
-                    ),
-                  },
-                  {
-                    icon: '3',
-                    text: (
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installStepText}
-                      >
-                        Tap <Text style={styles.installStepBold}>Install</Text>{' '}
-                        to confirm
-                      </Text>
-                    ),
-                  },
-                ];
-
-            return (
-              <TouchableOpacity
-                style={styles.modalOverlay}
-                activeOpacity={1}
-                onPress={() => setShowInstallModal(false)}
-              >
-                <TouchableOpacity
-                  activeOpacity={1}
-                  style={styles.installModal}
-                  onPress={() => {}}
-                >
-                  <View style={styles.installModalHeader}>
-                    <Text
-                      allowFontScaling={false}
-                      style={styles.installModalTitle}
-                    >
-                      Install Aptly
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => setShowInstallModal(false)}
-                      style={styles.installModalClose}
-                    >
-                      <Text
-                        allowFontScaling={false}
-                        style={styles.installModalCloseText}
-                      >
-                        ✕
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Text
-                    allowFontScaling={false}
-                    style={styles.installModalDesc}
-                  >
-                    Add Aptly to your home screen for quick access — it works
-                    just like a native app.
-                  </Text>
-                  {steps.map((step, i) => (
-                    <View key={i} style={styles.installStep}>
-                      <View style={styles.installStepNum}>
+              type Step = { icon: string; text: React.ReactNode };
+              const steps: Step[] = isSafari
+                ? [
+                    {
+                      icon: '1',
+                      text: (
                         <Text
                           allowFontScaling={false}
-                          style={styles.installStepNumText}
+                          style={styles.installStepText}
                         >
-                          {step.icon}
+                          Tap the{' '}
+                          <Text style={styles.installStepBold}>Share</Text>{' '}
+                          button <Text style={styles.installStepBold}>⎙</Text>{' '}
+                          at the bottom of Safari
                         </Text>
-                      </View>
-                      {step.text}
-                    </View>
-                  ))}
+                      ),
+                    },
+                    {
+                      icon: '2',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Scroll down and tap{' '}
+                          <Text style={styles.installStepBold}>
+                            "Add to Home Screen"
+                          </Text>
+                        </Text>
+                      ),
+                    },
+                    {
+                      icon: '3',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap <Text style={styles.installStepBold}>Add</Text> in
+                          the top-right corner
+                        </Text>
+                      ),
+                    },
+                  ]
+                : isFirefox
+                ? [
+                    {
+                      icon: '1',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap the{' '}
+                          <Text style={styles.installStepBold}>⋮ menu</Text> at
+                          the top-right
+                        </Text>
+                      ),
+                    },
+                    {
+                      icon: '2',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap{' '}
+                          <Text style={styles.installStepBold}>"Install"</Text>{' '}
+                          or{' '}
+                          <Text style={styles.installStepBold}>
+                            "Add to Home Screen"
+                          </Text>
+                        </Text>
+                      ),
+                    },
+                    {
+                      icon: '3',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap <Text style={styles.installStepBold}>Add</Text> to
+                          confirm
+                        </Text>
+                      ),
+                    },
+                  ]
+                : isChromeiOS
+                ? [
+                    {
+                      icon: '1',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap the{' '}
+                          <Text style={styles.installStepBold}>Share</Text>{' '}
+                          button <Text style={styles.installStepBold}>⎙</Text>{' '}
+                          at the bottom
+                        </Text>
+                      ),
+                    },
+                    {
+                      icon: '2',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap{' '}
+                          <Text style={styles.installStepBold}>
+                            "Add to Home Screen"
+                          </Text>
+                        </Text>
+                      ),
+                    },
+                    {
+                      icon: '3',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap <Text style={styles.installStepBold}>Add</Text> to
+                          confirm
+                        </Text>
+                      ),
+                    },
+                  ]
+                : [
+                    // Chrome / Edge on Android or desktop
+                    {
+                      icon: '1',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap the{' '}
+                          <Text style={styles.installStepBold}>⋮ menu</Text> at
+                          the top-right of Chrome
+                        </Text>
+                      ),
+                    },
+                    {
+                      icon: '2',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap{' '}
+                          <Text style={styles.installStepBold}>
+                            "Add to Home Screen"
+                          </Text>{' '}
+                          or{' '}
+                          <Text style={styles.installStepBold}>
+                            "Install App"
+                          </Text>
+                        </Text>
+                      ),
+                    },
+                    {
+                      icon: '3',
+                      text: (
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installStepText}
+                        >
+                          Tap{' '}
+                          <Text style={styles.installStepBold}>Install</Text> to
+                          confirm
+                        </Text>
+                      ),
+                    },
+                  ];
+
+              return (
+                <TouchableOpacity
+                  style={styles.modalOverlay}
+                  activeOpacity={1}
+                  onPress={() => setShowInstallModal(false)}
+                >
                   <TouchableOpacity
-                    style={styles.installModalBtn}
-                    activeOpacity={0.8}
-                    onPress={() => setShowInstallModal(false)}
+                    activeOpacity={1}
+                    style={styles.installModal}
+                    onPress={() => {}}
                   >
+                    <View style={styles.installModalHeader}>
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installModalTitle}
+                      >
+                        Install Aptly
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => setShowInstallModal(false)}
+                        style={styles.installModalClose}
+                      >
+                        <Text
+                          allowFontScaling={false}
+                          style={styles.installModalCloseText}
+                        >
+                          ✕
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                     <Text
                       allowFontScaling={false}
-                      style={styles.installModalBtnText}
+                      style={styles.installModalDesc}
                     >
-                      Got it
+                      Add Aptly to your home screen for quick access — it works
+                      just like a native app.
                     </Text>
+                    {steps.map((step, i) => (
+                      <View key={i} style={styles.installStep}>
+                        <View style={styles.installStepNum}>
+                          <Text
+                            allowFontScaling={false}
+                            style={styles.installStepNumText}
+                          >
+                            {step.icon}
+                          </Text>
+                        </View>
+                        {step.text}
+                      </View>
+                    ))}
+                    <TouchableOpacity
+                      style={styles.installModalBtn}
+                      activeOpacity={0.8}
+                      onPress={() => setShowInstallModal(false)}
+                    >
+                      <Text
+                        allowFontScaling={false}
+                        style={styles.installModalBtnText}
+                      >
+                        Got it
+                      </Text>
+                    </TouchableOpacity>
                   </TouchableOpacity>
                 </TouchableOpacity>
-              </TouchableOpacity>
-            );
-          })()}
-      </SafeAreaView>
-      <LoginModal
-        visible={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-      />
+              );
+            })()}
+        </SafeAreaView>
+        <LoginModal
+          visible={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+        />
       </>
     );
   }
@@ -2278,18 +2344,18 @@ const styles = StyleSheet.create({
   },
   desktopPromoBanner: {
     width: '39%',
-    backgroundColor: '#3B5BDB',
     borderRadius: SIZE(22),
     padding: SIZE(20),
     justifyContent: 'space-between',
+    overflow: 'hidden',
   },
   mobilePromoBanner: {
     marginHorizontal: SIZE(18),
     marginBottom: SIZE(18),
-    backgroundColor: '#3B5BDB',
     borderRadius: SIZE(18),
     padding: SIZE(20),
     gap: SIZE(12),
+    overflow: 'hidden',
   },
   promoBadge: {
     flexDirection: 'row',

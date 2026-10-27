@@ -86,28 +86,30 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabs}>
-        {(['clinics', 'doctors'] as Tab[]).map(t => (
-          <TouchableOpacity key={t} style={styles.tab} onPress={() => setTab(t)} activeOpacity={0.8}>
-            <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </Text>
-            {tab === t && <View style={styles.tabUnderline} />}
-          </TouchableOpacity>
-        ))}
-      </View>
+      <View style={styles.centeredContainer}>
+        <View style={styles.tabs}>
+          {(['clinics', 'doctors'] as Tab[]).map(t => (
+            <TouchableOpacity key={t} style={styles.tab} onPress={() => setTab(t)} activeOpacity={0.8}>
+              <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </Text>
+              {tab === t && <View style={styles.tabUnderline} />}
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      {/* Location & Filter bar */}
-      <View style={styles.locationFilterRow}>
-        <TouchableOpacity style={styles.locationLeft} activeOpacity={0.7} onPress={() => navigation.navigate('LocationSearch')}>
-          <LocationIcon width={SIZE(14)} height={SIZE(14)} />
-          <Text allowFontScaling={false} style={styles.locationText}>{location ? location.mainText : 'Select location'}</Text>
-          <DownArrowGrey width={SIZE(14)} height={SIZE(14)} />
-        </TouchableOpacity>
-        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} triggerOnly />
-      </View>
-      <View style={styles.chipsRow}>
-        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} chipsOnly />
+        {/* Location & Filter bar */}
+        <View style={styles.locationFilterRow}>
+          <TouchableOpacity style={styles.locationLeft} activeOpacity={0.7} onPress={() => navigation.navigate('LocationSearch')}>
+            <LocationIcon width={SIZE(14)} height={SIZE(14)} />
+            <Text allowFontScaling={false} style={styles.locationText}>{location ? location.mainText : 'Select location'}</Text>
+            <DownArrowGrey width={SIZE(14)} height={SIZE(14)} />
+          </TouchableOpacity>
+          <FilterModal applied={appliedFilters} onApply={setAppliedFilters} triggerOnly />
+        </View>
+        <View style={styles.chipsRow}>
+          <FilterModal applied={appliedFilters} onApply={setAppliedFilters} chipsOnly />
+        </View>
       </View>
 
       {/* List */}
@@ -117,7 +119,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
             key="doctors"
             data={doctors}
             keyExtractor={item => item.id}
-            contentContainerStyle={[styles.listContent, { paddingHorizontal: SIZE(18) }]}
+            contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => {
               const allSchedules = item.medicalCenters.flatMap(mc => (mc.schedules ?? []));
@@ -140,7 +142,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
               );
             }}
             ListEmptyComponent={
-              <View style={{ marginHorizontal: -SIZE(18) }}>
+              <View>
                 <View style={styles.emptyContainer}>
                   <TouchableOpacity activeOpacity={0.8} style={styles.emptyCard} onPress={() => navigation.navigate('LocationSearch')}>
                     <Image source={require('../assets/images/location-image.png')} style={styles.emptyCardImage} />
@@ -268,7 +270,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    paddingHorizontal: SIZE(18),
     marginTop: SIZE(10),
   },
   tab: {
@@ -295,8 +296,19 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: SIZE(24),
     gap: SIZE(12),
+    paddingTop: SIZE(12),
+    paddingHorizontal: SIZE(20),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
   },
-  emptyContainer: { paddingHorizontal: SIZE(18), paddingTop: SIZE(16), paddingBottom: SIZE(12) },
+  centeredContainer: {
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
+    paddingHorizontal: SIZE(18),
+  },
+  emptyContainer: { paddingTop: SIZE(16), paddingBottom: SIZE(12) },
   emptyCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -330,18 +342,16 @@ const styles = StyleSheet.create({
     borderRadius: SIZE(8),
   },
   emptyCardBtnText: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(11), color: colors.white },
-  fallbackHeading: { fontFamily: 'Manrope-Regular', fontSize: SIZE(12), color: colors.textSecondary, paddingTop: SIZE(8), paddingBottom: SIZE(4), paddingHorizontal: SIZE(18) },
-  fallbackItem: { marginBottom: SIZE(12), paddingHorizontal: SIZE(18) },
+  fallbackHeading: { fontFamily: 'Manrope-Regular', fontSize: SIZE(12), color: colors.textSecondary, paddingTop: SIZE(8), paddingBottom: SIZE(4) },
+  fallbackItem: { marginBottom: SIZE(12) },
   locationFilterRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SIZE(18),
     paddingVertical: SIZE(10),
     marginBottom: SIZE(4),
   },
   chipsRow: {
-    paddingHorizontal: SIZE(18),
     marginBottom: SIZE(8),
   },
   locationLeft: {

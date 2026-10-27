@@ -11,6 +11,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { sendOtp } from '../services/api';
@@ -65,7 +66,7 @@ export default function PhoneNumberScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Platform.OS !== 'web' ? Keyboard.dismiss : undefined} accessible={false}>
       <SafeAreaView
         style={[
           styles.container,
@@ -87,51 +88,53 @@ export default function PhoneNumberScreen() {
             Skip
           </Text>
         </TouchableOpacity>
-        <Image
-          source={require('../assets/images/aptly-logo2.png')}
-          style={[
-            styles.logo,
-            keyboardHeight > 0 && styles.logoCompact,
-          ]}
-        />
-        <Text allowFontScaling={false} style={styles.title}>
-          Welcome Back!
-        </Text>
-        <Text allowFontScaling={false} style={styles.subtitle}>
-          Access your account your phone number
-        </Text>
+        <View style={styles.content}>
+          <Image
+            source={require('../assets/images/aptly-logo2.png')}
+            style={[
+              styles.logo,
+              keyboardHeight > 0 && styles.logoCompact,
+            ]}
+          />
+          <Text allowFontScaling={false} style={styles.title}>
+            Welcome Back!
+          </Text>
+          <Text allowFontScaling={false} style={styles.subtitle}>
+            Access your account your phone number
+          </Text>
 
-        <View style={styles.inputRow}>
-          <View style={styles.countryCode}>
-            <Text allowFontScaling={false} style={styles.flag}>
-              +91
-            </Text>
+          <View style={styles.inputRow}>
+            <View style={styles.countryCode}>
+              <Text allowFontScaling={false} style={styles.flag}>
+                +91
+              </Text>
+            </View>
+            <TextInput
+              allowFontScaling={false}
+              style={styles.input}
+              placeholder="Enter phone number"
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={text => setPhone(text.replace(/[^0-9]/g, ''))}
+              maxLength={10}
+            />
           </View>
-          <TextInput
-            allowFontScaling={false}
-            style={styles.input}
-            placeholder="Enter phone number"
-            placeholderTextColor={colors.textSecondary}
-            keyboardType="phone-pad"
-            value={phone}
-            onChangeText={setPhone}
-            maxLength={10}
+
+          <PrimaryButton
+            label="Continue"
+            onPress={handleContinue}
+            disabled={!phone || loading}
+            icon={
+              loading ? undefined : !phone ? (
+                <ArrowRight width={18} height={18} />
+              ) : (
+                <ArrowRightWhite width={18} height={18} />
+              )
+            }
+            loading={loading}
           />
         </View>
-
-        <PrimaryButton
-          label="Continue"
-          onPress={handleContinue}
-          disabled={!phone || loading}
-          icon={
-            loading ? undefined : !phone ? (
-              <ArrowRight width={18} height={18} />
-            ) : (
-              <ArrowRightWhite width={18} height={18} />
-            )
-          }
-          loading={loading}
-        />
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
@@ -139,13 +142,21 @@ export default function PhoneNumberScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: colors.white,
-    paddingHorizontal: SIZE(25),
     overflow: 'hidden',
+    alignItems: 'center',
   },
   skipButton: {
     alignSelf: 'flex-end',
     paddingVertical: SIZE(8),
+    paddingHorizontal: SIZE(25),
+  },
+  content: {
+    width: '100%',
+    maxWidth: 1240,
+    paddingHorizontal: SIZE(25),
+    flex: 1,
   },
   skipText: {
     fontFamily: 'Manrope-SemiBold',

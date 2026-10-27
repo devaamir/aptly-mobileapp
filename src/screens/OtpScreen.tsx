@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   useWindowDimensions,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -82,23 +83,22 @@ export default function OtpScreen() {
   };
 
   const handleChange = (text: string, index: number) => {
+    const digits = text.replace(/[^0-9]/g, '');
     // Handle autofill paste — full OTP pasted at once (iOS QuickType / Android suggestion)
-    if (text.length > 1) {
-      const digits = text.replace(/\D/g, '').slice(0, OTP_LENGTH).split('');
+    if (digits.length > 1) {
+      const split = digits.slice(0, OTP_LENGTH).split('');
       const newOtp = [...otp];
-      digits.forEach((d, i) => {
-        newOtp[i] = d;
-      });
+      split.forEach((d, i) => { newOtp[i] = d; });
       setOtp(newOtp);
-      const lastIndex = Math.min(digits.length - 1, OTP_LENGTH - 1);
+      const lastIndex = Math.min(split.length - 1, OTP_LENGTH - 1);
       inputs.current[lastIndex]?.focus();
       return;
     }
 
     const newOtp = [...otp];
-    newOtp[index] = text;
+    newOtp[index] = digits;
     setOtp(newOtp);
-    if (text && index < OTP_LENGTH - 1) inputs.current[index + 1]?.focus();
+    if (digits && index < OTP_LENGTH - 1) inputs.current[index + 1]?.focus();
   };
 
   const handleKeyPress = (e: any, index: number) => {
@@ -151,73 +151,75 @@ export default function OtpScreen() {
   const isFilled = otp.every(d => d !== '');
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Platform.OS !== 'web' ? Keyboard.dismiss : undefined} accessible={false}>
     <SafeAreaView
       style={[
         styles.container,
         { height: screenHeight - keyboardHeight },
       ]}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={[styles.backButton, keyboardHeight > 0 && styles.backButtonCompact]}
-      >
-        <BackArrow width={SIZE(24)} height={SIZE(24)} />
-      </TouchableOpacity>
-      <Text allowFontScaling={false} style={styles.title}>
-        Verification Code
-      </Text>
-      <Text allowFontScaling={false} style={styles.subtitle}>
-        {"We've sent an sms with a verification code to "}
-        <Text allowFontScaling={false} style={styles.phone}>
-          +91 {phone}
-        </Text>
-        {' to proceed'}
-      </Text>
-
-      <View style={styles.otpRow}>
-        {otp.map((digit, index) => (
-          <TextInput
-            allowFontScaling={false}
-            key={index}
-            ref={ref => (inputs.current[index] = ref)}
-            style={[styles.otpBox, digit ? styles.otpBoxFilled : null]}
-            value={digit}
-            onChangeText={text => handleChange(text, index)}
-            onKeyPress={e => handleKeyPress(e, index)}
-            placeholder="0"
-            placeholderTextColor={colors.border}
-            maxLength={OTP_LENGTH}
-            keyboardType="number-pad"
-            textAlign="center"
-            textContentType="oneTimeCode"
-          />
-        ))}
-      </View>
-
-      <PrimaryButton
-        label="Verify"
-        onPress={handleVerify}
-        disabled={!isFilled || loading}
-        loading={loading}
-        icon={
-          !isFilled ? (
-            <ArrowRight width={SIZE(18)} height={SIZE(18)} />
-          ) : (
-            <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />
-          )
-        }
-      />
-      <Text allowFontScaling={false} style={styles.resend}>
-        Didn't receive code?{' '}
-        <Text
-          allowFontScaling={false}
-          style={[styles.resendLink, timer > 0 && styles.resendDisabled]}
-          onPress={timer === 0 ? handleResend : undefined}
+      <View style={styles.content}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={[styles.backButton, keyboardHeight > 0 && styles.backButtonCompact]}
         >
-          {timer > 0 ? `Resend in ${timer}s` : 'Resend'}
+          <BackArrow width={SIZE(24)} height={SIZE(24)} />
+        </TouchableOpacity>
+        <Text allowFontScaling={false} style={styles.title}>
+          Verification Code
         </Text>
-      </Text>
+        <Text allowFontScaling={false} style={styles.subtitle}>
+          {"We've sent an sms with a verification code to "}
+          <Text allowFontScaling={false} style={styles.phone}>
+            +91 {phone}
+          </Text>
+          {' to proceed'}
+        </Text>
+
+        <View style={styles.otpRow}>
+          {otp.map((digit, index) => (
+            <TextInput
+              allowFontScaling={false}
+              key={index}
+              ref={ref => (inputs.current[index] = ref)}
+              style={[styles.otpBox, digit ? styles.otpBoxFilled : null]}
+              value={digit}
+              onChangeText={text => handleChange(text, index)}
+              onKeyPress={e => handleKeyPress(e, index)}
+              placeholder="0"
+              placeholderTextColor={colors.border}
+              maxLength={OTP_LENGTH}
+              keyboardType="number-pad"
+              textAlign="center"
+              textContentType="oneTimeCode"
+            />
+          ))}
+        </View>
+
+        <PrimaryButton
+          label="Verify"
+          onPress={handleVerify}
+          disabled={!isFilled || loading}
+          loading={loading}
+          icon={
+            !isFilled ? (
+              <ArrowRight width={SIZE(18)} height={SIZE(18)} />
+            ) : (
+              <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />
+            )
+          }
+        />
+        <Text allowFontScaling={false} style={styles.resend}>
+          Didn't receive code?{' '}
+          <Text
+            allowFontScaling={false}
+            style={[styles.resendLink, timer > 0 && styles.resendDisabled]}
+            onPress={timer === 0 ? handleResend : undefined}
+          >
+            {timer > 0 ? `Resend in ${timer}s` : 'Resend'}
+          </Text>
+        </Text>
+      </View>
     </SafeAreaView>
     </TouchableWithoutFeedback>
   );
@@ -225,9 +227,16 @@ export default function OtpScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: colors.white,
-    paddingHorizontal: SIZE(25),
     overflow: 'hidden',
+    alignItems: 'center',
+  },
+  content: {
+    width: '100%',
+    maxWidth: 1240,
+    paddingHorizontal: SIZE(25),
+    flex: 1,
   },
   backButton: {
     marginTop: SIZE(17),

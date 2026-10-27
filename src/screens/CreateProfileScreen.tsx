@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert, TouchableWithoutFeedback, Keyboard, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -65,55 +65,57 @@ export default function CreateProfileScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Platform.OS !== 'web' ? Keyboard.dismiss : undefined} accessible={false}>
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
-      <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-        <BackArrow width={SIZE(24)} height={SIZE(24)} />
-      </TouchableOpacity>
+      <View style={styles.content}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <BackArrow width={SIZE(24)} height={SIZE(24)} />
+        </TouchableOpacity>
 
-      <Text allowFontScaling={false} style={styles.title}>{isEdit ? 'Edit Profile' : 'Welcome to APTLY'}</Text>
-      <Text allowFontScaling={false} style={styles.subtitle}>{isEdit ? 'Update your name, gender and age.' : 'Create your profile to book appointments, track tokens, and manage your clinic visits easily.'}</Text>
+        <Text allowFontScaling={false} style={styles.title}>{isEdit ? 'Edit Profile' : 'Welcome to APTLY'}</Text>
+        <Text allowFontScaling={false} style={styles.subtitle}>{isEdit ? 'Update your name, gender and age.' : 'Create your profile to book appointments, track tokens, and manage your clinic visits easily.'}</Text>
 
-      <AppInput
-        value={name}
-        onChangeText={setName}
-        placeholder="Enter your name"
-        onFocus={() => setActiveField('name')}
-        onBlur={() => setActiveField(null)}
-      />
-      <View style={styles.row}>
-        <View style={styles.rowItem}>
-          <AppDropdown
-            options={['Male', 'Female']}
-            value={gender}
-            onSelect={setGender}
-            placeholder="Gender"
-            focused={activeField === 'gender'}
-            onFocus={() => setActiveField('gender')}
-            onBlur={() => setActiveField(null)}
-          />
+        <AppInput
+          value={name}
+          onChangeText={setName}
+          placeholder="Enter your name"
+          onFocus={() => setActiveField('name')}
+          onBlur={() => setActiveField(null)}
+        />
+        <View style={styles.row}>
+          <View style={styles.rowItem}>
+            <AppDropdown
+              options={['Male', 'Female']}
+              value={gender}
+              onSelect={setGender}
+              placeholder="Gender"
+              focused={activeField === 'gender'}
+              onFocus={() => setActiveField('gender')}
+              onBlur={() => setActiveField(null)}
+            />
+          </View>
+          <View style={styles.rowItem}>
+            <AppInput
+              value={age}
+              onChangeText={(text) => setAge(text.replace(/[^0-9]/g, ''))}
+              placeholder="Age"
+              keyboardType="numeric"
+              maxLength={3}
+              focused={activeField === 'dob'}
+              onFocus={() => setActiveField('dob')}
+              onBlur={() => setActiveField(null)}
+            />
+          </View>
         </View>
-        <View style={styles.rowItem}>
-          <AppInput
-            value={age}
-            onChangeText={(text) => setAge(text.replace(/[^0-9]/g, ''))}
-            placeholder="Age"
-            keyboardType="numeric"
-            maxLength={3}
-            focused={activeField === 'dob'}
-            onFocus={() => setActiveField('dob')}
-            onBlur={() => setActiveField(null)}
-          />
-        </View>
+        <PrimaryButton
+          label="Continue"
+          onPress={handleContinue}
+          disabled={!isValid || loading}
+          loading={loading}
+          icon={!isValid ? <ArrowRight width={SIZE(18)} height={SIZE(18)} /> : <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />}
+        />
       </View>
-      <PrimaryButton
-        label="Continue"
-        onPress={handleContinue}
-        disabled={!isValid || loading}
-        loading={loading}
-        icon={!isValid ? <ArrowRight width={SIZE(18)} height={SIZE(18)} /> : <ArrowRightWhite width={SIZE(18)} height={SIZE(18)} />}
-      />
 
       <BottomModal visible={cancelVisible} onClose={() => setCancelVisible(false)} variant="center">
         <Text allowFontScaling={false} style={styles.modalTitle}>Cancel Setup?</Text>
@@ -140,7 +142,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+    alignItems: 'center',
+  },
+  content: {
+    width: '100%',
+    maxWidth: 1240,
     paddingHorizontal: SIZE(25),
+    flex: 1,
   },
   backButton: {
     marginTop: SIZE(17),

@@ -21,6 +21,7 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
+import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import { getDoctors, Doctor } from '../services/api';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
@@ -139,38 +140,50 @@ export default function DoctorsScreen({ navigation }: Props) {
         >
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.title}>
-          Doctors
-        </Text>
+
+        {/* Location + Distance container */}
         <TouchableOpacity
-          style={styles.backBtn}
+          style={styles.locationBtn}
           activeOpacity={0.7}
-          onPress={() => navigation.navigate('Search')}
+          onPress={() => navigation.navigate('LocationSearch')}
         >
-          <SearchIcon width={SIZE(22)} height={SIZE(22)} />
+          <LocationIcon width={SIZE(16)} height={SIZE(16)} style={{ flexShrink: 0 }} />
+          <Text
+            allowFontScaling={false}
+            style={styles.locationText}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {userLocation ? userLocation.mainText : 'Select location'}
+          </Text>
+          <DownArrowGrey width={SIZE(14)} height={SIZE(14)} style={{ flexShrink: 0 }} />
+          <View style={styles.locationDivider} />
+          <DistancePicker value={distance} onChange={setDistance} />
         </TouchableOpacity>
+
+        {/* Right actions */}
+        <View style={styles.headerRight}>
+          <FilterModal
+            applied={appliedFilters}
+            onApply={setAppliedFilters}
+            triggerOnly
+          />
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('Search')}
+          >
+            <SearchIcon width={SIZE(22)} height={SIZE(22)} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Location & Filter */}
-      <TouchableOpacity
-        style={styles.locationBox}
-        activeOpacity={0.8}
-        onPress={() => navigation.navigate('LocationSearch')}
-      >
-        <View style={styles.locationIconContainer}>
-          <LocationIcon width={SIZE(20)} height={SIZE(20)} />
-        </View>
-        <Text
-          allowFontScaling={false}
-          style={styles.locationText}
-          numberOfLines={1}
-        >
-          {userLocation ? userLocation.mainText : 'Select location'}
-        </Text>
-        <DistancePicker value={distance} onChange={setDistance} />
-      </TouchableOpacity>
-      <View style={styles.filterRow}>
-        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} />
+      {/* Applied filter chips */}
+      <View style={styles.chipsContainer}>
+        <FilterModal
+          applied={appliedFilters}
+          onApply={setAppliedFilters}
+          chipsOnly
+        />
       </View>
 
       {loading ? (
@@ -361,52 +374,62 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: SIZE(10),
     paddingHorizontal: SIZE(18),
     paddingVertical: SIZE(12),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   backBtn: { width: SIZE(32) },
-  title: {
+  locationBtn: {
+    flexShrink: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(6),
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: SIZE(10),
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(7),
+    backgroundColor: colors.white,
+  },
+  locationText: {
+    flexShrink: 1,
     fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(18),
+    fontSize: SIZE(14),
     color: colors.textPrimary,
+  },
+  locationDivider: {
+    width: 1,
+    height: SIZE(18),
+    backgroundColor: colors.border,
+    marginHorizontal: SIZE(2),
+    flexShrink: 0,
+  },
+  headerRight: {
+    flexShrink: 0,
+    marginLeft: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(12),
   },
   searchWrapper: { paddingHorizontal: SIZE(18), marginBottom: SIZE(20) },
   listContent: {
+    paddingTop: SIZE(12),
     paddingBottom: SIZE(24),
     gap: SIZE(12),
     paddingHorizontal: SIZE(20),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
   },
-  locationBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: SIZE(14),
-    paddingVertical: SIZE(8),
-    marginHorizontal: SIZE(18),
-    marginVertical: SIZE(8),
-    backgroundColor: colors.white,
-  },
-  locationIconContainer: {
-    paddingVertical: SIZE(8),
-    paddingRight: SIZE(12),
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  locationText: {
-    flex: 1,
-    fontFamily: 'Manrope-Medium',
-    fontSize: SIZE(14),
-    color: colors.textPrimary,
-    marginLeft: SIZE(10),
-  },
-  filterRow: {
-    paddingHorizontal: SIZE(18),
-    marginBottom: SIZE(8),
+  chipsContainer: {
+    paddingHorizontal: SIZE(20),
+    paddingTop: SIZE(8),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
   },
   emptyContainer: {
     paddingTop: SIZE(16),

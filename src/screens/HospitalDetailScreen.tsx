@@ -1,22 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Animated,
   StatusBar,
   Image,
   ActivityIndicator,
-  Dimensions,
   ScrollView,
   Linking,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -30,23 +26,35 @@ import WebIcon from '../assets/icons/web-icon-blue.svg';
 import DoctorCard from '../components/DoctorCard';
 import { getClinic, getDoctor } from '../services/api';
 import type { Clinic } from '../services/api';
+import { useLocation } from '../context/LocationContext';
+import { getDistance } from '../utils/getDistance';
 
-const BANNER_HEIGHT = SIZE(254);
-const SHEET_OVERLAP = SIZE(24);
-
-type Route = RouteProp<RootStackParamList, 'HospitalDetail'>;
+type RouteT = RouteProp<RootStackParamList, 'HospitalDetail'>;
 type Nav = NativeStackNavigationProp<RootStackParamList>;
+
+const BEFORE_YOU_VISIT = [
+  'Carry previous medical reports',
+  'Appointment confirmation required',
+  'Bring a valid ID proof',
+  'Emergency cases handled separately',
+];
+
+const to12h = (time: string) => {
+  const [h, m] = time.split(':').map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+};
 
 export default function HospitalDetailScreen() {
   const navigation = useNavigation<Nav>();
-  const { params } = useRoute<Route>();
+  const { params } = useRoute<RouteT>();
   const { id, name, specialty, location } = params;
-  const [tab, setTab] = useState<'Doctors' | 'Details' | 'Facilities'>('Doctors');
+  const { width: screenWidth } = useWindowDimensions();
+  const isDesktop = screenWidth >= 768;
+  const { location: userLocation } = useLocation();
+
+  const [tab, setTab] = useState<'Doctors' | 'Facilities' | 'Details'>('Doctors');
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
-  const [specialtiesExpanded, setSpecialtiesExpanded] = useState(false);
-  const { top } = useSafeAreaInsets();
-  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     getClinic(id)
@@ -55,11 +63,9 @@ export default function HospitalDetailScreen() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // When navigating from a deep link only `id` is available; name/specialty/location
-  // will be undefined until the API call resolves. The fallback strings keep the
-  // screen from crashing while loading.
   const displayClinic = clinic ?? {
     name: name ?? '',
+    type: '',
     about: '',
     phoneNumber: '',
     websiteUrl: '',
@@ -68,418 +74,465 @@ export default function HospitalDetailScreen() {
     medicalSystem: null,
   };
 
-  const backBtnBottom = top + SIZE(8) + SIZE(36) + SIZE(8);
-  const collapsedBannerHeight = backBtnBottom;
+  const distance = userLocation && clinic
+    ? getDistance(userLocation.latitude, userLocation.longitude, clinic.latitude, clinic.longitude)
+    : null;
 
-  const borderRadius = scrollY.interpolate({
-    inputRange: [0, 200],
-    outputRange: [24, 0],
-    extrapolate: 'clamp',
-  });
+  const callClinic = () => {
+    const phone = clinic?.phoneNumber;
+    if (phone) Linking.openURL(`tel:${phone}`);
+    else Alert.alert('Not available', 'No phone number found for this clinic.');
+  };
 
-  return (
-    <View style={styles.container}>
-      <StatusBar
-        barStyle="light-content"
-        translucent
-        backgroundColor="transparent"
-      />
+  const openMaps = () => {
+    const lat = clinic?.latitude;
+    const lng = clinic?.longitude;
+    if (lat && lng) {
+      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
+    } else {
+      const query = encodeURIComponent(location ?? '');
+      if (query) Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+      else Alert.alert('Not available', 'No location found for this clinic.');
+    }
+  };
 
-      {/* Fixed banner — always behind everything */}
-      <Image
-        source={{ uri: clinic?.profilePicture }}
-        style={[styles.banner, { height: BANNER_HEIGHT + top }]}
-      />
+  const openWebsite = () => {
+    const url = clinic?.websiteUrl;
+    if (url) Linking.openURL(url.startsWith('http') ? url : `https://${url}`);
+    else Alert.alert('Not available', 'No website found for this clinic.');
+  };
 
-      {/* Sticky back button */}
-      <View style={[styles.backBtnContainer, { top: top + SIZE(8) }]}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => navigation.goBack()}
-          hitSlop={SIZE(10)}
-        >
-          <BackArrow width={SIZE(22)} height={SIZE(22)} />
-        </TouchableOpacity>
-      </View>
-      <Animated.ScrollView
-        style={[styles.scrollView, { marginTop: collapsedBannerHeight }]}
-        contentContainerStyle={[
-          styles.sheetContent,
-          {
-            minHeight: Dimensions.get('window').height - collapsedBannerHeight,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-        scrollIndicatorInsets={{ top: 0 }}
-        contentInset={{ bottom: 0 }}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false },
+  // Left column: image + clinic name/info + tabs + tab content
+  const leftColumn = (
+    <View style={styles.leftColumn}>
+      {/* Clinic image */}
+      <View style={styles.imageContainer}>
+        {clinic?.profilePicture ? (
+          <Image source={{ uri: clinic.profilePicture }} style={styles.clinicImage} resizeMode="cover" />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <Image source={require('../assets/images/aptly-logo2.png')} style={styles.placeholderLogo} resizeMode="contain" />
+          </View>
         )}
-        scrollEventThrottle={16}
-        stickyHeaderIndices={[1]}
-      >
-        <View style={{ height: BANNER_HEIGHT - top - SIZE(50) }} />
-        <View style={[styles.topHeader, { borderRadius }]}>
-          <View style={styles.sheetHandle} />
-          <Text allowFontScaling={false} style={styles.clinicTitle}>
-            {displayClinic.name}
+      </View>
+
+      {/* Clinic title row */}
+      <View style={styles.titleRow}>
+        <View style={{ flex: 1 }}>
+          <Text allowFontScaling={false} style={styles.clinicTitle}>{displayClinic.name}</Text>
+          <Text allowFontScaling={false} style={styles.clinicType}>
+            {displayClinic.medicalSystem?.name
+              ? `${displayClinic.type ?? ''} • ${displayClinic.medicalSystem.name}`
+              : displayClinic.type ?? ''}
           </Text>
-          {displayClinic.medicalSystem?.name ? (
-            <Text
-              allowFontScaling={false}
-              style={styles.clinicSpecialty}
-              numberOfLines={2}
-            >
-              {displayClinic.medicalSystem.name}
-            </Text>
-          ) : null}
           <View style={styles.locationRow}>
             <LocationIcon width={SIZE(12)} height={SIZE(12)} />
-            <Text allowFontScaling={false} style={styles.clinicLocation}>
+            <Text allowFontScaling={false} style={styles.locationText}>
               {clinic?.address ?? location}
+              {distance ? (
+                <Text allowFontScaling={false} style={styles.distanceText}>{'  '}{distance}</Text>
+              ) : null}
             </Text>
-          </View>
-          {displayClinic.specialties?.length > 0 && (
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => setSpecialtiesExpanded(e => !e)}
-              style={styles.specialtiesRow}
-            >
-              {(specialtiesExpanded
-                ? displayClinic.specialties
-                : displayClinic.specialties.slice(0, 3)
-              ).map((s: { name: string }, i: number) => (
-                <View key={i} style={styles.specialtyChip}>
-                  <Text
-                    allowFontScaling={false}
-                    style={styles.specialtyChipText}
-                  >
-                    {s.name}
-                  </Text>
-                </View>
-              ))}
-              {!specialtiesExpanded && displayClinic.specialties.length > 3 && (
-                <View style={styles.specialtyChip}>
-                  <Text
-                    allowFontScaling={false}
-                    style={styles.specialtyChipText}
-                  >
-                    +{displayClinic.specialties.length - 3}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          )}
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={styles.actionBtn}
-              activeOpacity={0.7}
-              onPress={() => {
-                const phone = clinic?.phoneNumber;
-                if (phone) Linking.openURL(`tel:${phone}`);
-                else
-                  Alert.alert(
-                    'Not available',
-                    'No phone number found for this clinic.',
-                  );
-              }}
-            >
-              <PhoneIcon width={SIZE(22)} height={SIZE(22)} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionBtn}
-              activeOpacity={0.7}
-              onPress={() => {
-                const lat = clinic?.latitude;
-                const lng = clinic?.longitude;
-                if (lat && lng) {
-                  const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-                  Linking.openURL(url);
-                } else {
-                  const query = encodeURIComponent(location ?? '');
-                  if (query) {
-                    Linking.openURL(
-                      `https://www.google.com/maps/search/?api=1&query=${query}`,
-                    );
-                  } else {
-                    Alert.alert(
-                      'Not available',
-                      'No location found for this clinic.',
-                    );
-                  }
-                }
-              }}
-            >
-              <MapIcon width={SIZE(22)} height={SIZE(22)} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.actionBtn}
-              activeOpacity={0.7}
-              onPress={() => {
-                const url = clinic?.websiteUrl;
-                if (url)
-                  Linking.openURL(
-                    url.startsWith('http') ? url : `https://${url}`,
-                  );
-                else
-                  Alert.alert(
-                    'Not available',
-                    'No website found for this clinic.',
-                  );
-              }}
-            >
-              <WebIcon width={SIZE(22)} height={SIZE(22)} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Tabs */}
-          <View style={styles.tabs}>
-            <TouchableOpacity
-              onPress={() => setTab('Doctors')}
-              style={styles.tab}
-              activeOpacity={0.8}
-            >
-              <Text
-                allowFontScaling={false}
-                style={[
-                  styles.tabText,
-                  tab === 'Doctors' && styles.tabTextActive,
-                ]}
-              >
-                Doctors
-              </Text>
-              {tab === 'Doctors' && <View style={styles.tabUnderline} />}
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setTab('Details')}
-              style={styles.tab}
-              activeOpacity={0.8}
-            >
-              <Text
-                allowFontScaling={false}
-                style={[
-                  styles.tabText,
-                  tab === 'Details' && styles.tabTextActive,
-                ]}
-              >
-                Details
-              </Text>
-              {tab === 'Details' && <View style={styles.tabUnderline} />}
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setTab('Facilities')}
-              style={styles.tab}
-              activeOpacity={0.8}
-            >
-              <Text
-                allowFontScaling={false}
-                style={[
-                  styles.tabText,
-                  tab === 'Facilities' && styles.tabTextActive,
-                ]}
-              >
-                Facilities
-              </Text>
-              {tab === 'Facilities' && <View style={styles.tabUnderline} />}
-            </TouchableOpacity>
           </View>
         </View>
+      </View>
 
-        {loading && <ActivityIndicator color={colors.accent} />}
+      {/* Tabs */}
+      <View style={styles.tabs}>
+        {(['Doctors', 'Facilities', 'Details'] as const).map(t => (
+          <TouchableOpacity key={t} style={styles.tab} onPress={() => setTab(t)} activeOpacity={0.8}>
+            <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>{t}</Text>
+            {tab === t && <View style={styles.tabUnderline} />}
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        {!loading &&
-          tab === 'Doctors' &&
-          displayClinic.doctors.map(doc => (
-            <View key={doc.id} style={styles.doctorCardWrapper}>
+      {/* Tab content */}
+      {loading && <ActivityIndicator style={{ marginTop: SIZE(24) }} color={colors.primary} />}
+
+      {!loading && tab === 'Doctors' && (
+        <View style={styles.tabContent}>
+          {displayClinic.doctors.length === 0
+            ? <Text allowFontScaling={false} style={styles.emptyText}>No doctors listed.</Text>
+            : displayClinic.doctors.map(doc => (
               <DoctorCard
+                key={doc.id}
                 name={doc.name}
                 type={doc.specialties.map((s: { name: string }) => s.name).join(', ')}
-                experience={
-                  doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''
-                }
+                experience={doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''}
                 image={doc.profilePicture}
                 nextSchedule={doc.nextSchedule}
-                onPress={() =>
-                  navigation.navigate('DoctorDetail', { doctorId: doc.id })
-                }
+                onPress={() => navigation.navigate('DoctorDetail', { doctorId: doc.id })}
                 onBookPress={async () => {
                   const res = await getDoctor(doc.id);
-                  navigation.navigate('BookAppointment', {
-                    doctor: res.data,
-                    clinicId: clinic?.id,
-                  });
+                  navigation.navigate('BookAppointment', { doctor: res.data, clinicId: clinic?.id });
                 }}
-                style={{ marginBottom: SIZE(16) }}
               />
+            ))
+          }
+        </View>
+      )}
+
+      {!loading && tab === 'Details' && (
+        <View style={styles.tabContent}>
+          {/* About */}
+          {displayClinic.about ? (
+            <>
+              <Text allowFontScaling={false} style={styles.sectionTitle}>About the Clinic</Text>
+              <Text allowFontScaling={false} style={styles.aboutText}>{displayClinic.about}</Text>
+            </>
+          ) : null}
+
+          {/* Clinic Information grid */}
+          <Text allowFontScaling={false} style={styles.sectionTitle}>Clinic Information</Text>
+          <View style={styles.infoGrid}>
+            <View style={styles.infoCell}>
+              <Text allowFontScaling={false} style={styles.infoCellLabel}>Clinic Type</Text>
+              <Text allowFontScaling={false} style={styles.infoCellValue}>{displayClinic.type || '—'}</Text>
             </View>
-          ))}
+            <View style={styles.infoCell}>
+              <Text allowFontScaling={false} style={styles.infoCellLabel}>System of Medicine</Text>
+              <Text allowFontScaling={false} style={styles.infoCellValue}>{displayClinic.medicalSystem?.name || '—'}</Text>
+            </View>
+            <View style={styles.infoCell}>
+              <Text allowFontScaling={false} style={styles.infoCellLabel}>Established</Text>
+              <Text allowFontScaling={false} style={styles.infoCellValue}>
+                {clinic?.createdAt ? new Date(clinic.createdAt).getFullYear() : '—'}
+              </Text>
+            </View>
+            <View style={styles.infoCell}>
+              <Text allowFontScaling={false} style={styles.infoCellLabel}>Doctors</Text>
+              <Text allowFontScaling={false} style={styles.infoCellValue}>
+                {displayClinic.doctors.length > 0 ? `${displayClinic.doctors.length}+` : '—'}
+              </Text>
+            </View>
+          </View>
 
-        {!loading && tab === 'Details' && (
-          <Text allowFontScaling={false} style={styles.detailsText}>
-            {displayClinic.about || 'No details available.'}
+          {/* Before You Visit */}
+          <View style={styles.beforeVisitCard}>
+            <Text allowFontScaling={false} style={styles.beforeVisitTitle}>Before You Visit</Text>
+            {BEFORE_YOU_VISIT.map((item, i) => (
+              <View key={i} style={styles.beforeVisitRow}>
+                <Text allowFontScaling={false} style={styles.checkmark}>✓</Text>
+                <Text allowFontScaling={false} style={styles.beforeVisitText}>{item}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {!loading && tab === 'Facilities' && (
+        <View style={[styles.tabContent, styles.comingSoonContainer]}>
+          <Text allowFontScaling={false} style={styles.comingSoonTitle}>Coming Soon</Text>
+          <Text allowFontScaling={false} style={styles.comingSoonSubtitle}>
+            Facilities information will be available here soon.
           </Text>
-        )}
+        </View>
+      )}
+    </View>
+  );
 
-        {!loading && tab === 'Facilities' && (
-          <View style={styles.comingSoonContainer}>
-            <Text allowFontScaling={false} style={styles.comingSoonTitle}>Coming Soon</Text>
-            <Text allowFontScaling={false} style={styles.comingSoonSubtitle}>
-              Facilities information will be available here soon.
-            </Text>
+  // Right column: clinic info card
+  const rightColumn = (
+    <View style={styles.rightColumn}>
+      <View style={styles.infoCard}>
+        <Text allowFontScaling={false} style={styles.infoCardTitle}>Clinic info</Text>
+        <View style={styles.infoCardLocationRow}>
+          <LocationIcon width={SIZE(14)} height={SIZE(14)} />
+          <Text allowFontScaling={false} style={styles.infoCardAddress} numberOfLines={2}>
+            {clinic?.address ?? location}
+          </Text>
+          {distance ? (
+            <Text allowFontScaling={false} style={styles.infoCardDistance}>{distance}</Text>
+          ) : null}
+        </View>
+
+        <TouchableOpacity style={styles.infoActionBtn} activeOpacity={0.7} onPress={callClinic}>
+          <PhoneIcon width={SIZE(18)} height={SIZE(18)} />
+          <Text allowFontScaling={false} style={styles.infoActionText}>Call clinic</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.infoActionBtn} activeOpacity={0.7} onPress={openMaps}>
+          <MapIcon width={SIZE(18)} height={SIZE(18)} />
+          <Text allowFontScaling={false} style={styles.infoActionText}>Open in maps</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.infoActionBtn} activeOpacity={0.7} onPress={openWebsite}>
+          <WebIcon width={SIZE(18)} height={SIZE(18)} />
+          <Text allowFontScaling={false} style={styles.infoActionText}>Website</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+
+      {/* Header — full width */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+          <BackArrow width={SIZE(22)} height={SIZE(22)} />
+        </TouchableOpacity>
+        <Text allowFontScaling={false} style={styles.headerTitle}>
+          {name ?? displayClinic.name}
+        </Text>
+      </View>
+      <View style={styles.headerDivider} />
+
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.pageLayout, isDesktop && styles.pageLayoutDesktop]}>
+          {leftColumn}
+          {isDesktop && rightColumn}
+        </View>
+
+        {/* Mobile: action buttons below content */}
+        {!isDesktop && (
+          <View style={styles.mobileActions}>
+            <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={callClinic}>
+              <PhoneIcon width={SIZE(20)} height={SIZE(20)} />
+              <Text allowFontScaling={false} style={styles.mobileActionText}>Call</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={openMaps}>
+              <MapIcon width={SIZE(20)} height={SIZE(20)} />
+              <Text allowFontScaling={false} style={styles.mobileActionText}>Maps</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={openWebsite}>
+              <WebIcon width={SIZE(20)} height={SIZE(20)} />
+              <Text allowFontScaling={false} style={styles.mobileActionText}>Website</Text>
+            </TouchableOpacity>
           </View>
         )}
-
-      </Animated.ScrollView>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
-  banner: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    resizeMode: 'cover',
-  },
-  backBtnContainer: {
-    position: 'absolute',
-    left: SIZE(16),
-    zIndex: 10,
-  },
-  backBtn: {
-    width: SIZE(36),
-    height: SIZE(36),
-    borderRadius: SIZE(18),
-    backgroundColor: colors.white80,
+
+  // Header
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: SIZE(18),
+    paddingVertical: SIZE(12),
+    gap: SIZE(10),
   },
-  scrollView: {
+  backBtn: { width: SIZE(32) },
+  headerTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(16),
+    color: colors.textPrimary,
     flex: 1,
-    // paddingHorizontal: 10
-    // backgroundColor: colors.white,
   },
-  sheetContent: {
-    // gap: SIZE(16),
+  headerDivider: { height: 1, backgroundColor: colors.border },
+
+  // Scroll
+  scrollContent: {
     paddingBottom: SIZE(40),
   },
-  topHeader: {
-    backgroundColor: colors.white,
-    // paddingTop: 0,
-    padding: SIZE(18),
+  scrollContentDesktop: {
+    alignItems: 'center',
   },
-  sheetHandle: {
-    width: SIZE(40),
-    height: SIZE(4),
-    borderRadius: SIZE(2),
-    backgroundColor: colors.border,
-    alignSelf: 'center',
-    marginBottom: SIZE(4),
+  pageLayout: {
+    width: '100%',
+  },
+  pageLayoutDesktop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SIZE(24),
+    maxWidth: 1240,
+    paddingHorizontal: SIZE(24),
+    paddingTop: SIZE(24),
+  },
+
+  // Left column
+  leftColumn: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  // Image
+  imageContainer: {
+    marginHorizontal: SIZE(18),
+    marginTop: SIZE(16),
+    borderRadius: SIZE(16),
+    overflow: 'hidden',
+    height: SIZE(220),
+    backgroundColor: colors.backgroundLight,
+  },
+  clinicImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.backgroundLight,
+  },
+  placeholderLogo: {
+    width: SIZE(80),
+    height: SIZE(80),
+    opacity: 0.3,
+  },
+
+  // Clinic title
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: SIZE(18),
+    paddingTop: SIZE(16),
+    paddingBottom: SIZE(8),
+    gap: SIZE(8),
   },
   clinicTitle: {
     fontFamily: 'Manrope-Bold',
     fontSize: SIZE(20),
-    color: colors.black,
-    marginBottom: SIZE(16),
+    color: colors.textPrimary,
+    marginBottom: SIZE(4),
   },
-  clinicSpecialty: {
+  clinicType: {
     fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(12),
-    color: colors.subText,
-    marginTop: -SIZE(10),
-    marginBottom: SIZE(16),
+    fontSize: SIZE(13),
+    color: colors.textSecondary,
+    marginBottom: SIZE(8),
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(4),
-    marginBottom: SIZE(16),
   },
-  clinicLocation: {
+  locationText: {
     fontFamily: 'Manrope-Regular',
-    fontSize: SIZE(11),
-    color: colors.subText,
+    fontSize: SIZE(12),
+    color: colors.textSecondary,
   },
-  specialtiesRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SIZE(6),
-    marginBottom: SIZE(16),
+  distanceText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(12),
+    color: colors.primary,
   },
-  specialtyChip: {
-    paddingHorizontal: SIZE(8),
-    paddingVertical: SIZE(2),
-    borderRadius: SIZE(6),
-    backgroundColor: colors.specialtyChipBg,
-  },
-  specialtyChipText: {
-    fontFamily: 'Manrope-Medium',
-    fontSize: SIZE(11),
-    color: colors.specialtyChipText,
-    lineHeight: SIZE(20),
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: SIZE(8),
-    marginBottom: SIZE(16),
-  },
-  actionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SIZE(6),
-    paddingVertical: SIZE(10),
-    borderRadius: SIZE(10),
-    backgroundColor: colors.backgroundLight,
-  },
+
+  // Tabs
   tabs: {
     flexDirection: 'row',
-    gap: SIZE(20),
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    marginHorizontal: -SIZE(20),
-    paddingHorizontal: SIZE(20),
+    paddingHorizontal: SIZE(18),
+    marginTop: SIZE(8),
+    gap: SIZE(20),
   },
   tab: {},
   tabText: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(14),
-    color: colors.subText,
+    color: colors.textSecondary,
+    paddingBottom: SIZE(10),
   },
   tabTextActive: {
-    fontFamily: 'Manrope-Medium',
-    fontSize: SIZE(14),
+    fontFamily: 'Manrope-SemiBold',
     color: colors.textPrimary,
   },
   tabUnderline: {
-    height: SIZE(4),
+    height: SIZE(3),
     backgroundColor: colors.accent,
     borderRadius: SIZE(2),
-    marginTop: SIZE(6),
+    marginTop: -SIZE(3),
     marginBottom: -1,
   },
-  doctorCardWrapper: {
-    marginHorizontal: -SIZE(2),
+
+  // Tab content
+  tabContent: {
     paddingHorizontal: SIZE(18),
+    paddingTop: SIZE(20),
+    gap: SIZE(16),
   },
-  detailsText: {
+  emptyText: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(13),
     color: colors.textSecondary,
-    padding: SIZE(16),
   },
+
+  // Details tab
+  sectionTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(15),
+    color: colors.textPrimary,
+    marginBottom: SIZE(4),
+  },
+  aboutText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: colors.textSecondary,
+    lineHeight: SIZE(20),
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: SIZE(12),
+    overflow: 'hidden',
+  },
+  infoCell: {
+    width: '50%',
+    padding: SIZE(14),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+  },
+  infoCellLabel: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(11),
+    color: colors.textSecondary,
+    marginBottom: SIZE(4),
+  },
+  infoCellValue: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.textPrimary,
+  },
+
+  // Before You Visit
+  beforeVisitCard: {
+    backgroundColor: '#FFF8F0',
+    borderRadius: SIZE(12),
+    padding: SIZE(16),
+    gap: SIZE(8),
+  },
+  beforeVisitTitle: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(15),
+    color: '#92400E',
+    marginBottom: SIZE(4),
+  },
+  beforeVisitRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SIZE(8),
+  },
+  checkmark: {
+    fontSize: SIZE(13),
+    color: '#92400E',
+    marginTop: SIZE(1),
+  },
+  beforeVisitText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(13),
+    color: '#92400E',
+    flex: 1,
+    lineHeight: SIZE(20),
+  },
+
+  // Coming soon
   comingSoonContainer: {
     alignItems: 'center',
     paddingTop: SIZE(40),
-    paddingHorizontal: SIZE(24),
-  },
-  comingSoonEmoji: {
-    fontSize: SIZE(48),
-    marginBottom: SIZE(16),
   },
   comingSoonTitle: {
     fontFamily: 'Manrope-Bold',
@@ -491,10 +544,83 @@ const styles = StyleSheet.create({
   comingSoonSubtitle: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(12),
-    color: colors.subText,
-    opacity: 0.6,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: SIZE(18),
   },
-});
 
+  // Mobile action buttons
+  mobileActions: {
+    flexDirection: 'row',
+    gap: SIZE(8),
+    paddingHorizontal: SIZE(18),
+    paddingTop: SIZE(16),
+  },
+  mobileActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SIZE(6),
+    paddingVertical: SIZE(10),
+    borderRadius: SIZE(10),
+    backgroundColor: colors.backgroundLight,
+  },
+  mobileActionText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(13),
+    color: colors.primary,
+  },
+
+  // Right column (desktop)
+  rightColumn: {
+    width: SIZE(280),
+    flexShrink: 0,
+  },
+  infoCard: {
+    borderRadius: SIZE(16),
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    padding: SIZE(20),
+    gap: SIZE(12),
+  },
+  infoCardTitle: {
+    fontFamily: 'Manrope-Bold',
+    fontSize: SIZE(16),
+    color: colors.textPrimary,
+    marginBottom: SIZE(4),
+  },
+  infoCardLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SIZE(6),
+    marginBottom: SIZE(4),
+  },
+  infoCardAddress: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: SIZE(12),
+    color: colors.textSecondary,
+    flex: 1,
+  },
+  infoCardDistance: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(12),
+    color: colors.primary,
+    flexShrink: 0,
+  },
+  infoActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SIZE(8),
+    paddingVertical: SIZE(11),
+    borderRadius: SIZE(10),
+    backgroundColor: colors.backgroundLight,
+  },
+  infoActionText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(14),
+    color: colors.primary,
+  },
+});
