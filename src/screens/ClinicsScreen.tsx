@@ -21,6 +21,7 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
+import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import { getClinics, Clinic } from '../services/api';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
@@ -91,37 +92,39 @@ export default function ClinicsScreen({ navigation }: Props) {
         >
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.title}>
-          Nearby Clinics
-        </Text>
+
         <TouchableOpacity
-          style={styles.backBtn}
+          style={styles.locationBtn}
           activeOpacity={0.7}
-          onPress={() => navigation.navigate('Search')}
+          onPress={() => navigation.navigate('LocationSearch')}
         >
-          <SearchIcon width={SIZE(22)} height={SIZE(22)} />
+          <LocationIcon width={SIZE(16)} height={SIZE(16)} style={{ flexShrink: 0 }} />
+          <Text
+            allowFontScaling={false}
+            style={styles.locationText}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {location ? location.mainText : 'Select location'}
+          </Text>
+          <DownArrowGrey width={SIZE(14)} height={SIZE(14)} style={{ flexShrink: 0 }} />
+          <View style={styles.locationDivider} />
+          <DistancePicker value={distance} onChange={setDistance} />
         </TouchableOpacity>
+
+        <View style={styles.headerRight}>
+          <FilterModal applied={appliedFilters} onApply={setAppliedFilters} triggerOnly />
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('Search')}
+          >
+            <SearchIcon width={SIZE(22)} height={SIZE(22)} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <TouchableOpacity
-        style={styles.locationBox}
-        activeOpacity={0.8}
-        onPress={() => navigation.navigate('LocationSearch')}
-      >
-        <View style={styles.locationIconContainer}>
-          <LocationIcon width={SIZE(20)} height={SIZE(20)} />
-        </View>
-        <Text
-          allowFontScaling={false}
-          style={styles.locationText}
-          numberOfLines={1}
-        >
-          {location ? location.mainText : 'Select location'}
-        </Text>
-        <DistancePicker value={distance} onChange={setDistance} />
-      </TouchableOpacity>
-      <View style={styles.filterRow}>
-        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} />
+      <View style={styles.chipsContainer}>
+        <FilterModal applied={appliedFilters} onApply={setAppliedFilters} chipsOnly />
       </View>
 
       {loading ? (
@@ -133,6 +136,8 @@ export default function ClinicsScreen({ navigation }: Props) {
         <FlatList
           data={clinics}
           keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -143,28 +148,33 @@ export default function ClinicsScreen({ navigation }: Props) {
               tintColor={colors.primary}
             />
           }
-          renderItem={({ item }) => (
-            <ClinicCard
-              name={item.name}
-              subType={item.specialties[0]?.name ?? item.type}
-              specialties={item.specialties.map((s: { name: string }) => s.name)}
-              location={item.address}
-              image={item.profilePicture}
-              distance={
-                location
-                  ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude)
-                  : undefined
-              }
-              onPress={() =>
-                navigation.navigate('HospitalDetail', {
-                  id: item.id,
-                  name: item.name,
-                  specialty: item.specialties[0]?.name ?? '',
-                  location: item.address,
-                })
-              }
-            />
-          )}
+          renderItem={({ item, index }) => {
+            const isLastOdd = clinics.length % 2 !== 0 && index === clinics.length - 1;
+            return (
+              <View style={[styles.gridItem, isLastOdd && styles.gridItemHalf]}>
+                <ClinicCard
+                  name={item.name}
+                  subType={item.specialties[0]?.name ?? item.type}
+                  specialties={item.specialties.map((s: { name: string }) => s.name)}
+                  location={item.address}
+                  image={item.profilePicture}
+                  distance={
+                    location
+                      ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude)
+                      : undefined
+                  }
+                  onPress={() =>
+                    navigation.navigate('HospitalDetail', {
+                      id: item.id,
+                      name: item.name,
+                      specialty: item.specialties[0]?.name ?? '',
+                      location: item.address,
+                    })
+                  }
+                />
+              </View>
+            );
+          }}
           ListEmptyComponent={
             <View>
               <View style={styles.emptyContainer}>
@@ -195,31 +205,35 @@ export default function ClinicsScreen({ navigation }: Props) {
               {fallbackClinics.length > 0 && (
                 <Text allowFontScaling={false} style={styles.fallbackHeading}>Available clinics</Text>
               )}
-              {fallbackClinics.map(item => (
-                <View key={item.id} style={styles.fallbackItem}>
-                  <ClinicCard
-                    name={item.name}
-                    subType={item.specialties[0]?.name ?? item.type}
-                    specialties={item.specialties.map((s: { name: string }) => s.name)}
-                    location={item.address}
-                    image={item.profilePicture}
-                    distance={
-                      location
-                        ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude)
-                        : undefined
-                    }
-                    style={{ marginHorizontal: 0 }}
-                    onPress={() =>
-                      navigation.navigate('HospitalDetail', {
-                        id: item.id,
-                        name: item.name,
-                        specialty: item.specialties[0]?.name ?? '',
-                        location: item.address,
-                      })
-                    }
-                  />
-                </View>
-              ))}
+              <View style={styles.fallbackGrid}>
+                {fallbackClinics.map((item, idx) => {
+                  const isLastOdd = fallbackClinics.length % 2 !== 0 && idx === fallbackClinics.length - 1;
+                  return (
+                    <View key={item.id} style={[styles.fallbackGridItem, isLastOdd && styles.fallbackGridItemHalf]}>
+                      <ClinicCard
+                        name={item.name}
+                        subType={item.specialties[0]?.name ?? item.type}
+                        specialties={item.specialties.map((s: { name: string }) => s.name)}
+                        location={item.address}
+                        image={item.profilePicture}
+                        distance={
+                          location
+                            ? getDistance(location.latitude, location.longitude, item.latitude, item.longitude)
+                            : undefined
+                        }
+                        onPress={() =>
+                          navigation.navigate('HospitalDetail', {
+                            id: item.id,
+                            name: item.name,
+                            specialty: item.specialties[0]?.name ?? '',
+                            location: item.address,
+                          })
+                        }
+                      />
+                    </View>
+                  );
+                })}
+              </View>
             </View>
           }
         />
@@ -233,50 +247,87 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: SIZE(10),
     paddingHorizontal: SIZE(18),
     paddingVertical: SIZE(12),
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   backBtn: { width: SIZE(32) },
-  title: {
+  locationBtn: {
+    flexShrink: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(6),
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: SIZE(10),
+    paddingHorizontal: SIZE(10),
+    paddingVertical: SIZE(7),
+    backgroundColor: colors.white,
+  },
+  locationText: {
+    flexShrink: 1,
     fontFamily: 'Manrope-SemiBold',
-    fontSize: SIZE(18),
+    fontSize: SIZE(14),
     color: colors.textPrimary,
+  },
+  locationDivider: {
+    width: 1,
+    height: SIZE(18),
+    backgroundColor: colors.border,
+    marginHorizontal: SIZE(2),
+    flexShrink: 0,
+  },
+  headerRight: {
+    flexShrink: 0,
+    marginLeft: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SIZE(12),
+  },
+  chipsContainer: {
+    paddingHorizontal: SIZE(20),
+    paddingTop: SIZE(8),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
   },
   listContent: {
     paddingBottom: SIZE(24),
+    paddingHorizontal: SIZE(16),
+    paddingTop: SIZE(12),
+    gap: SIZE(12),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
+  },
+  columnWrapper: {
     gap: SIZE(12),
   },
-  locationBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    paddingHorizontal: SIZE(14),
-    paddingVertical: SIZE(8),
-    marginHorizontal: SIZE(18),
-    marginVertical: SIZE(8),
-    backgroundColor: colors.white,
-  },
-  locationIconContainer: {
-    paddingVertical: SIZE(8),
-    paddingRight: SIZE(12),
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  locationText: {
+  gridItem: {
     flex: 1,
-    fontFamily: 'Manrope-Medium',
-    fontSize: SIZE(14),
-    color: colors.textPrimary,
-    marginLeft: SIZE(10),
   },
-  filterRow: { paddingHorizontal: SIZE(18), marginBottom: SIZE(8) },
+  gridItemHalf: {
+    flex: 0,
+    flexBasis: 'calc(50% - 6px)' as any,
+  },
+  fallbackGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SIZE(12),
+  },
+  fallbackGridItem: {
+    flex: 1,
+    flexBasis: 'calc(50% - 6px)' as any,
+  },
+  fallbackGridItemHalf: {
+    flex: 0,
+    flexBasis: 'calc(50% - 6px)' as any,
+  },
+
   emptyContainer: {
-    paddingHorizontal: SIZE(18),
     paddingTop: SIZE(16),
     paddingBottom: SIZE(12),
   },
@@ -333,10 +384,8 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     paddingTop: SIZE(8),
     paddingBottom: SIZE(4),
-    paddingHorizontal: SIZE(18),
   },
   fallbackItem: {
     marginBottom: SIZE(12),
-    paddingHorizontal: SIZE(18),
   },
 });

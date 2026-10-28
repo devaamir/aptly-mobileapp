@@ -195,6 +195,8 @@ export default function DoctorsScreen({ navigation }: Props) {
         <FlatList
           data={doctors}
           keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -219,7 +221,7 @@ export default function DoctorsScreen({ navigation }: Props) {
               />
             ) : null
           }
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             const specialty = item.specialties.map(s => s.name).join(', ');
             const hospital = item.medicalCenters[0]?.name ?? '';
             const clinicType = item.medicalCenters[0]?.type ?? '';
@@ -232,37 +234,40 @@ export default function DoctorsScreen({ navigation }: Props) {
             const today = DAYS[new Date().getDay()];
             const todaySchedule = allSchedules.find(s => s.dayOfWeek === today);
             const nextSchedule = todaySchedule ?? allSchedules[0];
+            const isLastOdd = doctors.length % 2 !== 0 && index === doctors.length - 1;
             return (
-              <DoctorCard
-                name={item.name}
-                type={specialty}
-                hospital={hospital}
-                clinicType={clinicType}
-                location={location}
-                distance={(() => {
-                  const mc = item.medicalCenters[0];
-                  return userLocation && mc
-                    ? getDistance(
-                        userLocation.latitude,
-                        userLocation.longitude,
-                        mc.latitude,
-                        mc.longitude,
-                      )
-                    : undefined;
-                })()}
-                experience={`${item.yearsOfExperience} yrs exp`}
-                image={item.profilePicture}
-                nextSchedule={nextSchedule}
-                onPress={() =>
-                  navigation.navigate('DoctorDetail', { doctorId: item.id })
-                }
-                onBookPress={() =>
-                  navigation.navigate('BookAppointment', {
-                    doctor: item,
-                    clinicId: item.medicalCenters[0]?.id,
-                  })
-                }
-              />
+              <View style={[styles.gridItem, isLastOdd && styles.gridItemHalf]}>
+                <DoctorCard
+                  name={item.name}
+                  type={specialty}
+                  hospital={hospital}
+                  clinicType={clinicType}
+                  location={location}
+                  distance={(() => {
+                    const mc = item.medicalCenters[0];
+                    return userLocation && mc
+                      ? getDistance(
+                          userLocation.latitude,
+                          userLocation.longitude,
+                          mc.latitude,
+                          mc.longitude,
+                        )
+                      : undefined;
+                  })()}
+                  experience={`${item.yearsOfExperience} yrs exp`}
+                  image={item.profilePicture}
+                  nextSchedule={nextSchedule}
+                  onPress={() =>
+                    navigation.navigate('DoctorDetail', { doctorId: item.id })
+                  }
+                  onBookPress={() =>
+                    navigation.navigate('BookAppointment', {
+                      doctor: item,
+                      clinicId: item.medicalCenters[0]?.id,
+                    })
+                  }
+                />
+              </View>
             );
           }}
           ListEmptyComponent={
@@ -309,58 +314,61 @@ export default function DoctorsScreen({ navigation }: Props) {
                   Available doctors
                 </Text>
               )}
-              {fallbackDoctors.map(item => {
-                const specialty = item.specialties.map(s => s.name).join(', ');
-                const hospital = item.medicalCenters[0]?.name ?? '';
-                const clinicType = item.medicalCenters[0]?.type ?? '';
-                const location = item.medicalCenters[0]
-                  ? `${item.medicalCenters[0].address}`
-                  : '';
-                const allSchedules = item.medicalCenters.flatMap(
-                  mc => mc.schedules ?? [],
-                );
-                const today = DAYS[new Date().getDay()];
-                const todaySchedule = allSchedules.find(
-                  s => s.dayOfWeek === today,
-                );
-                const nextSchedule = todaySchedule ?? allSchedules[0];
-                return (
-                  <View key={item.id} style={styles.fallbackItem}>
-                    <DoctorCard
-                      name={item.name}
-                      type={specialty}
-                      hospital={hospital}
-                      clinicType={clinicType}
-                      location={location}
-                      distance={(() => {
-                        const mc = item.medicalCenters[0];
-                        return userLocation && mc
-                          ? getDistance(
-                              userLocation.latitude,
-                              userLocation.longitude,
-                              mc.latitude,
-                              mc.longitude,
-                            )
-                          : undefined;
-                      })()}
-                      experience={`${item.yearsOfExperience} yrs exp`}
-                      image={item.profilePicture}
-                      nextSchedule={nextSchedule}
-                      onPress={() =>
-                        navigation.navigate('DoctorDetail', {
-                          doctorId: item.id,
-                        })
-                      }
-                      onBookPress={() =>
-                        navigation.navigate('BookAppointment', {
-                          doctor: item,
-                          clinicId: item.medicalCenters[0]?.id,
-                        })
-                      }
-                    />
-                  </View>
-                );
-              })}
+              <View style={styles.fallbackGrid}>
+                {fallbackDoctors.map((item, idx) => {
+                  const specialty = item.specialties.map(s => s.name).join(', ');
+                  const hospital = item.medicalCenters[0]?.name ?? '';
+                  const clinicType = item.medicalCenters[0]?.type ?? '';
+                  const location = item.medicalCenters[0]
+                    ? `${item.medicalCenters[0].address}`
+                    : '';
+                  const allSchedules = item.medicalCenters.flatMap(
+                    mc => mc.schedules ?? [],
+                  );
+                  const today = DAYS[new Date().getDay()];
+                  const todaySchedule = allSchedules.find(
+                    s => s.dayOfWeek === today,
+                  );
+                  const nextSchedule = todaySchedule ?? allSchedules[0];
+                  const isLastOdd = fallbackDoctors.length % 2 !== 0 && idx === fallbackDoctors.length - 1;
+                  return (
+                    <View key={item.id} style={[styles.fallbackGridItem, isLastOdd && styles.fallbackGridItemHalf]}>
+                      <DoctorCard
+                        name={item.name}
+                        type={specialty}
+                        hospital={hospital}
+                        clinicType={clinicType}
+                        location={location}
+                        distance={(() => {
+                          const mc = item.medicalCenters[0];
+                          return userLocation && mc
+                            ? getDistance(
+                                userLocation.latitude,
+                                userLocation.longitude,
+                                mc.latitude,
+                                mc.longitude,
+                              )
+                            : undefined;
+                        })()}
+                        experience={`${item.yearsOfExperience} yrs exp`}
+                        image={item.profilePicture}
+                        nextSchedule={nextSchedule}
+                        onPress={() =>
+                          navigation.navigate('DoctorDetail', {
+                            doctorId: item.id,
+                          })
+                        }
+                        onBookPress={() =>
+                          navigation.navigate('BookAppointment', {
+                            doctor: item,
+                            clinicId: item.medicalCenters[0]?.id,
+                          })
+                        }
+                      />
+                    </View>
+                  );
+                })}
+              </View>
             </View>
           }
         />
@@ -423,6 +431,28 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
     maxWidth: 1240,
+  },
+  columnWrapper: {
+    gap: SIZE(12),
+  },
+  gridItem: {
+    flex: 1,
+  },
+  gridItemHalf: {
+    flex: 0,
+    flexBasis: 'calc(50% - 6px)' as any,
+  },  fallbackGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SIZE(12),
+  },
+  fallbackGridItem: {
+    flex: 1,
+    flexBasis: 'calc(50% - 6px)' as any,
+  },
+  fallbackGridItemHalf: {
+    flex: 0,
+    flexBasis: 'calc(50% - 6px)' as any,
   },
   chipsContainer: {
     paddingHorizontal: SIZE(20),

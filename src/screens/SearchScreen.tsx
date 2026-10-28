@@ -59,6 +59,8 @@ export default function SearchScreen() {
             data={results}
             keyExtractor={item => item.id}
             keyboardShouldPersistTaps="handled"
+            numColumns={2}
+            columnWrapperStyle={styles.columnWrapper}
             contentContainerStyle={styles.list}
             style={{ backgroundColor: colors.backgroundGrey }}
             ListHeaderComponent={
@@ -88,50 +90,53 @@ export default function SearchScreen() {
               ) : null
             }
             ListEmptyComponent={<Text allowFontScaling={false} style={styles.empty}>No results found</Text>}
-            renderItem={({ item }) => {
+            renderItem={({ item, index }) => {
               const isDoctor = (item as any).type === 'doctor';
+              const isLastOdd = results.length % 2 !== 0 && index === results.length - 1;
               return (
-                <TouchableOpacity
-                  style={styles.card}
-                  activeOpacity={0.7}
-                  onPress={() => isDoctor
-                    ? navigation.navigate('DoctorDetail', { doctorId: item.id })
-                    : navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })
-                  }>
-                  <View style={[styles.itemImage, isDoctor && styles.itemImageCircle]}>
-                    <Image
-                      source={(item as any).profilePicture
-                        ? { uri: (item as any).profilePicture }
-                        : isDoctor
-                          ? require('../assets/images/doctor-profile.png')
-                          : require('../assets/images/aptly-logo2.png')}
-                      style={{ width: '100%', height: '100%' }}
-                    />
-                  </View>
-                  <View style={styles.cardContent}>
-                    <Text allowFontScaling={false} style={styles.resultName}>{item.name}</Text>
-                    <Text allowFontScaling={false} style={styles.meta} numberOfLines={1}>
-                      {isDoctor
-                        ? (item as Doctor).specialties[0]?.name ?? ''
-                        : (item as Clinic).specialties.length > 0
-                          ? (item as Clinic).specialties.map((s, i, arr) => (
-                              <Text key={i} allowFontScaling={false}>
-                                {s.name}
-                                {i < arr.length - 1 && <Text style={styles.metaDot}>{'  •  '}</Text>}
-                              </Text>
-                            ))
-                          : (item as Clinic).type}
-                    </Text>
-                    <View style={styles.locationRow}>
-                      <LocationIcon width={SIZE(11)} height={SIZE(11)} />
-                      <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>
-                        {isDoctor
-                          ? (item as Doctor).medicalCenters[0]?.name ?? (item as Doctor).address
-                          : `${(item as Clinic).district}, ${(item as Clinic).state}`}
-                      </Text>
+                <View style={[styles.gridItem, isLastOdd && styles.gridItemHalf]}>
+                  <TouchableOpacity
+                    style={styles.card}
+                    activeOpacity={0.7}
+                    onPress={() => isDoctor
+                      ? navigation.navigate('DoctorDetail', { doctorId: item.id })
+                      : navigation.navigate('HospitalDetail', { id: item.id, name: item.name, specialty: (item as Clinic).specialties[0]?.name ?? '', location: (item as Clinic).address })
+                    }>
+                    <View style={[styles.itemImage, isDoctor && styles.itemImageCircle]}>
+                      <Image
+                        source={(item as any).profilePicture
+                          ? { uri: (item as any).profilePicture }
+                          : isDoctor
+                            ? require('../assets/images/doctor-profile.png')
+                            : require('../assets/images/aptly-logo2.png')}
+                        style={{ width: '100%', height: '100%' }}
+                      />
                     </View>
-                  </View>
-                </TouchableOpacity>
+                    <View style={styles.cardContent}>
+                      <Text allowFontScaling={false} style={styles.resultName}>{item.name}</Text>
+                      <Text allowFontScaling={false} style={styles.meta} numberOfLines={1}>
+                        {isDoctor
+                          ? (item as Doctor).specialties[0]?.name ?? ''
+                          : (item as Clinic).specialties.length > 0
+                            ? (item as Clinic).specialties.map((s, i, arr) => (
+                                <Text key={i} allowFontScaling={false}>
+                                  {s.name}
+                                  {i < arr.length - 1 && <Text style={styles.metaDot}>{'  •  '}</Text>}
+                                </Text>
+                              ))
+                            : (item as Clinic).type}
+                      </Text>
+                      <View style={styles.locationRow}>
+                        <LocationIcon width={SIZE(11)} height={SIZE(11)} />
+                        <Text allowFontScaling={false} style={styles.locationText} numberOfLines={1}>
+                          {isDoctor
+                            ? (item as Doctor).medicalCenters[0]?.name ?? (item as Doctor).address
+                            : `${(item as Clinic).district}, ${(item as Clinic).state}`}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </View>
               );
             }}
           />
@@ -174,8 +179,27 @@ const styles = StyleSheet.create({
   },
   searchWrapper: { flex: 1 },
   backBtn: { padding: SIZE(4) },
-  list: { paddingHorizontal: SIZE(16), paddingBottom: SIZE(24), paddingTop: SIZE(8) },
+  list: {
+    paddingHorizontal: SIZE(16),
+    paddingBottom: SIZE(24),
+    paddingTop: SIZE(8),
+    gap: SIZE(8),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
+  },
+  columnWrapper: {
+    gap: SIZE(8),
+  },
+  gridItem: {
+    flex: 1,
+  },
+  gridItemHalf: {
+    flex: 0,
+    flexBasis: 'calc(50% - 4px)' as any,
+  },
   card: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: SIZE(10),
@@ -183,7 +207,6 @@ const styles = StyleSheet.create({
     gap: SIZE(14),
     backgroundColor: colors.white,
     borderRadius: SIZE(12),
-    marginBottom: SIZE(8),
   },
   itemImage: {
     width: SIZE(56),
@@ -218,6 +241,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(16),
     paddingTop: SIZE(16),
     paddingBottom: SIZE(8),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
   },
   suggestionsTitle: {
     fontFamily: 'Manrope-SemiBold',

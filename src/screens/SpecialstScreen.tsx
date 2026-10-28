@@ -74,32 +74,39 @@ export default function SpecialstScreen({ navigation }: Props) {
         <FlatList
           data={filtered}
           keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.card}
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate('SpecialstDetail', {
-                name: item.name,
-                id: item.id,
-                desc: item.description,
-                clinics: 0,
-                doctors: 0,
-              })}
-            >
-              {item.icon?.toLowerCase().endsWith('.svg') ? (
-                <SvgUri uri={item.icon} width={SIZE(52)} height={SIZE(52)} style={styles.avatar} />
-              ) : (
-                <Image source={{ uri: item.icon }} style={styles.avatar} />
-              )}
-              <View style={styles.info}>
-                <Text allowFontScaling={false} style={styles.name}>{item.name}</Text>
-                <Text allowFontScaling={false} style={styles.desc}>{item.description}</Text>
+          renderItem={({ item, index }) => {
+            const isLastOdd = filtered.length % 2 !== 0 && index === filtered.length - 1;
+            return (
+              <View style={[styles.gridItem, isLastOdd && styles.gridItemHalf]}>
+                <TouchableOpacity
+                  style={styles.card}
+                  activeOpacity={0.8}
+                  onPress={() => navigation.navigate('SpecialstDetail', {
+                    name: item.name,
+                    id: item.id,
+                    desc: item.description,
+                    clinics: 0,
+                    doctors: 0,
+                  })}
+                >
+                  {item.icon?.toLowerCase().endsWith('.svg') ? (
+                    <SvgUri uri={item.icon} width={SIZE(52)} height={SIZE(52)} style={styles.avatar} />
+                  ) : (
+                    <Image source={{ uri: item.icon }} style={styles.avatar} />
+                  )}
+                  <View style={styles.info}>
+                    <Text allowFontScaling={false} style={styles.name}>{item.name}</Text>
+                    <Text allowFontScaling={false} style={styles.desc}>{item.description}</Text>
+                  </View>
+                  <ArrowRight width={SIZE(18)} height={SIZE(18)} />
+                </TouchableOpacity>
               </View>
-              <ArrowRight width={SIZE(18)} height={SIZE(18)} />
-            </TouchableOpacity>
-          )}
+            );
+          }}
         />
       )}
     </SafeAreaView>
@@ -147,15 +154,19 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   listContent: {
-    paddingHorizontal: SIZE(20),
+    paddingHorizontal: SIZE(16),
     paddingTop: SIZE(12),
     paddingBottom: SIZE(24),
-    gap: SIZE(12),
     alignSelf: 'center',
     width: '100%',
     maxWidth: 1240,
+    gap: SIZE(12),
+  },
+  columnWrapper: {
+    gap: SIZE(12),
   },
   card: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(14),
@@ -164,6 +175,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.cardBorderLight,
     backgroundColor: colors.white,
+  },
+  gridItem: {
+    flex: 1,
+  },
+  gridItemHalf: {
+    flex: 0,
+    flexBasis: 'calc(50% - 6px)' as any,
   },
   avatar: {
     width: SIZE(52),

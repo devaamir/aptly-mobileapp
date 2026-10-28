@@ -140,6 +140,8 @@ export default function AppointmentScreen() {
         <FlatList
           data={filtered}
           keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
           contentContainerStyle={[styles.list, filtered.length === 0 && styles.listEmpty]}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchPage(1, true)} colors={[colors.primary]} tintColor={colors.primary} />}
@@ -167,7 +169,8 @@ export default function AppointmentScreen() {
               </View>
             );
           }}
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
+            const isLastOdd = filtered.length % 2 !== 0 && index === filtered.length - 1;
             const liveAppt = trackData?.appointments.find(
               a => a.id === item.id,
             );
@@ -219,33 +222,36 @@ export default function AppointmentScreen() {
             const time = start && stop ? `${start} - ${stop}` : '';
             const date = formatDate(item.appointmentDate);
             return (
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() =>
-                  navigation.navigate('AppointmentDetail', {
-                    id: item.id,
-                    doctor: item.doctor.name,
-                    type: item.doctor.specialties[0]?.name ?? '',
-                    hospital: item.medicalCenter.name,
-                    date,
-                    time,
-                    token: liveToken,
-                    status,
-                  })
-                }
-              >
-                <AppointmentCard
-                  doctor={item.doctor.name}
-                  type={item.doctor.specialties[0]?.name ?? ''}
-                  hospital={item.medicalCenter.name}
-                  date={date}
-                  time={time}
-                  token={liveToken}
-                  status={status}
-                  avatar={item.doctor.profilePicture}
-                  clinicAvatar={item.medicalCenter.profilePicture}
-                />
-              </TouchableOpacity>
+              <View style={[styles.gridItem, isLastOdd && styles.gridItemHalf]}>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  style={{ flex: 1 }}
+                  onPress={() =>
+                    navigation.navigate('AppointmentDetail', {
+                      id: item.id,
+                      doctor: item.doctor.name,
+                      type: item.doctor.specialties[0]?.name ?? '',
+                      hospital: item.medicalCenter.name,
+                      date,
+                      time,
+                      token: liveToken,
+                      status,
+                    })
+                  }
+                >
+                  <AppointmentCard
+                    doctor={item.doctor.name}
+                    type={item.doctor.specialties[0]?.name ?? ''}
+                    hospital={item.medicalCenter.name}
+                    date={date}
+                    time={time}
+                    token={liveToken}
+                    status={status}
+                    avatar={item.doctor.profilePicture}
+                    clinicAvatar={item.medicalCenter.profilePicture}
+                  />
+                </TouchableOpacity>
+              </View>
             );
           }}
         />
@@ -295,8 +301,25 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: SIZE(6),
   },
-  list: { paddingHorizontal: SIZE(18), gap: SIZE(12), paddingBottom: SIZE(24) },
+  list: {
+    paddingHorizontal: SIZE(18),
+    gap: SIZE(12),
+    paddingBottom: SIZE(24),
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 1240,
+  },
   listEmpty: { flexGrow: 1 },
+  columnWrapper: {
+    gap: SIZE(12),
+  },
+  gridItem: {
+    flex: 1,
+  },
+  gridItemHalf: {
+    flex: 0,
+    flexBasis: 'calc(50% - 6px)' as any,
+  },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
