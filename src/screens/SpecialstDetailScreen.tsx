@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,6 +13,7 @@ import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import ClinicCard from '../components/ClinicCard';
 import DoctorCard from '../components/DoctorCard';
 import { getClinics, getDoctors, getDoctor, Clinic, Doctor } from '../services/api';
+import { buildSpecialtySchema, buildBreadcrumbSchema, specialtyPageMeta, schemaToString, BASE_URL } from '../utils/seo';
 import FilterModal from '../components/FilterModal';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
@@ -70,8 +72,25 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
     }).catch(() => { }).finally(() => setLoading(false));
   }, [id, location, distance, appliedFilters]);
 
+  const pageMeta = specialtyPageMeta(name);
+  const specialtySchema = buildSpecialtySchema(name);
+  const breadcrumb = buildBreadcrumbSchema([
+    { name: 'Home', url: BASE_URL },
+    { name: 'Specialties', url: `${BASE_URL}/specialties` },
+    { name: name, url: `${BASE_URL}/specialties/${encodeURIComponent(name.toLowerCase())}` },
+  ]);
+
   return (
     <SafeAreaView style={styles.container}>
+      <Helmet>
+        <title>{pageMeta.title}</title>
+        <meta name="description" content={pageMeta.description} />
+        <meta property="og:title" content={pageMeta.title} />
+        <meta property="og:description" content={pageMeta.description} />
+        <link rel="canonical" href={`${BASE_URL}/specialties/${encodeURIComponent(name.toLowerCase())}`} />
+        <script type="application/ld+json">{schemaToString(specialtySchema)}</script>
+        <script type="application/ld+json">{schemaToString(breadcrumb)}</script>
+      </Helmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       {/* Header */}

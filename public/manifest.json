@@ -1,12 +1,15 @@
 {
-  "name": "Aptly",
+  "name": "Aptly – Book Doctor & Clinic Appointments",
   "short_name": "Aptly",
-  "description": "Book doctor appointments easily with Aptly",
+  "description": "Find and book appointments with doctors and clinics near you. Search by specialty — cardiologist, dermatologist, dentist, and more. Real-time token tracking.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "orientation": "portrait",
+  "categories": ["medical", "health", "lifestyle"],
+  "lang": "en-IN",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -19,6 +22,17 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.aptly.care"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/aptly-care"
     }
   ]
 }

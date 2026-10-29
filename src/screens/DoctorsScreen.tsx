@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   View,
   Text,
@@ -23,6 +24,7 @@ import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import { getDoctors, Doctor } from '../services/api';
+import { doctorsMeta, BASE_URL } from '../utils/seo';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
 
@@ -131,6 +133,13 @@ export default function DoctorsScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Helmet>
+        <title>{doctorsMeta.title}</title>
+        <meta name="description" content={doctorsMeta.description} />
+        <meta property="og:title" content={doctorsMeta.title} />
+        <meta property="og:description" content={doctorsMeta.description} />
+        <link rel="canonical" href={`${BASE_URL}/doctors`} />
+      </Helmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
         <TouchableOpacity

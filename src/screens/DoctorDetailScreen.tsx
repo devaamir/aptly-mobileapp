@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,6 +9,7 @@ import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import { getDoctor, Doctor } from '../services/api';
+import { buildDoctorSchema, buildBreadcrumbSchema, doctorPageMeta, schemaToString, BASE_URL } from '../utils/seo';
 import BottomModal from '../components/BottomModal';
 import LoginModal from '../components/LoginModal';
 import LocationIcon from '../assets/icons/location-icon.svg';
@@ -119,8 +121,35 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
     ? `${getDistance(USER_LAT, USER_LON, doctor.latitude, doctor.longitude)} km`
     : null;
 
+  const pageMeta = doctorPageMeta(doctor.name, specialty || undefined);
+  const firstClinic = doctor.medicalCenters[0];
+  const doctorSchema = buildDoctorSchema({
+    doctorId,
+    name: doctor.name,
+    specialty: specialty || undefined,
+    image: doctor.profilePicture,
+    hospital: firstClinic
+      ? { name: firstClinic.name, address: firstClinic.address, id: firstClinic.id }
+      : undefined,
+  });
+  const breadcrumb = buildBreadcrumbSchema([
+    { name: 'Home', url: BASE_URL },
+    { name: 'Doctors', url: `${BASE_URL}/doctors` },
+    { name: doctor.name, url: `${BASE_URL}/doctor/${doctorId}` },
+  ]);
+
   return (
     <SafeAreaView style={styles.container}>
+      <Helmet>
+        <title>{pageMeta.title}</title>
+        <meta name="description" content={pageMeta.description} />
+        <meta property="og:title" content={pageMeta.title} />
+        <meta property="og:description" content={pageMeta.description} />
+        {doctor.profilePicture && <meta property="og:image" content={doctor.profilePicture} />}
+        <link rel="canonical" href={`${BASE_URL}/doctor/${doctorId}`} />
+        <script type="application/ld+json">{schemaToString(doctorSchema)}</script>
+        <script type="application/ld+json">{schemaToString(breadcrumb)}</script>
+      </Helmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>

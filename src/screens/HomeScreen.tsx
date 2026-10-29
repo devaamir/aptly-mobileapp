@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   View,
   Image,
@@ -1204,6 +1205,19 @@ export default function HomeScreen() {
   } else {
     return (
       <>
+        <Helmet>
+          <title>Aptly – Book Doctor &amp; Clinic Appointments Near You</title>
+          <meta
+            name="description"
+            content="Find and book appointments with top doctors and clinics near you. Search by specialty — cardiologist, dermatologist, dentist, and more. Instant confirmation, real-time token tracking."
+          />
+          <meta property="og:title" content="Aptly – Book Doctor & Clinic Appointments Near You" />
+          <meta
+            property="og:description"
+            content="Find clinics and doctors near you. Book appointments in seconds with real-time token tracking."
+          />
+          <link rel="canonical" href="https://aptly.care/" />
+        </Helmet>
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
           <Svg
             style={StyleSheet.absoluteFill}

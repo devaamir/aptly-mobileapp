@@ -1,0 +1,15 @@
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+
+# Private / auth routes — no SEO value
+Disallow: /otp
+Disallow: /create-profile
+Disallow: /account-settings
+Disallow: /book-appointment
+Disallow: /booking-confirmed
+Disallow: /appointment-detail
+Disallow: /token-detail
+
+Sitemap: https://app.aptly.care/sitemap.xml

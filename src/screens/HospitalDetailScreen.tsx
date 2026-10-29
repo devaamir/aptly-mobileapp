@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   View,
   Text,
@@ -24,6 +25,7 @@ import PhoneIcon from '../assets/icons/phone-icon-blue.svg';
 import MapIcon from '../assets/icons/map-icon-blue.svg';
 import WebIcon from '../assets/icons/web-icon-blue.svg';
 import DoctorCard from '../components/DoctorCard';
+import { buildClinicSchema, buildBreadcrumbSchema, clinicPageMeta, schemaToString, BASE_URL } from '../utils/seo';
 import { getClinic, getDoctor } from '../services/api';
 import type { Clinic } from '../services/api';
 import { useLocation } from '../context/LocationContext';
@@ -318,8 +320,45 @@ export default function HospitalDetailScreen() {
     </View>
   );
 
+  // Compute SEO data once clinic is loaded
+  const clinicCity = clinic?.district ?? clinic?.state ?? '';
+  const clinicLocation = [clinic?.address, clinicCity].filter(Boolean).join(', ');
+  const pageMeta = clinicPageMeta(displayClinic.name || name || 'Clinic', clinicLocation || location);
+  const clinicSchema = clinic
+    ? buildClinicSchema({
+        id: clinic.id ?? id,
+        name: clinic.name,
+        address: clinic.address,
+        city: clinic.district,
+        state: clinic.state,
+        phone: clinic.phoneNumber,
+        website: clinic.websiteUrl,
+        latitude: clinic.latitude,
+        longitude: clinic.longitude,
+        image: clinic.profilePicture,
+        specialties: clinic.specialties?.map((s: { name: string }) => s.name) ?? [],
+      })
+    : null;
+  const breadcrumb = buildBreadcrumbSchema([
+    { name: 'Home', url: BASE_URL },
+    { name: 'Clinics', url: `${BASE_URL}/clinics` },
+    { name: displayClinic.name || name || 'Clinic', url: `${BASE_URL}/c/${id}` },
+  ]);
+
   return (
     <SafeAreaView style={styles.container}>
+      <Helmet>
+        <title>{pageMeta.title}</title>
+        <meta name="description" content={pageMeta.description} />
+        <meta property="og:title" content={pageMeta.title} />
+        <meta property="og:description" content={pageMeta.description} />
+        {clinic?.profilePicture && <meta property="og:image" content={clinic.profilePicture} />}
+        <link rel="canonical" href={`${BASE_URL}/c/${id}`} />
+        <script type="application/ld+json">{schemaToString(breadcrumb)}</script>
+        {clinicSchema && (
+          <script type="application/ld+json">{schemaToString(clinicSchema)}</script>
+        )}
+      </Helmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       {/* Header — full width */}

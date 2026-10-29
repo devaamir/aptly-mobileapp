@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +12,7 @@ import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import { useMetadata } from '../context/MetadataContext';
+import { specialtiesMeta, BASE_URL } from '../utils/seo';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'specialst'>;
 
@@ -25,6 +27,13 @@ export default function SpecialstScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Helmet>
+        <title>{specialtiesMeta.title}</title>
+        <meta name="description" content={specialtiesMeta.description} />
+        <meta property="og:title" content={specialtiesMeta.title} />
+        <meta property="og:description" content={specialtiesMeta.description} />
+        <link rel="canonical" href={`${BASE_URL}/specialties`} />
+      </Helmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       {/* Header */}

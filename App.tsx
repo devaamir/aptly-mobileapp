@@ -1,6 +1,7 @@
 import React from 'react';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { HelmetProvider } from 'react-helmet-async';
 import Navigation, { navigationRef } from './src/navigations/Navigation';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
@@ -25,10 +26,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </SafeAreaProvider>
+    <HelmetProvider>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </SafeAreaProvider>
+    </HelmetProvider>
   );
 }
