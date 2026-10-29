@@ -173,9 +173,31 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
       {/* Date picker */}
       <View style={styles.sectionHeader}>
         <Text allowFontScaling={false} style={styles.sectionTitle}>Select Date</Text>
-        <TouchableOpacity activeOpacity={0.7} onPress={() => setShowCalendar(true)}>
-          <CalendarIcon width={SIZE(20)} height={SIZE(20)} />
-        </TouchableOpacity>
+        {Platform.OS === 'web' ? (
+          // On web use the browser's native date input — no modal needed
+          <View style={styles.calendarIconWrapper}>
+            <CalendarIcon width={SIZE(20)} height={SIZE(20)} />
+            {/* @ts-ignore */}
+            <input
+              type="date"
+              min={dayjs(DAYS[0].full).format('YYYY-MM-DD')}
+              max={dayjs(DAYS[DAYS.length - 1].full).format('YYYY-MM-DD')}
+              value={dayjs(DAYS[selectedDay].full).format('YYYY-MM-DD')}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                if (e.target.value) {
+                  const picked = new Date(e.target.value + 'T12:00:00');
+                  const idx = DAYS.findIndex(d => d.full.toDateString() === picked.toDateString());
+                  if (idx !== -1) setSelectedDay(idx);
+                }
+              }}
+              style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+            />
+          </View>
+        ) : (
+          <TouchableOpacity activeOpacity={0.7} onPress={() => setShowCalendar(true)}>
+            <CalendarIcon width={SIZE(20)} height={SIZE(20)} />
+          </TouchableOpacity>
+        )}
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysRow}>
         {DAYS.map((d, i) => (
@@ -339,17 +361,26 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
             </ScrollView>
             <View style={styles.stickyFooter}>
               <View style={styles.centeredContainer}>
-                <SwipeToBook
-                  disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
-                  onSwipeComplete={handleGetToken}
-                />
+                {Platform.OS === 'web' ? (
+                  <PrimaryButton
+                    label={loading ? 'Booking...' : 'Confirm Appointment'}
+                    onPress={handleGetToken}
+                    disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
+                    loading={loading}
+                  />
+                ) : (
+                  <SwipeToBook
+                    disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
+                    onSwipeComplete={handleGetToken}
+                  />
+                )}
               </View>
             </View>
           </>
         )}
       </SafeAreaView>
 
-      <Modal visible={showCalendar} transparent animationType="slide" onRequestClose={() => setShowCalendar(false)}>
+      <Modal visible={showCalendar && Platform.OS !== 'web'} transparent animationType="slide" onRequestClose={() => setShowCalendar(false)}>
         <View style={styles.calendarOverlay}>
           <View style={styles.calendarSheet}>
             <View style={styles.calendarHeader}>
@@ -807,6 +838,9 @@ const styles = StyleSheet.create({
     fontSize: SIZE(15),
     color: colors.white,
     textAlign: 'center',
+  },
+  calendarIconWrapper: {
+    position: 'relative',
   },
   calendarOverlay: {
     flex: 1,

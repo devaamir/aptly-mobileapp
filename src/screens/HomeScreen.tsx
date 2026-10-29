@@ -513,7 +513,7 @@ const ListHeader = ({
 
   return (
     <>
-      {visibleAppointments.length > 1 ? (
+      {Platform.OS !== 'web' && visibleAppointments.length > 1 ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -523,7 +523,7 @@ const ListHeader = ({
         >
           {visibleAppointments.map(renderBannerCard)}
         </ScrollView>
-      ) : visibleAppointments.length === 1 ? (
+      ) : Platform.OS !== 'web' && visibleAppointments.length === 1 ? (
         renderBannerCard(visibleAppointments[0])
       ) : screenWidth < 768 ? (
         <View style={styles.mobilePromoBanner}>
@@ -590,7 +590,7 @@ const ListHeader = ({
             </TouchableOpacity>
           </View>
         </View>
-      ) : visibleSpotlight ? (
+      ) : Platform.OS !== 'web' && visibleSpotlight ? (
         renderBannerCard(visibleSpotlight)
       ) : null}
       <View style={screenWidth >= 768 ? styles.desktopLayout : undefined}>

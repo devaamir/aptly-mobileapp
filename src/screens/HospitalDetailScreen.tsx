@@ -53,6 +53,7 @@ export default function HospitalDetailScreen() {
   const { location: userLocation } = useLocation();
 
   const [tab, setTab] = useState<'Doctors' | 'Facilities' | 'Details'>('Doctors');
+  const [specialtiesExpanded, setSpecialtiesExpanded] = useState(false);
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -137,6 +138,55 @@ export default function HospitalDetailScreen() {
         </View>
       </View>
 
+      {/* Specialties */}
+      {displayClinic.specialties?.length > 0 && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setSpecialtiesExpanded(e => !e)}
+          style={styles.specialtiesRow}
+        >
+          {specialtiesExpanded
+            ? displayClinic.specialties.map((s: { id: string; name: string }) => (
+                <View key={s.id} style={styles.specialtyChip}>
+                  <Text allowFontScaling={false} style={styles.specialtyChipText}>{s.name}</Text>
+                </View>
+              ))
+            : <>
+                {displayClinic.specialties.slice(0, 3).map((s: { id: string; name: string }) => (
+                  <View key={s.id} style={styles.specialtyChip}>
+                    <Text allowFontScaling={false} style={styles.specialtyChipText} numberOfLines={1}>{s.name}</Text>
+                  </View>
+                ))}
+                {displayClinic.specialties.length > 3 && (
+                  <View style={[styles.specialtyChip, styles.specialtyChipMore]}>
+                    <Text allowFontScaling={false} style={styles.specialtyChipText}>
+                      +{displayClinic.specialties.length - 3}
+                    </Text>
+                  </View>
+                )}
+              </>
+          }
+        </TouchableOpacity>
+      )}
+
+      {/* Mobile action buttons */}
+      {!isDesktop && (
+        <View style={styles.mobileActions}>
+          <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={callClinic}>
+            <PhoneIcon width={SIZE(20)} height={SIZE(20)} />
+            <Text allowFontScaling={false} style={styles.mobileActionText}>Call</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={openMaps}>
+            <MapIcon width={SIZE(20)} height={SIZE(20)} />
+            <Text allowFontScaling={false} style={styles.mobileActionText}>Maps</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={openWebsite}>
+            <WebIcon width={SIZE(20)} height={SIZE(20)} />
+            <Text allowFontScaling={false} style={styles.mobileActionText}>Website</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Tabs */}
       <View style={styles.tabs}>
         {(['Doctors', 'Facilities', 'Details'] as const).map(t => (
@@ -154,21 +204,26 @@ export default function HospitalDetailScreen() {
         <View style={styles.tabContent}>
           {displayClinic.doctors.length === 0
             ? <Text allowFontScaling={false} style={styles.emptyText}>No doctors listed.</Text>
-            : displayClinic.doctors.map(doc => (
-              <DoctorCard
-                key={doc.id}
-                name={doc.name}
-                type={doc.specialties.map((s: { name: string }) => s.name).join(', ')}
-                experience={doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''}
-                image={doc.profilePicture}
-                nextSchedule={doc.nextSchedule}
-                onPress={() => navigation.navigate('DoctorDetail', { doctorId: doc.id })}
-                onBookPress={async () => {
-                  const res = await getDoctor(doc.id);
-                  navigation.navigate('BookAppointment', { doctor: res.data, clinicId: clinic?.id });
-                }}
-              />
-            ))
+            : (
+              <View style={isDesktop ? styles.doctorsGrid : styles.doctorsList}>
+                {displayClinic.doctors.map(doc => (
+                  <DoctorCard
+                    key={doc.id}
+                    name={doc.name}
+                    type={doc.specialties.map((s: { name: string }) => s.name).join(', ')}
+                    experience={doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''}
+                    image={doc.profilePicture}
+                    nextSchedule={doc.nextSchedule}
+                    style={isDesktop ? styles.doctorGridItem : undefined}
+                    onPress={() => navigation.navigate('DoctorDetail', { doctorId: doc.id })}
+                    onBookPress={async () => {
+                      const res = await getDoctor(doc.id);
+                      navigation.navigate('BookAppointment', { doctor: res.data, clinicId: clinic?.id });
+                    }}
+                  />
+                ))}
+              </View>
+            )
           }
         </View>
       )}
@@ -287,23 +342,6 @@ export default function HospitalDetailScreen() {
           {isDesktop && rightColumn}
         </View>
 
-        {/* Mobile: action buttons below content */}
-        {!isDesktop && (
-          <View style={styles.mobileActions}>
-            <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={callClinic}>
-              <PhoneIcon width={SIZE(20)} height={SIZE(20)} />
-              <Text allowFontScaling={false} style={styles.mobileActionText}>Call</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={openMaps}>
-              <MapIcon width={SIZE(20)} height={SIZE(20)} />
-              <Text allowFontScaling={false} style={styles.mobileActionText}>Maps</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={openWebsite}>
-              <WebIcon width={SIZE(20)} height={SIZE(20)} />
-              <Text allowFontScaling={false} style={styles.mobileActionText}>Website</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -417,6 +455,29 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
 
+  // Specialties
+  specialtiesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SIZE(8),
+    paddingHorizontal: SIZE(18),
+    paddingTop: SIZE(12),
+  },
+  specialtyChip: {
+    backgroundColor: colors.specialtyChipBg,
+    borderRadius: SIZE(20),
+    paddingHorizontal: SIZE(12),
+    paddingVertical: SIZE(5),
+  },
+  specialtyChipMore: {
+    backgroundColor: colors.specialtyChipBg,
+  },
+  specialtyChipText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(12),
+    color: colors.specialtyChipText,
+  },
+
   // Tabs
   tabs: {
     flexDirection: 'row',
@@ -455,6 +516,22 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(13),
     color: colors.textSecondary,
+  },
+
+  // Doctors layout
+  doctorsList: {
+    gap: SIZE(16),
+  },
+  doctorsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SIZE(16),
+  },
+  doctorGridItem: {
+    // Each card takes roughly half the available width minus the gap
+    flexBasis: '47%',
+    flexGrow: 1,
+    maxWidth: '49%',
   },
 
   // Details tab
@@ -555,6 +632,7 @@ const styles = StyleSheet.create({
     gap: SIZE(8),
     paddingHorizontal: SIZE(18),
     paddingTop: SIZE(16),
+    paddingBottom: SIZE(4),
   },
   mobileActionBtn: {
     flex: 1,
