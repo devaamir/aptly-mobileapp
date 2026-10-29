@@ -32,7 +32,7 @@ export default function SpecialstScreen({ navigation }: Props) {
         <meta name="description" content={specialtiesMeta.description} />
         <meta property="og:title" content={specialtiesMeta.title} />
         <meta property="og:description" content={specialtiesMeta.description} />
-        <link rel="canonical" href={`${BASE_URL}/specialties`} />
+        <link rel="canonical" href={`${BASE_URL}/specialst`} />
       </Helmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 

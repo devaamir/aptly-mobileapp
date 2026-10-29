@@ -341,7 +341,7 @@ export default function HospitalDetailScreen() {
     : null;
   const breadcrumb = buildBreadcrumbSchema([
     { name: 'Home', url: BASE_URL },
-    { name: 'Clinics', url: `${BASE_URL}/clinics` },
+    { name: 'Clinics', url: `${BASE_URL}/Clinics` },
     { name: displayClinic.name || name || 'Clinic', url: `${BASE_URL}/c/${id}` },
   ]);
 

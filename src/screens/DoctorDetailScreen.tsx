@@ -134,7 +134,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
   });
   const breadcrumb = buildBreadcrumbSchema([
     { name: 'Home', url: BASE_URL },
-    { name: 'Doctors', url: `${BASE_URL}/doctors` },
+    { name: 'Doctors', url: `${BASE_URL}/Doctors` },
     { name: doctor.name, url: `${BASE_URL}/doctor/${doctorId}` },
   ]);
 

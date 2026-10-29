@@ -90,7 +90,7 @@ export default function ClinicsScreen({ navigation }: Props) {
         <meta name="description" content={clinicsMeta.description} />
         <meta property="og:title" content={clinicsMeta.title} />
         <meta property="og:description" content={clinicsMeta.description} />
-        <link rel="canonical" href={`${BASE_URL}/clinics`} />
+        <link rel="canonical" href={`${BASE_URL}/Clinics`} />
       </Helmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>

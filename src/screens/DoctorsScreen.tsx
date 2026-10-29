@@ -138,7 +138,7 @@ export default function DoctorsScreen({ navigation }: Props) {
         <meta name="description" content={doctorsMeta.description} />
         <meta property="og:title" content={doctorsMeta.title} />
         <meta property="og:description" content={doctorsMeta.description} />
-        <link rel="canonical" href={`${BASE_URL}/doctors`} />
+        <link rel="canonical" href={`${BASE_URL}/Doctors`} />
       </Helmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
