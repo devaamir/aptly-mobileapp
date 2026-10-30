@@ -25,6 +25,7 @@ import LocationIcon from '../assets/icons/location-icon.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import { getClinics, Clinic } from '../services/api';
 import { clinicsMeta, BASE_URL } from '../utils/seo';
+import { signalPrerenderReady } from '../utils/prerenderReady';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
 import { useMetadata } from '../context/MetadataContext';
@@ -76,6 +77,7 @@ export default function ClinicsScreen({ navigation }: Props) {
       .finally(() => {
         setLoading(false);
         setRefreshing(false);
+        signalPrerenderReady();
       });
   };
 

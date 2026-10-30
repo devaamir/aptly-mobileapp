@@ -42,22 +42,26 @@
 
 ## What's NOT Done Yet ❌
 
-### 1. Pre-rendering (MOST IMPORTANT — do this first)
+### 1. Pre-rendering ✅ CODE DONE — needs Vercel env var + deploy
 **Problem:** This is a client-side SPA. When Google crawls `/Clinics`, `/Doctors`, or any
 clinic/doctor detail page, it sees an empty `<div id="root"></div>` until JavaScript runs.
-This means Google can't read the actual content and won't rank these pages well.
 
-**Solution:** Set up [prerender.io](https://prerender.io) — intercepts Googlebot requests
-and serves pre-rendered HTML with full content.
+**What was done:**
+- `api/prerender.js` — Vercel serverless function that detects bots and fetches from prerender.io
+- `vercel.json` — updated with `has: user-agent` rewrite to route bot traffic through the function
+  - Bot requests → `/api/prerender?url=/<path>` → prerender.io → rendered HTML
+  - Regular browsers → `/index.html` (SPA, unchanged)
 
-**How to do it:**
-1. Sign up at [prerender.io](https://prerender.io) (free tier available)
-2. Get your token (looks like `xxxxxxxxxxxxxx`)
-3. Share token → add to `vercel.json` as a middleware config
-4. Deploy — done. No other code changes needed.
+**⚠️ ONE REMAINING STEP — Add env var in Vercel dashboard:**
+1. Go to [vercel.com](https://vercel.com) → Aptly project → Settings → Environment Variables
+2. Add: `PRERENDER_TOKEN` = `wsgDj041Z4AKVcZjd42r` (from prerender.io dashboard)
+3. Push this branch to deploy
 
-**Impact:** This is the single biggest remaining SEO improvement. Without it, inner pages
-(clinics, doctors, specialties) will stay poorly ranked.
+**To verify after deploy:**
+```bash
+curl -A "Googlebot" https://app.aptly.care/Clinics -I
+# Should see: X-Prerendered: true in response headers
+```
 
 ---
 
@@ -117,7 +121,7 @@ Consider code splitting in webpack to improve LCP (Largest Contentful Paint).
 
 ## Priority Order for Next Session
 
-1. 🔴 **Pre-rendering** (prerender.io) — biggest impact, do first
+1. ✅ **Pre-rendering** (prerender.io) — code done; add `PRERENDER_TOKEN` env var in Vercel dashboard then deploy
 2. 🟠 **Verify exact URL paths** for detail pages
 3. 🟠 **Dynamic sitemap** — include all clinic and doctor pages
 4. 🟡 **Google Business Profile** — free local SEO boost

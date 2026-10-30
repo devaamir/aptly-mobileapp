@@ -25,6 +25,7 @@ import LocationIcon from '../assets/icons/location-icon.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import { getDoctors, Doctor } from '../services/api';
 import { doctorsMeta, BASE_URL } from '../utils/seo';
+import { signalPrerenderReady } from '../utils/prerenderReady';
 import { useLocation } from '../context/LocationContext';
 import { getDistance } from '../utils/getDistance';
 
@@ -110,6 +111,7 @@ export default function DoctorsScreen({ navigation }: Props) {
         setLoading(false);
         setRefreshing(false);
         setLoadingMore(false);
+        signalPrerenderReady();
       });
   };
 

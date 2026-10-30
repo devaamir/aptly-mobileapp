@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator } from 'react-native';
 import { SvgUri } from 'react-native-svg';
@@ -13,6 +13,7 @@ import ArrowRight from '../assets/icons/arrow-right.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import { useMetadata } from '../context/MetadataContext';
 import { specialtiesMeta, BASE_URL } from '../utils/seo';
+import { signalPrerenderReady } from '../utils/prerenderReady';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'specialst'>;
 
@@ -20,6 +21,13 @@ export default function SpecialstScreen({ navigation }: Props) {
   const { specialties } = useMetadata();
   const [query, setQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+
+  // Signal prerender.io once specialties have loaded from the API
+  useEffect(() => {
+    if (specialties.length > 0) {
+      signalPrerenderReady();
+    }
+  }, [specialties.length]);
 
   const filtered = specialties.filter(s =>
     s.name.toLowerCase().includes(query.toLowerCase())

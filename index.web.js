@@ -15,5 +15,12 @@ Alert.alert = (title, message, buttons) => {
   }
 };
 
+// Tell prerender.io to wait until the app signals it's ready.
+// Screens call window.prerenderReady = true after their content has loaded.
+// Without this, prerender.io snapshots the page while it's still blank.
+if (typeof window !== 'undefined') {
+  window.prerenderReady = false;
+}
+
 const root = createRoot(document.getElementById('root'));
 root.render(createElement(App));

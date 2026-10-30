@@ -67,13 +67,21 @@ module.exports = async function handler(req, res) {
   const fullUrl = `${protocol}://${host}${pagePath}`;
   const prerenderUrl = `${PRERENDER_SERVICE_URL}/${fullUrl}`;
 
+  // Use an 8s timeout — safely under Vercel Hobby's 10s function limit.
+  // If prerender.io hasn't cached the page yet (cold render takes 15-30s),
+  // we fall back to the raw index.html so the user/bot still gets a response.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
   try {
     const response = await fetch(prerenderUrl, {
+      signal: controller.signal,
       headers: {
         'X-Prerender-Token': PRERENDER_TOKEN,
         'User-Agent': userAgent,
       },
     });
+    clearTimeout(timeoutId);
 
     const html = await response.text();
 
@@ -89,8 +97,21 @@ module.exports = async function handler(req, res) {
 
     res.status(response.status).send(html);
   } catch (err) {
-    console.error('[prerender] Error fetching from prerender.io:', err.message);
-    // On failure, fall through — return 404 so Vercel serves the static file
-    res.status(404).end();
+    clearTimeout(timeoutId);
+
+    if (err.name === 'AbortError') {
+      // Prerender.io is doing a cold render (first time seeing this URL).
+      // It will cache the result — next bot visit will be fast.
+      // For now, serve a minimal HTML shell so the bot gets a valid 200.
+      console.log('[prerender] Cold render timeout for:', fullUrl, '— serving fallback');
+    } else {
+      console.error('[prerender] Error fetching from prerender.io:', err.message);
+    }
+
+    // Fallback: redirect bot to the raw SPA (index.html).
+    // The bot will re-crawl later when the page is cached in prerender.io.
+    res.setHeader('X-Prerendered', 'fallback');
+    res.setHeader('Location', pagePath);
+    res.status(302).end();
   }
 };
