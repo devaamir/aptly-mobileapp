@@ -2,5 +2,22 @@
   "buildCommand": "yarn web:build",
   "outputDirectory": "web-build",
   "installCommand": "yarn install",
-  "rewrites": [{ "source": "/((?!manifest.json|sw.js|icon-192.png|icon-512.png|fonts/).*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/((?!api/|manifest.json|sw.js|icon-192.png|icon-512.png|fonts/|sitemap.xml|robots.txt).*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(googlebot|bingbot|yandexbot|duckduckbot|slurp|baiduspider|facebookexternalhit|twitterbot|linkedinbot|whatsapp|applebot|semrushbot|ahrefsbot|gptbot|claudebot|chatgpt-user|ccbot|ia_archiver|prerender).*"
+        }
+      ],
+      "destination": "/api/prerender?url=/$1"
+    },
+    {
+      "source": "/((?!manifest.json|sw.js|icon-192.png|icon-512.png|fonts/).*)",
+      "destination": "/index.html"
+    }
+  ]
 }
+
