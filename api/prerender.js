@@ -33,7 +33,8 @@ const BOT_USER_AGENTS = [
   'chatgpt-user',
   'ccbot',
   'ia_archiver',     // Wayback Machine
-  'prerender',       // Prerender.io's own rendering bot
+  // NOTE: do NOT add 'prerender' here — prerender.io's own rendering bot must be served
+  // the raw SPA (not routed back through this API), otherwise it creates an infinite loop.
 ];
 
 function isBot(userAgent) {
