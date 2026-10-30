@@ -2,6 +2,11 @@
   "buildCommand": "yarn web:build",
   "outputDirectory": "web-build",
   "installCommand": "yarn install",
+  "functions": {
+    "api/prerender.js": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api/|manifest.json|sw.js|icon-192.png|icon-512.png|fonts/|sitemap.xml|robots.txt).*)",
