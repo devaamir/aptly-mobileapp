@@ -2,80 +2,318 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
-  <!-- Home / Landing -->
+  <!-- ================================================================ -->
+  <!-- Static pages                                                      -->
+  <!-- ================================================================ -->
   <url>
     <loc>https://app.aptly.care/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- Public browse pages (React Navigation screen names = URL paths) -->
   <url>
     <loc>https://app.aptly.care/Clinics</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
-
   <url>
     <loc>https://app.aptly.care/Doctors</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
-
   <url>
     <loc>https://app.aptly.care/specialst</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=Cardiology</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=Dermatology</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=Dentistry</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=Pediatrics</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=Orthopedics</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=Gynecology</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=Neurology</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=Ophthalmology</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=General-Practice</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/SpecialstDetail?name=ENT</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
 
-  <!-- Specialty landing pages (high-intent local search keywords) -->
+  <!-- ================================================================ -->
+  <!-- Clinic detail pages (12)                          -->
+  <!-- ================================================================ -->
   <url>
-    <loc>https://app.aptly.care/specialst/Cardiology</loc>
+    <loc>https://app.aptly.care/c/36a68f3b-5b63-4bf0-95f4-61765d0b7dca</loc>
+    <lastmod>2026-09-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://app.aptly.care/specialst/Dermatology</loc>
+    <loc>https://app.aptly.care/c/7effdf04-71a3-4b13-9151-41e51f0000f2</loc>
+    <lastmod>2026-09-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://app.aptly.care/specialst/Dentistry</loc>
+    <loc>https://app.aptly.care/c/0107d7a0-dab2-4984-a2d9-09defcf5dcfd</loc>
+    <lastmod>2026-10-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://app.aptly.care/specialst/Pediatrics</loc>
+    <loc>https://app.aptly.care/c/e1f1c52d-eda2-452d-ab1a-b293a283e632</loc>
+    <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://app.aptly.care/specialst/Orthopedics</loc>
+    <loc>https://app.aptly.care/c/b5540291-3d7b-4fdd-b5cd-f9a9158826ad</loc>
+    <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://app.aptly.care/specialst/Gynecology</loc>
+    <loc>https://app.aptly.care/c/00af9f28-227c-4ee4-9610-09a2fa99f884</loc>
+    <lastmod>2026-10-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://app.aptly.care/specialst/Neurology</loc>
+    <loc>https://app.aptly.care/c/6721e8e6-1420-4d73-b933-79167ba8fe7a</loc>
+    <lastmod>2026-10-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://app.aptly.care/specialst/Ophthalmology</loc>
+    <loc>https://app.aptly.care/c/f4722ba2-e283-4423-9ad9-40d847d7b2f8</loc>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://app.aptly.care/specialst/General-Practice</loc>
+    <loc>https://app.aptly.care/c/368bcda5-0e0d-4d98-a584-d9df387ac74a</loc>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://app.aptly.care/specialst/ENT</loc>
+    <loc>https://app.aptly.care/c/f0139591-6474-4676-9f66-108b7eca92f0</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/c/0a9d1c1e-e500-414c-980d-7dffd6eef704</loc>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/c/3fac834c-fcaa-4b65-abab-ca522cb49817</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ================================================================ -->
+  <!-- Doctor detail pages (27)                          -->
+  <!-- ================================================================ -->
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=13dce01d-73aa-4444-8a85-50586def01f5</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=9e3907a3-ac9e-406e-829a-42ae28fe1955</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=7a1db874-e368-4f3a-9025-1f6335c9c4c5</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=64209d7f-afd2-413e-9f04-1622f8ecbced</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=a534b21f-85b1-4b07-a42e-b71569df6d68</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=e638e876-4e2f-4124-89d7-51c0efb784e4</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=d970d904-d2b1-4cb6-888a-67d9e0488aff</loc>
+    <lastmod>2026-10-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=a2467530-86b6-4d53-a226-734b29076583</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=f8cc84ea-23b2-4552-a213-886daca0c4ae</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=c81e1d04-24b7-45f3-bc20-bebedb33c3ca</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=c1af1bd9-ee6e-4508-9b95-0b26b0a1b308</loc>
+    <lastmod>2026-10-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=e0423524-f36d-4c5c-a43a-caf12e3234c1</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=4bada525-0cbb-4108-89f3-2e029736108b</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=52e64bcd-ee5b-4393-b4cb-4a31e294448b</loc>
+    <lastmod>2026-10-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=efc19f84-0340-4719-8915-1d4952af46ed</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=82356796-9424-4ae3-ab8c-4cbf8f2d2698</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=0a7a3748-ef2c-46c0-9550-55d18b11c7af</loc>
+    <lastmod>2026-10-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=9e720223-3f36-4831-b20e-523f7cdbef14</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=bcc50353-cd8f-4f02-ad69-1bd7e0b8de5a</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=d392e395-1188-4c99-9374-8a92dfd44a4d</loc>
+    <lastmod>2026-09-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=cd57695d-850a-4bdd-8f40-be0f57ef0f0f</loc>
+    <lastmod>2026-10-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=e90fd7c6-a5c8-48ad-b29f-2278beff7acd</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=424625f9-95de-4a39-bbce-0729f84c5e5f</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=212b73da-fbfe-4c20-815b-27ebbc0229a9</loc>
+    <lastmod>2026-10-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=7924ab84-6448-49c5-a0a0-fe13e6ea69af</loc>
+    <lastmod>2026-10-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=2010989f-09c8-4cdd-bd27-a5bb2c9e9464</loc>
+    <lastmod>2026-10-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://app.aptly.care/DoctorDetail?doctorId=7068518f-676a-4880-aa24-30177c2aedc1</loc>
+    <lastmod>2026-09-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

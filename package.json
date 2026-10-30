@@ -6,7 +6,7 @@
     "lint": "eslint .",
     "test": "jest",
     "web": "webpack serve --config webpack.config.js",
-    "web:build": "webpack --config webpack.config.js --mode production"
+    "web:build": "node scripts/generate-sitemap.js && webpack --config webpack.config.js --mode production"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",

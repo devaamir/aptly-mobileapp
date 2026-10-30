@@ -12,6 +12,7 @@
   - Canonical URL → `https://app.aptly.care/`
   - Robots meta → `index, follow`
   - Global JSON-LD structured data (Organization + WebSite schema)
+  - `window.prerenderReady = false` set synchronously in `<head>` before bundle loads
 - **`public/robots.txt`** — allows all public pages, blocks auth pages
 - **`public/sitemap.xml`** — 15 URLs: home, Clinics, Doctors, specialst + 10 specialty pages
 - **`public/manifest.json`** — enriched with health categories, richer description
@@ -21,113 +22,97 @@
   - `buildDoctorSchema()` → Physician JSON-LD
   - `buildSpecialtySchema()` → MedicalWebPage JSON-LD
   - `buildBreadcrumbSchema()` → BreadcrumbList JSON-LD
+- **`src/utils/prerenderReady.ts`** — `signalPrerenderReady()` helper called by screens after data loads
 - **Per-page Helmet added to:**
   - `HomeScreen.tsx` — title, description, OG, canonical
   - `HospitalDetailScreen.tsx` — dynamic meta + MedicalOrganization + Breadcrumb JSON-LD
   - `DoctorDetailScreen.tsx` — dynamic meta + Physician + Breadcrumb JSON-LD
   - `SpecialstDetailScreen.tsx` — dynamic meta + MedicalWebPage + Breadcrumb JSON-LD
-  - `ClinicsScreen.tsx` — meta + canonical
-  - `DoctorsScreen.tsx` — meta + canonical
-  - `SpecialstScreen.tsx` — meta + canonical
+  - `ClinicsScreen.tsx` — meta + canonical + `signalPrerenderReady()` after API load
+  - `DoctorsScreen.tsx` — meta + canonical + `signalPrerenderReady()` after API load
+  - `SpecialstScreen.tsx` — meta + canonical + `signalPrerenderReady()` after API load
 - **`webpack.config.js`** — copies robots.txt, sitemap.xml, Google verification file to build output
 - **`App.tsx`** — wrapped in `<HelmetProvider>`
+
+### Pre-rendering (prerender.io) ✅ FULLY WORKING
+- **`api/prerender.js`** — Vercel serverless function that proxies bot requests to prerender.io
+- **`vercel.json`** — `has: user-agent` rewrite routes crawlers → `/api/prerender`, browsers → `/index.html`
+- **`src/navigations/Navigation.tsx`** — deep-link prefixes include `https://app.aptly.care` and `http://localhost:8080`; all public screen paths mapped in linking config
+- **Root cause fixed (Oct 30 2026):** `prerender` was in the Vercel bot UA regex, causing prerender.io's own rendering Chromium to be routed back through the middleware — infinite loop, 362-byte empty response every time. Removed `prerender` from both `vercel.json` and `api/prerender.js` bot lists.
+
+**Verified rendered output (Oct 30 2026):**
+| Page | Prerendered size | Title |
+|---|---|---|
+| `/Clinics` | 55,439 bytes ✅ | Clinics |
+| `/Doctors` | 198,478 bytes ✅ | Doctors |
+| `/specialst` | 122,757 bytes ✅ | specialst |
+| `/` | 9,633 bytes (stale cache) | PhoneNumber — recache queued |
 
 ### Google Search Console
 - ✅ `https://app.aptly.care` property verified
 - ✅ Sitemap submitted → `https://app.aptly.care/sitemap.xml` (14 pages discovered)
 - ✅ Homepage `https://app.aptly.care/` — **indexed on Google**
-- ⏳ `/Clinics`, `/Doctors`, `/specialst` — discovered but not yet indexed (indexing requested)
+- ⏳ `/Clinics`, `/Doctors`, `/specialst` — discovered, indexing requested; should index now that pre-rendering works
 
 ---
 
-## What's NOT Done Yet ❌
+## What's Next 🔜
 
-### 1. Pre-rendering ✅ CODE DONE — needs Vercel env var + deploy
-**Problem:** This is a client-side SPA. When Google crawls `/Clinics`, `/Doctors`, or any
-clinic/doctor detail page, it sees an empty `<div id="root"></div>` until JavaScript runs.
+### 1. ✅ Dynamic Sitemap — DONE (Oct 30 2026)
+`scripts/generate-sitemap.js` written and wired into the build.
 
-**What was done:**
-- `api/prerender.js` — Vercel serverless function that detects bots and fetches from prerender.io
-- `vercel.json` — updated with `has: user-agent` rewrite to route bot traffic through the function
-  - Bot requests → `/api/prerender?url=/<path>` → prerender.io → rendered HTML
-  - Regular browsers → `/index.html` (SPA, unchanged)
+**What was built:**
+- Paginates through `/api/clinics` and `/api/doctors` (100 per page) to fetch every record
+- Writes `public/sitemap.xml` with proper `<lastmod>` dates from `updatedAt`
+- **53 URLs** total: 14 static + 12 clinics + 27 doctors
+- Runs automatically before every production build via the updated `web:build` script:
+  `"web:build": "node scripts/generate-sitemap.js && webpack ..."`
 
-**⚠️ ONE REMAINING STEP — Add env var in Vercel dashboard:**
-1. Go to [vercel.com](https://vercel.com) → Aptly project → Settings → Environment Variables
-2. Add: `PRERENDER_TOKEN` = `wsgDj041Z4AKVcZjd42r` (from prerender.io dashboard)
-3. Push this branch to deploy
+**URL patterns used:**
+- Clinic detail: `https://app.aptly.care/c/:id` (path slug in Navigation linking config)
+- Doctor detail: `https://app.aptly.care/DoctorDetail?doctorId=:id` (no slug in linking config — query param used)
+- Specialty detail: `https://app.aptly.care/SpecialstDetail?name=:name` (same reason)
 
-**To verify after deploy:**
-```bash
-curl -A "Googlebot" https://app.aptly.care/Clinics -I
-# Should see: X-Prerendered: true in response headers
-```
+**Next step after deploying:** Re-submit sitemap in Google Search Console (the URL is the same, GSC will re-crawl it automatically within a few days).
 
 ---
 
-### 2. Verify Actual URL Paths
-React Navigation uses screen names as URL paths. We need to confirm the exact URLs for:
-- Doctor detail page — is it `/DoctorDetail/:id`?
-- Clinic detail page — is it `/HospitalDetail/:id` or `/c/:id`?
-- Specialty detail page — is it `/SpecialstDetail`?
-
-Once confirmed, update `sitemap.xml` to include real clinic and doctor pages
-(e.g. `https://app.aptly.care/c/some-clinic-id`).
+### 2. ✅ Verify Detail Page URL Paths — DONE (Oct 30 2026)
+Confirmed from `Navigation.tsx` linking config:
+- `HospitalDetail` → `c/:id` (has ID slug ✅)
+- `DoctorDetail` → `DoctorDetail` (no ID slug — query param approach used in sitemap)
+- `SpecialstDetail` → `SpecialstDetail` (no ID slug — query param approach used in sitemap)
 
 ---
 
-### 3. Dynamic Sitemap (after pre-rendering is set up)
-The current `sitemap.xml` only has 15 static URLs. Real SEO impact comes from listing
-every clinic and doctor page individually.
+### 3. 🟡 Core Web Vitals / Bundle Size
+The bundle is **2.24 MB** — this will hurt LCP (Largest Contentful Paint) and Google's page experience score.
 
-**How to do it:**
-- Write a script that calls the Aptly API (`https://api.aptly.care/api`) to fetch
-  all clinics and doctors
-- Generates a `sitemap.xml` with one URL per clinic (`/c/:id`) and per doctor
-- Run this script as part of the build or on a schedule (e.g. weekly via GitHub Actions)
+**Options:**
+- Enable code splitting in `webpack.config.js` (dynamic `import()` for heavy screens)
+- Check Search Console → Experience → Core Web Vitals for current scores
+- Lazy-load screens that aren't on the initial route
 
 ---
 
-### 4. Google Business Profile
+### 4. 🟡 Google Business Profile
 Create a listing at [business.google.com](https://business.google.com) for Aptly.
-This makes Aptly appear in Google Maps and the local "3-pack" results for
-"clinic near me" / "doctor booking near me" searches. Free and high impact.
+Appears in Google Maps and the local "3-pack" for "clinic near me" searches. Free, high impact.
 
 ---
 
-### 5. Backlinks — List on Healthcare Directories
-Each listing = a backlink + local SEO signal. Submit Aptly to:
+### 5. 🟡 Backlinks — Healthcare Directories
+Each listing = a backlink + local SEO signal:
 - **Practo** — practo.com (highest impact for Indian healthcare)
 - **Justdial** — justdial.com
 - **Sulekha** — sulekha.com
 - **IndiaMART** — indiamart.com
-- **Crunchbase** — crunchbase.com (for brand authority)
+- **Crunchbase** — crunchbase.com (brand authority)
 
 ---
 
-### 6. Link from www.aptly.care → app.aptly.care
-Add a prominent "Book Appointment" or "Open App" button on the landing page
-(`www.aptly.care`) that links to `https://app.aptly.care`. This passes SEO
-authority from the already-indexed landing page to the app.
-
----
-
-### 7. Core Web Vitals
-Check **Search Console → Experience → Core Web Vitals**.
-The current bundle size is 2.24 MB which is large and will hurt page speed scores.
-Consider code splitting in webpack to improve LCP (Largest Contentful Paint).
-
----
-
-## Priority Order for Next Session
-
-1. ✅ **Pre-rendering** (prerender.io) — code done; add `PRERENDER_TOKEN` env var in Vercel dashboard then deploy
-2. 🟠 **Verify exact URL paths** for detail pages
-3. 🟠 **Dynamic sitemap** — include all clinic and doctor pages
-4. 🟡 **Google Business Profile** — free local SEO boost
-5. 🟡 **Backlinks** — list on Practo, Justdial, Sulekha
-6. 🟢 **Link landing page → app**
-7. 🟢 **Core Web Vitals / bundle size**
+### 6. 🟢 Link www.aptly.care → app.aptly.care
+Add a "Book Appointment" / "Open App" link on the landing page. Passes SEO authority from the already-indexed landing page to the app subdomain.
 
 ---
 
@@ -146,3 +131,4 @@ Consider code splitting in webpack to improve LCP (Largest Contentful Paint).
 | Build command | `npm run web:build` |
 | Build output | `web-build/` |
 | Deployment | Vercel (auto-deploy on push to main) |
+| Prerender token env var | `PRERENDER_TOKEN` in Vercel dashboard |
