@@ -67,12 +67,19 @@ export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 // React Navigation linking configuration
 // ---------------------------------------------------------------------------
 const linking = {
-  prefixes: ['https://qr.aptly.care'],
+  prefixes: ['https://qr.aptly.care', 'https://app.aptly.care', 'http://localhost:8080'],
   config: {
     screens: {
       HospitalDetail: {
         path: 'c/:id',
       },
+      Clinics: 'Clinics',
+      Doctors: 'Doctors',
+      specialst: 'specialst',
+      SpecialstDetail: 'SpecialstDetail',
+      DoctorDetail: 'DoctorDetail',
+      Search: 'Search',
+      SearchResult: 'SearchResult',
     },
   },
   async getInitialURL(): Promise<string | null | undefined> {
