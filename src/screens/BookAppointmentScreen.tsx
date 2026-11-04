@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert, KeyboardAvoidingView, Modal, useWindowDimensions } from 'react-native';
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
@@ -307,7 +308,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
 
         {/* Header — full width */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7}>
             <BackArrow width={SIZE(26)} height={SIZE(26)} />
           </TouchableOpacity>
           <View style={styles.headerAvatar}>

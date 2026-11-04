@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, TextInput, ActivityIndicator, Alert, Linking, Platform, PermissionsAndroid } from 'react-native';
+import { goBackOrHome } from '../utils/goBack';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, TextInput, ActivityIndicator, Alert, Linking, Platform, PermissionsAndroid, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
@@ -32,6 +33,9 @@ type Location = { description: string; placeId: string; latitude: number; longit
 
 export default function LocationSearchScreen({ navigation }: Props) {
   const { setLocation, distance, setDistance } = useLocation();
+  const { width } = useWindowDimensions();
+  // On wide web screens the page is shown as a centred modal over a dimmed backdrop
+  const isModal = Platform.OS === 'web' && width >= 768;
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
@@ -43,7 +47,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
 
     setLocation({ mainText: item.mainText, secondaryText: item.secondaryText, latitude: item.latitude, longitude: item.longitude, isGps: false });
     if (distance !== 25) setDistance(25);
-    navigation.goBack();
+    goBackOrHome(navigation);
   };
 
   const handleGps = async () => {
@@ -80,7 +84,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
         setLocation({ mainText, secondaryText, latitude, longitude, isGps: true });
         if (distance !== 25) setDistance(25);
         setGpsLoading(false);
-        navigation.goBack();
+        goBackOrHome(navigation);
       },
       () => { setGpsLoading(false); },
       { timeout: 8000, maximumAge: 0 },
@@ -100,11 +104,20 @@ export default function LocationSearchScreen({ navigation }: Props) {
   }, [query]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={isModal ? styles.backdrop : styles.fill}>
+    {isModal && (
+      <TouchableOpacity
+        style={StyleSheet.absoluteFill}
+        activeOpacity={1}
+        onPress={() => goBackOrHome(navigation)}
+        accessibilityLabel="Close"
+      />
+    )}
+    <SafeAreaView style={[styles.container, isModal && styles.modalCard]}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
         <View style={styles.searchBox}>
@@ -180,10 +193,34 @@ export default function LocationSearchScreen({ navigation }: Props) {
         ListEmptyComponent={loading && query.trim() ? <ActivityIndicator style={{ marginTop: SIZE(20) }} color={colors.primary} /> : null}
       />
     </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  fill: { flex: 1 },
+  backdrop: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: 'rgba(17,24,39,0.45)',
+  },
+  modalCard: {
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
+    width: '100%',
+    maxWidth: 560,
+    height: '85vh' as any,
+    maxHeight: 720,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 12 },
+  },
   container: {
     flex: 1,
     backgroundColor: colors.white

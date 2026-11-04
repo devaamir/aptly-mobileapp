@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { Helmet } from 'react-helmet-async';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -19,6 +20,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'specialst'>;
 
 export default function SpecialstScreen({ navigation }: Props) {
   const { specialties } = useMetadata();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 640;
   const [query, setQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
 
@@ -48,7 +51,7 @@ export default function SpecialstScreen({ navigation }: Props) {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
+            onPress={() => goBackOrHome(navigation)}
             style={styles.backBtn}
             activeOpacity={0.7}
           >
@@ -89,14 +92,15 @@ export default function SpecialstScreen({ navigation }: Props) {
         <ActivityIndicator style={{ marginTop: SIZE(40) }} color={colors.primary} />
       ) : (
         <FlatList
+          key={isMobile ? 'list' : 'grid'}
           data={filtered}
           keyExtractor={item => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
+          numColumns={isMobile ? 1 : 2}
+          columnWrapperStyle={isMobile ? undefined : styles.columnWrapper}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => {
-            const isLastOdd = filtered.length % 2 !== 0 && index === filtered.length - 1;
+            const isLastOdd = !isMobile && filtered.length % 2 !== 0 && index === filtered.length - 1;
             return (
               <View style={[styles.gridItem, isLastOdd && styles.gridItemHalf]}>
                 <TouchableOpacity
@@ -117,9 +121,9 @@ export default function SpecialstScreen({ navigation }: Props) {
                   )}
                   <View style={styles.info}>
                     <Text allowFontScaling={false} style={styles.name}>{item.name}</Text>
-                    <Text allowFontScaling={false} style={styles.desc}>{item.description}</Text>
+                    <Text allowFontScaling={false} style={styles.desc} numberOfLines={2}>{item.description}</Text>
                   </View>
-                  <ArrowRight width={SIZE(18)} height={SIZE(18)} />
+                  <ArrowRight width={SIZE(18)} height={SIZE(18)} style={styles.arrow} />
                 </TouchableOpacity>
               </View>
             );
@@ -171,7 +175,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   listContent: {
-    paddingHorizontal: SIZE(16),
+    paddingHorizontal: 16,
     paddingTop: SIZE(12),
     paddingBottom: SIZE(24),
     alignSelf: 'center',
@@ -187,8 +191,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(14),
-    padding: SIZE(14),
-    borderRadius: SIZE(12),
+    padding: SIZE(16),
+    borderRadius: SIZE(16),
     borderWidth: 1,
     borderColor: colors.cardBorderLight,
     backgroundColor: colors.white,
@@ -204,8 +208,10 @@ const styles = StyleSheet.create({
     width: SIZE(52),
     height: SIZE(52),
     borderRadius: SIZE(26),
+    flexShrink: 0,
   },
-  info: { flex: 1 },
+  arrow: { flexShrink: 0 },
+  info: { flex: 1, minWidth: 0 },
   name: {
     fontFamily: 'Manrope-SemiBold',
     fontSize: SIZE(15),

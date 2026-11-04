@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { Helmet } from 'react-helmet-async';
 import {
   View,
@@ -10,6 +11,7 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -42,6 +44,8 @@ const DAYS = [
 ];
 
 export default function DoctorsScreen({ navigation }: Props) {
+  const { width } = useWindowDimensions();
+  const isMobile = width < 640;
   const { location: userLocation, distance, setDistance } = useLocation();
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [fallbackDoctors, setFallbackDoctors] = useState<Doctor[]>([]);
@@ -145,7 +149,7 @@ export default function DoctorsScreen({ navigation }: Props) {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => goBackOrHome(navigation)}
           style={styles.backBtn}
           activeOpacity={0.7}
         >
@@ -206,8 +210,9 @@ export default function DoctorsScreen({ navigation }: Props) {
         <FlatList
           data={doctors}
           keyExtractor={item => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
+          key={isMobile ? 'list' : 'grid'}
+          numColumns={isMobile ? 1 : 2}
+          columnWrapperStyle={isMobile ? undefined : styles.columnWrapper}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -245,7 +250,7 @@ export default function DoctorsScreen({ navigation }: Props) {
             const today = DAYS[new Date().getDay()];
             const todaySchedule = allSchedules.find(s => s.dayOfWeek === today);
             const nextSchedule = todaySchedule ?? allSchedules[0];
-            const isLastOdd = doctors.length % 2 !== 0 && index === doctors.length - 1;
+            const isLastOdd = !isMobile && doctors.length % 2 !== 0 && index === doctors.length - 1;
             return (
               <View style={[styles.gridItem, isLastOdd && styles.gridItemHalf]}>
                 <DoctorCard
@@ -341,9 +346,9 @@ export default function DoctorsScreen({ navigation }: Props) {
                     s => s.dayOfWeek === today,
                   );
                   const nextSchedule = todaySchedule ?? allSchedules[0];
-                  const isLastOdd = fallbackDoctors.length % 2 !== 0 && idx === fallbackDoctors.length - 1;
+                  const isLastOdd = !isMobile && fallbackDoctors.length % 2 !== 0 && idx === fallbackDoctors.length - 1;
                   return (
-                    <View key={item.id} style={[styles.fallbackGridItem, isLastOdd && styles.fallbackGridItemHalf]}>
+                    <View key={item.id} style={[styles.fallbackGridItem, isMobile && styles.fullWidthItem, isLastOdd && styles.fallbackGridItemHalf]}>
                       <DoctorCard
                         name={item.name}
                         type={specialty}
@@ -438,7 +443,7 @@ const styles = StyleSheet.create({
     paddingTop: SIZE(12),
     paddingBottom: SIZE(24),
     gap: SIZE(12),
-    paddingHorizontal: SIZE(20),
+    paddingHorizontal: 16,
     alignSelf: 'center',
     width: '100%',
     maxWidth: 1240,
@@ -465,8 +470,11 @@ const styles = StyleSheet.create({
     flex: 0,
     flexBasis: 'calc(50% - 6px)' as any,
   },
+  fullWidthItem: {
+    flexBasis: '100%',
+  },
   chipsContainer: {
-    paddingHorizontal: SIZE(20),
+    paddingHorizontal: 16,
     paddingTop: SIZE(8),
     alignSelf: 'center',
     width: '100%',

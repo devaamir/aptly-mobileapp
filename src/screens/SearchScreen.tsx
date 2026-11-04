@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -38,7 +39,7 @@ export default function SearchScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} translucent={false} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn}>
           <BackArrow width={SIZE(26)} height={SIZE(26)} />
         </TouchableOpacity>
         <View style={styles.searchWrapper}>

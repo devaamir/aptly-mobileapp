@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import {
   View,
   Text,
@@ -91,7 +92,7 @@ export default function TokenDetailScreen({ navigation, route }: Props) {
   const handleCancel = async () => {
     await cancelAppointment(appt.id).catch(console.error);
     setCancelVisible(false);
-    navigation.goBack();
+    goBackOrHome(navigation);
   };
 
   return (
@@ -138,7 +139,7 @@ export default function TokenDetailScreen({ navigation, route }: Props) {
       {/* TOP */}
       <View style={styles.top}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => goBackOrHome(navigation)}
           style={styles.backBtn}
           activeOpacity={0.7}
         >

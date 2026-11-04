@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { Helmet } from 'react-helmet-async';
 import {
   View,
@@ -24,7 +25,11 @@ import LocationIcon from '../assets/icons/location-icon.svg';
 import PhoneIcon from '../assets/icons/phone-icon-blue.svg';
 import MapIcon from '../assets/icons/map-icon-blue.svg';
 import WebIcon from '../assets/icons/web-icon-blue.svg';
+import NotificationIcon from '../assets/icons/notification-icon-grey.svg';
 import DoctorCard from '../components/DoctorCard';
+import LoginModal from '../components/LoginModal';
+import AppPromoBanner from '../components/AppPromoBanner';
+import { useAuth } from '../context/AuthContext';
 import { buildClinicSchema, buildBreadcrumbSchema, clinicPageMeta, schemaToString, BASE_URL } from '../utils/seo';
 import { getClinic, getDoctor } from '../services/api';
 import type { Clinic } from '../services/api';
@@ -53,6 +58,23 @@ export default function HospitalDetailScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth >= 768;
   const { location: userLocation } = useLocation();
+  const { user } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const initials = (user?.name ?? '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(w => w[0].toUpperCase())
+    .join('');
+
+  const goToTab = (tab: 'Home' | 'Appointments' | 'Profile') => {
+    if (tab !== 'Home' && !user) {
+      setShowLoginModal(true);
+      return;
+    }
+    (navigation as any).navigate('Main', { screen: tab });
+  };
 
   const [tab, setTab] = useState<'Doctors' | 'Facilities' | 'Details'>('Doctors');
   const [specialtiesExpanded, setSpecialtiesExpanded] = useState(false);
@@ -105,20 +127,23 @@ export default function HospitalDetailScreen() {
     else Alert.alert('Not available', 'No website found for this clinic.');
   };
 
-  // Left column: image + clinic name/info + tabs + tab content
-  const leftColumn = (
-    <View style={styles.leftColumn}>
-      {/* Clinic image */}
-      <View style={styles.imageContainer}>
-        {clinic?.profilePicture ? (
-          <Image source={{ uri: clinic.profilePicture }} style={styles.clinicImage} resizeMode="cover" />
-        ) : (
-          <View style={styles.imagePlaceholder}>
-            <Image source={require('../assets/images/aptly-logo2.png')} style={styles.placeholderLogo} resizeMode="contain" />
-          </View>
-        )}
-      </View>
+  // Left column: image + clinic name/info + tabs + tab content.
+  // On mobile these are laid out separately so the image can stay fixed
+  // while the rest scrolls over it and the tabs stick to the top.
+  const imageEl = (
+    <View style={[styles.imageContainer, !isDesktop && styles.imageContainerMobile]}>
+      {clinic?.profilePicture ? (
+        <Image source={{ uri: clinic.profilePicture }} style={styles.clinicImage} resizeMode="cover" />
+      ) : (
+        <View style={styles.imagePlaceholder}>
+          <Image source={require('../assets/images/aptly-logo2.png')} style={styles.placeholderLogo} resizeMode="contain" />
+        </View>
+      )}
+    </View>
+  );
 
+  const infoEl = (
+    <View style={styles.solidBg}>
       {/* Clinic title row */}
       <View style={styles.titleRow}>
         <View style={{ flex: 1 }}>
@@ -189,16 +214,22 @@ export default function HospitalDetailScreen() {
         </View>
       )}
 
-      {/* Tabs */}
-      <View style={styles.tabs}>
-        {(['Doctors', 'Facilities', 'Details'] as const).map(t => (
-          <TouchableOpacity key={t} style={styles.tab} onPress={() => setTab(t)} activeOpacity={0.8}>
-            <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>{t}</Text>
-            {tab === t && <View style={styles.tabUnderline} />}
-          </TouchableOpacity>
-        ))}
-      </View>
+    </View>
+  );
 
+  const tabsEl = (
+    <View style={[styles.tabs, styles.solidBg]}>
+      {(['Doctors', 'Facilities', 'Details'] as const).map(t => (
+        <TouchableOpacity key={t} style={styles.tab} onPress={() => setTab(t)} activeOpacity={0.8}>
+          <Text allowFontScaling={false} style={[styles.tabText, tab === t && styles.tabTextActive]}>{t}</Text>
+          {tab === t && <View style={styles.tabUnderline} />}
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+
+  const contentEl = (
+    <View style={styles.solidBg}>
       {/* Tab content */}
       {loading && <ActivityIndicator style={{ marginTop: SIZE(24) }} color={colors.primary} />}
 
@@ -289,6 +320,15 @@ export default function HospitalDetailScreen() {
     </View>
   );
 
+  const leftColumn = (
+    <View style={styles.leftColumn}>
+      {imageEl}
+      {infoEl}
+      {tabsEl}
+      {contentEl}
+    </View>
+  );
+
   // Right column: clinic info card
   const rightColumn = (
     <View style={styles.rightColumn}>
@@ -361,27 +401,65 @@ export default function HospitalDetailScreen() {
       </Helmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
+      <AppPromoBanner />
       {/* Header — full width */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
-          <BackArrow width={SIZE(22)} height={SIZE(22)} />
-        </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.headerTitle}>
-          {name ?? displayClinic.name}
-        </Text>
+      <View style={[styles.webHeader, !isDesktop && styles.webHeaderMobile]}>
+          <View style={[styles.webHeaderSide, !isDesktop && styles.webSideMobile]}>
+            <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7} accessibilityLabel="Back">
+              <BackArrow width={SIZE(22)} height={SIZE(22)} />
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.webNav, !isDesktop && styles.webNavMobile]}>
+            {(['Home', 'Appointments'] as const).map(t => (
+              <TouchableOpacity key={t} activeOpacity={0.7} style={[styles.webNavItem, !isDesktop && styles.webNavItemMobile]} onPress={() => goToTab(t)}>
+                <Text allowFontScaling={false} style={[styles.webNavText, !isDesktop && styles.webNavTextMobile]}>{t}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <View style={[styles.webHeaderSide, styles.webHeaderRight, !isDesktop && styles.webHeaderRightMobile]}>
+            <TouchableOpacity style={[styles.bellBtn, !isDesktop && styles.headerBtnMobile]} activeOpacity={0.7} accessibilityLabel="Notifications">
+              <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
+            </TouchableOpacity>
+            {user ? (
+              <TouchableOpacity style={[styles.avatarBtn, !isDesktop && styles.avatarBtnMobile]} activeOpacity={0.7} onPress={() => goToTab('Profile')} accessibilityLabel="Profile">
+                <Text allowFontScaling={false} style={styles.avatarText}>{initials || 'U'}</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={[styles.avatarBtn, styles.guestBtn, !isDesktop && styles.avatarBtnMobile]} activeOpacity={0.7} onPress={() => setShowLoginModal(true)} accessibilityLabel="Login">
+                <Image source={require('../assets/images/user-profile.png')} style={[styles.guestAvatar, !isDesktop && styles.guestAvatarMobile]} />
+              </TouchableOpacity>
+            )}
+          </View>
       </View>
       <View style={styles.headerDivider} />
+      <LoginModal visible={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={[styles.pageLayout, isDesktop && styles.pageLayoutDesktop]}>
-          {leftColumn}
-          {isDesktop && rightColumn}
+      {isDesktop ? (
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, styles.scrollContentDesktop]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={[styles.pageLayout, styles.pageLayoutDesktop]}>
+            {leftColumn}
+            {rightColumn}
+          </View>
+        </ScrollView>
+      ) : (
+        <View style={styles.mobileBody}>
+          {/* Image stays put; the sheet below scrolls over it */}
+          <View style={styles.fixedImage}>{imageEl}</View>
+          <ScrollView
+            stickyHeaderIndices={[2]}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.imageSpacer} />
+            {infoEl}
+            {tabsEl}
+            {contentEl}
+          </ScrollView>
         </View>
-
-      </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -405,6 +483,57 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerDivider: { height: 1, backgroundColor: colors.border },
+
+  // Desktop header: back, Home / Appointments, bell + profile
+  webHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  webHeaderMobile: { paddingHorizontal: 12, paddingVertical: 8 },
+  webNavItemMobile: { paddingHorizontal: 0 },
+  webNavTextMobile: { fontSize: 14, color: colors.textSubdued },
+  webHeaderRightMobile: { flexGrow: 0, flexShrink: 0, flexBasis: 'auto', gap: 6 },
+  webSideMobile: { flexGrow: 0, flexShrink: 0, flexBasis: 'auto' },
+  webNavMobile: { flex: 1, justifyContent: 'center', gap: 20 },
+  headerBtnMobile: { width: 40, height: 40 },
+  avatarBtnMobile: { width: 40, height: 40, borderRadius: 20 },
+  webHeaderSide: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  webHeaderRight: { justifyContent: 'flex-end', gap: 12 },
+  webNav: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  webNavItem: { paddingHorizontal: 14, paddingVertical: 8 },
+  webNavText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: 15,
+    color: colors.textSubdued,
+  },
+  bellBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
+  avatarBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primaryLight,
+  },
+  avatarText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: 15,
+    color: colors.primary,
+  },
+  guestBtn: { backgroundColor: 'transparent' },
+  guestAvatar: { width: 34, height: 34, borderRadius: 17 },
+  guestAvatarMobile: { width: 30, height: 30, borderRadius: 15 },
 
   // Scroll
   scrollContent: {
@@ -437,8 +566,23 @@ const styles = StyleSheet.create({
     marginTop: SIZE(16),
     borderRadius: SIZE(16),
     overflow: 'hidden',
-    height: SIZE(220),
+    height: 340,
     backgroundColor: colors.backgroundLight,
+  },
+  mobileBody: { flex: 1 },
+  fixedImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  imageSpacer: { height: SIZE(290) },
+  solidBg: { backgroundColor: colors.white },
+  imageContainerMobile: {
+    marginHorizontal: 0,
+    marginTop: 0,
+    borderRadius: 0,
+    height: SIZE(290),
   },
   clinicImage: {
     width: '100%',
@@ -523,7 +667,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     paddingHorizontal: SIZE(18),
-    marginTop: SIZE(8),
+    paddingTop: SIZE(8),
     gap: SIZE(20),
   },
   tab: {},
@@ -693,6 +837,9 @@ const styles = StyleSheet.create({
   rightColumn: {
     width: SIZE(280),
     flexShrink: 0,
+    // stays in view while the left column scrolls
+    position: 'sticky' as any,
+    top: 24,
   },
   infoCard: {
     borderRadius: SIZE(16),

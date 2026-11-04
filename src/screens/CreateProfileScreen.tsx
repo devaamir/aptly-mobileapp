@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, Alert, TouchableWithoutFeedback, Keyboard, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -34,7 +35,7 @@ export default function CreateProfileScreen() {
   const [cancelVisible, setCancelVisible] = useState(false);
 
   const handleBack = () => {
-    if (isEdit) { navigation.goBack(); return; }
+    if (isEdit) { goBackOrHome(navigation); return; }
     setCancelVisible(true);
   };
 
@@ -55,7 +56,7 @@ export default function CreateProfileScreen() {
       }
       await AsyncStorage.multiSet([['name', name], ['patientId', patientId], ['gender', genderLower], ['dateOfBirth', dateOfBirth]]);
       updateUser({ name, patientId, gender: genderLower, dateOfBirth });
-      if (isEdit) navigation.goBack();
+      if (isEdit) goBackOrHome(navigation);
       else { initLocation(); navigation.reset({ index: 0, routes: [{ name: 'Main' as never }] }); }
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to save profile');

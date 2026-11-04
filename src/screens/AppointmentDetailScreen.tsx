@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import {
   View,
   Text,
@@ -142,7 +143,7 @@ export default function AppointmentDetailScreen() {
     try {
       await cancelAppointment(id);
       setConfirmVisible(false);
-      navigation.goBack();
+      goBackOrHome(navigation);
     } catch (e) {
       console.error(e);
     } finally {
@@ -155,7 +156,7 @@ export default function AppointmentDetailScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => goBackOrHome(navigation)}
           hitSlop={SIZE(10)}
         >
           <BackArrow width={SIZE(22)} height={SIZE(22)} />

@@ -40,6 +40,8 @@ import ClinicCard from '../components/ClinicCard';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon.svg';
+import LocationPinFilled from '../assets/icons/location-pin-filled.svg';
+import NotificationIcon from '../assets/icons/notification-icon-grey.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import PhoneIcon from '../assets/icons/phone-icon.svg';
 import PhoneIconBlue from '../assets/icons/phone-icon-blue.svg';
@@ -47,8 +49,8 @@ import MapIcon from '../assets/icons/map-icon.svg';
 import MapIconBlue from '../assets/icons/map-icon-blue.svg';
 import LocationSlashIcon from '../assets/icons/location-slash-icon.svg';
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
-import GooglePlayIcon from '../assets/icons/googleplay-icon.svg';
-import AppStoreIcon from '../assets/icons/appstore-icon.svg';
+import AndroidLogo from '../assets/icons/android-logo.svg';
+import AppleLogo from '../assets/icons/apple-logo.svg';
 import {
   getHomeData,
   IS_DEV,
@@ -60,6 +62,8 @@ import PrimaryButton from '../components/PrimaryButton';
 import { usePWAInstall } from '../utils/usePWAInstall';
 import { useAuth } from '../context/AuthContext';
 import LoginModal from '../components/LoginModal';
+import { FadeInUp, PulseDot } from '../components/PromoAnimations';
+import AppPromoBanner from '../components/AppPromoBanner';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -527,7 +531,7 @@ const ListHeader = ({
       ) : Platform.OS !== 'web' && visibleAppointments.length === 1 ? (
         renderBannerCard(visibleAppointments[0])
       ) : screenWidth < 768 ? (
-        <View style={styles.mobilePromoBanner}>
+        <FadeInUp style={styles.mobilePromoBanner}>
           <Svg
             style={StyleSheet.absoluteFill}
             width="100%"
@@ -536,8 +540,8 @@ const ListHeader = ({
           >
             <Defs>
               <SvgLinearGradient id="promo-mobile" x1="0" y1="0" x2="1" y2="1">
-                <Stop offset="0" stopColor="#4C6EF5" stopOpacity="1" />
-                <Stop offset="1" stopColor="#1E3A8A" stopOpacity="1" />
+                <Stop offset="0" stopColor="#2B7DEB" stopOpacity="1" />
+                <Stop offset="1" stopColor="#1749A8" stopOpacity="1" />
               </SvgLinearGradient>
             </Defs>
             <Rect
@@ -548,7 +552,7 @@ const ListHeader = ({
             />
           </Svg>
           <View style={styles.promoBadge}>
-            <View style={styles.promoGreenDot} />
+            <PulseDot style={styles.promoGreenDot} />
             <Text allowFontScaling={false} style={styles.promoBadgeText}>
               Live token
             </Text>
@@ -560,7 +564,7 @@ const ListHeader = ({
             Your token number, estimated time and queue status update in real
             time, and they are accurate only in the mobile app.
           </Text>
-          <View style={styles.promoButtons}>
+          <FadeInUp style={styles.promoButtons} delay={250}>
             <TouchableOpacity
               style={styles.promoBtn}
               activeOpacity={0.8}
@@ -570,9 +574,9 @@ const ListHeader = ({
                 )
               }
             >
-              <AppStoreIcon width={20} height={20} />
+              <AppleLogo width={22} height={22} style={styles.promoIcon} />
               <Text allowFontScaling={false} style={styles.promoBtnText}>
-                App Store
+                Download for iPhone
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -584,13 +588,13 @@ const ListHeader = ({
                 )
               }
             >
-              <GooglePlayIcon width={20} height={20} />
+              <AndroidLogo width={22} height={22} style={styles.promoIcon} />
               <Text allowFontScaling={false} style={styles.promoBtnText}>
-                Google Play
+                Get it on Android
               </Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </FadeInUp>
+        </FadeInUp>
       ) : Platform.OS !== 'web' && visibleSpotlight ? (
         renderBannerCard(visibleSpotlight)
       ) : null}
@@ -677,7 +681,7 @@ const ListHeader = ({
           </View>
         </View>
         {screenWidth >= 768 && (
-          <View style={styles.desktopPromoBanner}>
+          <FadeInUp style={styles.desktopPromoBanner}>
             <Svg
               style={StyleSheet.absoluteFill}
               width="100%"
@@ -692,8 +696,8 @@ const ListHeader = ({
                   x2="1"
                   y2="1"
                 >
-                  <Stop offset="0" stopColor="#4C6EF5" stopOpacity="1" />
-                  <Stop offset="1" stopColor="#1E3A8A" stopOpacity="1" />
+                  <Stop offset="0" stopColor="#2B7DEB" stopOpacity="1" />
+                  <Stop offset="1" stopColor="#1749A8" stopOpacity="1" />
                 </SvgLinearGradient>
               </Defs>
               <Rect
@@ -704,7 +708,7 @@ const ListHeader = ({
               />
             </Svg>
             <View style={styles.promoBadge}>
-              <View style={styles.promoGreenDot} />
+              <PulseDot style={styles.promoGreenDot} />
               <Text allowFontScaling={false} style={styles.promoBadgeText}>
                 Live token
               </Text>
@@ -716,7 +720,7 @@ const ListHeader = ({
               Your token number, estimated time and queue status update in real
               time, and they are accurate only in the mobile app.
             </Text>
-            <View style={styles.promoButtons}>
+            <FadeInUp style={styles.promoButtons} delay={250}>
               <TouchableOpacity
                 style={styles.promoBtn}
                 activeOpacity={0.8}
@@ -726,9 +730,9 @@ const ListHeader = ({
                   )
                 }
               >
-                <AppStoreIcon width={20} height={20} />
+                <AppleLogo width={22} height={22} style={styles.promoIcon} />
                 <Text allowFontScaling={false} style={styles.promoBtnText}>
-                  App Store
+                  Download for iPhone
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -740,13 +744,13 @@ const ListHeader = ({
                   )
                 }
               >
-                <GooglePlayIcon width={20} height={20} />
+                <AndroidLogo width={22} height={22} style={styles.promoIcon} />
                 <Text allowFontScaling={false} style={styles.promoBtnText}>
-                  Google Play
+                  Get it on Android
                 </Text>
               </TouchableOpacity>
-            </View>
-          </View>
+            </FadeInUp>
+          </FadeInUp>
         )}
       </View>
       {/* Recommended for You section — temporarily disabled
@@ -1234,8 +1238,10 @@ export default function HomeScreen() {
             <Rect width={screenWidth} height={screenHeight} fill="url(#bg)" />
           </Svg>
           <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+          <AppPromoBanner />
           {/* Header */}
-          <View style={styles.header}>
+          <View style={screenWidth >= 768 ? styles.headerWrapDesktop : undefined}>
+          <View style={[styles.header, screenWidth >= 768 && styles.headerDesktop]}>
             <View style={styles.headerLeft}>
               {screenWidth >= 768 && (
                 <Image
@@ -1249,11 +1255,19 @@ export default function HomeScreen() {
                 activeOpacity={0.7}
                 onPress={() => navigation.navigate('LocationSearch')}
               >
-                <LocationIcon
-                  width={SIZE(19)}
-                  height={SIZE(19)}
-                  style={styles.locationIcon}
-                />
+                {screenWidth >= 768 ? (
+                  <LocationPinFilled
+                    width={24}
+                    height={24}
+                    style={styles.locationIcon}
+                  />
+                ) : (
+                  <LocationIcon
+                    width={SIZE(23)}
+                    height={SIZE(23)}
+                    style={styles.locationIcon}
+                  />
+                )}
                 <View style={{ maxWidth: SIZE(150) }}>
                   <View
                     style={{
@@ -1295,7 +1309,7 @@ export default function HomeScreen() {
                     <TouchableOpacity
                       key={tab}
                       activeOpacity={0.7}
-                      style={styles.headerTab}
+                      style={[styles.headerTab, isActive && styles.headerTabActive]}
                       onPress={() => {
                         if (tab === 'Appointments' && !user) {
                           setShowLoginModal(true);
@@ -1313,7 +1327,6 @@ export default function HomeScreen() {
                       >
                         {tab}
                       </Text>
-                      {isActive && <View style={styles.headerTabIndicator} />}
                     </TouchableOpacity>
                   );
                 })}
@@ -1329,7 +1342,16 @@ export default function HomeScreen() {
                   <AnimatedSearchBar style={{ height: SIZE(34) }} />
                 </TouchableOpacity>
               )}
-              {Platform.OS === 'web' && !isInstalled && (
+              {screenWidth < 768 && (
+                <TouchableOpacity
+                  style={styles.headerBell}
+                  activeOpacity={0.7}
+                  accessibilityLabel="Notifications"
+                >
+                  <NotificationIcon width={22} height={22} />
+                </TouchableOpacity>
+              )}
+              {Platform.OS === 'web' && !isInstalled && screenWidth >= 768 && screenWidth < 1024 && (
                 <TouchableOpacity
                   style={styles.installBtn}
                   activeOpacity={0.7}
@@ -1342,7 +1364,47 @@ export default function HomeScreen() {
                   </Text>
                 </TouchableOpacity>
               )}
+              {screenWidth >= 768 && (
+                <>
+                  <TouchableOpacity
+                    style={styles.headerBell}
+                    activeOpacity={0.7}
+                    accessibilityLabel="Notifications"
+                  >
+                    <NotificationIcon width={22} height={22} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.headerAvatar}
+                    activeOpacity={0.7}
+                    accessibilityLabel={user ? 'Profile' : 'Login'}
+                    onPress={() => {
+                      if (!user) {
+                        setShowLoginModal(true);
+                        return;
+                      }
+                      (navigation as any).navigate('Main', { screen: 'Profile' });
+                    }}
+                  >
+                    {user ? (
+                      <Text allowFontScaling={false} style={styles.headerAvatarText}>
+                        {user.name
+                          .split(' ')
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map(w => w[0].toUpperCase())
+                          .join('') || 'U'}
+                      </Text>
+                    ) : (
+                      <Image
+                        source={require('../assets/images/user-profile.png')}
+                        style={styles.headerGuestAvatar}
+                      />
+                    )}
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
+          </View>
           </View>
 
           {/* Search - mobile only */}
@@ -1973,6 +2035,21 @@ const styles = StyleSheet.create({
     paddingVertical: SIZE(8),
     marginBottom: SIZE(10),
     width: '100%',
+    maxWidth: 1240,
+    alignSelf: 'center',
+  },
+  // Full-width wrapper so the divider spans the page while the header
+  // content stays aligned with the 1240px content column.
+  headerWrapDesktop: {
+    width: '100%',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.white,
+    marginBottom: SIZE(10),
+  },
+  headerDesktop: {
+    paddingVertical: SIZE(12),
+    marginBottom: 0,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -1982,17 +2059,43 @@ const styles = StyleSheet.create({
   headerCenter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SIZE(4),
-    position: 'absolute',
-    left: '50%',
-    transform: [{ translateX: -100 }],
+    gap: 4,
+    flexShrink: 0,
   },
   headerTab: {
-    paddingHorizontal: SIZE(14),
-    paddingVertical: SIZE(8),
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     alignItems: 'center',
     position: 'relative',
+    borderRadius: 12,
   },
+  headerTabActive: {
+    backgroundColor: colors.primaryLight,
+  },
+  headerBell: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
+  headerAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primaryLight,
+  },
+  headerAvatarText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: 15,
+    color: colors.primary,
+  },
+  headerGuestAvatar: { width: 34, height: 34, borderRadius: 17 },
   headerTabText: {
     fontFamily: 'Manrope-Medium',
     fontSize: SIZE(14),
@@ -2002,18 +2105,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-SemiBold',
     color: colors.primary,
   },
-  headerTabIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    left: SIZE(14),
-    right: SIZE(14),
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: colors.primary,
-  },
   headerLogo: {
-    height: 38,
-    width: 100,
+    height: 48,
+    width: 126,
   },
   logo: {
     width: 94,
@@ -2022,11 +2116,11 @@ const styles = StyleSheet.create({
   },
   locationBtn: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: SIZE(4),
+    alignItems: 'center',
+    gap: SIZE(6),
   },
   locationIcon: {
-    marginTop: SIZE(8),
+    flexShrink: 0,
   },
   locationText: {
     fontFamily: 'Manrope-Bold',
@@ -2042,10 +2136,12 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SIZE(8),
+    gap: 12,
   },
   headerSearchWrapper: {
-    width: 412,
+    width: 340,
+    flexShrink: 1,
+    minWidth: 150,
     height: SIZE(34),
   },
   installBtn: {
@@ -2360,7 +2456,8 @@ const styles = StyleSheet.create({
     width: '39%',
     borderRadius: SIZE(22),
     padding: SIZE(20),
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    gap: SIZE(12),
     overflow: 'hidden',
   },
   mobilePromoBanner: {
@@ -2380,6 +2477,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SIZE(10),
     paddingVertical: SIZE(5),
     gap: SIZE(6),
+    flexShrink: 0,
   },
   promoGreenDot: {
     width: SIZE(8),
@@ -2394,34 +2492,43 @@ const styles = StyleSheet.create({
   },
   promoTitle: {
     fontFamily: 'Manrope-Bold',
-    fontSize: SIZE(20),
+    fontSize: SIZE(22),
     color: colors.white,
     lineHeight: SIZE(28),
+    flexShrink: 0,
   },
   promoDesc: {
     fontFamily: 'Manrope-Regular',
     fontSize: SIZE(13),
-    color: 'rgba(255,255,255,0.8)',
-    lineHeight: SIZE(20),
+    color: 'rgba(255,255,255,0.85)',
+    lineHeight: SIZE(21),
+    flexShrink: 0,
   },
   promoButtons: {
     flexDirection: 'row',
     gap: SIZE(10),
     flexWrap: 'wrap',
+    flexShrink: 0,
   },
   promoBtn: {
+    flexGrow: 1,
+    flexShrink: 0,
+    flexBasis: 'auto',
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: SIZE(8),
     backgroundColor: colors.white,
-    borderRadius: SIZE(12),
-    paddingHorizontal: SIZE(18),
-    paddingVertical: SIZE(12),
+    borderRadius: 999,
+    paddingHorizontal: SIZE(12),
+    paddingVertical: SIZE(13),
   },
+  promoIcon: { flexShrink: 0 },
   promoBtnText: {
-    fontFamily: 'Manrope-SemiBold',
+    fontFamily: 'Manrope-Medium',
     fontSize: SIZE(13),
     color: colors.textPrimary,
+    ...(Platform.OS === 'web' ? ({ whiteSpace: 'nowrap' } as object) : {}),
   },
   card: {
     flex: 1,
