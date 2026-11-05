@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -115,7 +116,7 @@ export default function FamilyMembersScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(24)} height={SIZE(24)} />
         </TouchableOpacity>
         <Text allowFontScaling={false} style={styles.title}>Family Members</Text>

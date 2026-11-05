@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Linking } from 'react-native';
+import { Linking, Platform, useWindowDimensions } from 'react-native';
 import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -99,6 +99,9 @@ const linking = {
 // ---------------------------------------------------------------------------
 export default function Navigation() {
   const [initialRoute, setInitialRoute] = useState<'PhoneNumber' | 'CreateProfile' | 'Main' | null>(null);
+  const { width } = useWindowDimensions();
+  // On wide web screens the location picker is a modal over the screen it was opened from
+  const isWideWeb = Platform.OS === 'web' && width >= 768;
 
   // Determine initial auth route
   useEffect(() => {
@@ -137,7 +140,11 @@ export default function Navigation() {
               />
               <Stack.Screen name="Search" component={SearchScreen} options={{ animation: 'fade' }} />
               <Stack.Screen name="SearchResult" component={SearchResultScreen} />
-              <Stack.Screen name="LocationSearch" component={LocationSearchScreen} />
+              <Stack.Screen
+                name="LocationSearch"
+                component={LocationSearchScreen}
+                options={isWideWeb ? { presentation: 'transparentModal', animation: 'fade' } : undefined}
+              />
               <Stack.Screen name="specialst" component={SpecialstScreen} />
               <Stack.Screen name="SpecialstDetail" component={SpecialstDetailScreen} />
               <Stack.Screen name="Doctors" component={DoctorsScreen} />

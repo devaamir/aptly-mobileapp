@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import {
   View,
   Text,
@@ -160,7 +161,7 @@ export default function OtpScreen() {
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
       <View style={styles.content}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => goBackOrHome(navigation, 'PhoneNumber')}
           style={[styles.backButton, keyboardHeight > 0 && styles.backButtonCompact]}
         >
           <BackArrow width={SIZE(24)} height={SIZE(24)} />

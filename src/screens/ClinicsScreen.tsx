@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { Helmet } from 'react-helmet-async';
 import {
   View,
@@ -10,6 +11,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -33,6 +35,8 @@ import { useMetadata } from '../context/MetadataContext';
 type Props = NativeStackScreenProps<RootStackParamList, 'Clinics'>;
 
 export default function ClinicsScreen({ navigation }: Props) {
+  const { width } = useWindowDimensions();
+  const isMobile = width < 640;
   const { location, distance, setDistance } = useLocation();
   const { specialties: allSpecialties, medicalSystems } = useMetadata();
   const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -97,7 +101,7 @@ export default function ClinicsScreen({ navigation }: Props) {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => goBackOrHome(navigation)}
           style={styles.backBtn}
           activeOpacity={0.7}
         >
@@ -147,8 +151,9 @@ export default function ClinicsScreen({ navigation }: Props) {
         <FlatList
           data={clinics}
           keyExtractor={item => item.id}
-          numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
+          key={isMobile ? 'list' : 'grid'}
+          numColumns={isMobile ? 1 : 2}
+          columnWrapperStyle={isMobile ? undefined : styles.columnWrapper}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -160,7 +165,7 @@ export default function ClinicsScreen({ navigation }: Props) {
             />
           }
           renderItem={({ item, index }) => {
-            const isLastOdd = clinics.length % 2 !== 0 && index === clinics.length - 1;
+            const isLastOdd = !isMobile && clinics.length % 2 !== 0 && index === clinics.length - 1;
             return (
               <View style={[styles.gridItem, isLastOdd && styles.gridItemHalf]}>
                 <ClinicCard
@@ -218,9 +223,9 @@ export default function ClinicsScreen({ navigation }: Props) {
               )}
               <View style={styles.fallbackGrid}>
                 {fallbackClinics.map((item, idx) => {
-                  const isLastOdd = fallbackClinics.length % 2 !== 0 && idx === fallbackClinics.length - 1;
+                  const isLastOdd = !isMobile && fallbackClinics.length % 2 !== 0 && idx === fallbackClinics.length - 1;
                   return (
-                    <View key={item.id} style={[styles.fallbackGridItem, isLastOdd && styles.fallbackGridItemHalf]}>
+                    <View key={item.id} style={[styles.fallbackGridItem, isMobile && styles.fullWidthItem, isLastOdd && styles.fallbackGridItemHalf]}>
                       <ClinicCard
                         name={item.name}
                         subType={item.specialties[0]?.name ?? item.type}
@@ -307,7 +312,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: SIZE(24),
-    paddingHorizontal: SIZE(16),
+    paddingHorizontal: 16,
     paddingTop: SIZE(12),
     gap: SIZE(12),
     alignSelf: 'center',
@@ -336,6 +341,9 @@ const styles = StyleSheet.create({
   fallbackGridItemHalf: {
     flex: 0,
     flexBasis: 'calc(50% - 6px)' as any,
+  },
+  fullWidthItem: {
+    flexBasis: '100%',
   },
 
   emptyContainer: {

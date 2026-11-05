@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { Helmet } from 'react-helmet-async';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -95,7 +96,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
         <Text allowFontScaling={false} style={styles.title}>{name}</Text>
@@ -316,7 +317,7 @@ const styles = StyleSheet.create({
     paddingBottom: SIZE(24),
     gap: SIZE(12),
     paddingTop: SIZE(12),
-    paddingHorizontal: SIZE(20),
+    paddingHorizontal: 16,
     alignSelf: 'center',
     width: '100%',
     maxWidth: 1240,

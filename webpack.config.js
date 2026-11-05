@@ -47,14 +47,14 @@ module.exports = {
       // Force webpack to treat react-navigation ESM files as regular JS (not native ESM)
       {
         test: /\.js$/,
-        include: /node_modules\/@react-navigation/,
+        include: /node_modules[\\/]@react-navigation/,
         type: 'javascript/auto',
         use: { loader: 'babel-loader', options: babelConfig },
       },
       // Force CJS modules that use require() to be treated as plain JS
       {
         test: /\.js$/,
-        include: /node_modules\/@lottiefiles/,
+        include: /node_modules[\\/]@lottiefiles/,
         type: 'javascript/auto',
         use: { loader: 'babel-loader', options: babelConfig },
       },

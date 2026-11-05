@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -54,7 +55,7 @@ export default function SearchResultScreen({ navigation, route }: Props) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
         <Text allowFontScaling={false} style={styles.title}>{isDoctor ? title : 'Clinics'}</Text>

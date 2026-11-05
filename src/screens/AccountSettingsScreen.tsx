@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { goBackOrHome } from '../utils/goBack';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -46,7 +47,7 @@ export default function AccountSettingsScreen() {
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(24)} height={SIZE(24)} />
         </TouchableOpacity>
         <Text style={styles.title}>Account Settings</Text>
