@@ -37,6 +37,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
   // On wide web screens the page is shown as a centred modal over a dimmed backdrop
   const isModal = Platform.OS === 'web' && width >= 768;
   const [query, setQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const [results, setResults] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
   const [popularLoading, setPopularLoading] = useState<string | null>(null);
@@ -120,7 +121,7 @@ export default function LocationSearchScreen({ navigation }: Props) {
         <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7}>
           <BackArrow width={SIZE(22)} height={SIZE(22)} />
         </TouchableOpacity>
-        <View style={styles.searchBox}>
+        <View style={[styles.searchBox, searchFocused && styles.searchBoxFocused]}>
           <LocationIcon width={SIZE(18)} height={SIZE(18)} />
           <TextInput
             allowFontScaling={false}
@@ -129,6 +130,8 @@ export default function LocationSearchScreen({ navigation }: Props) {
             placeholderTextColor={colors.textSecondary}
             value={query}
             onChangeText={setQuery}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
             autoFocus
           />
           <DistancePicker value={distance} onChange={setDistance} />
@@ -249,6 +252,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     height: SIZE(48),
   },
+  searchBoxFocused: { borderColor: colors.primary },
   input: {
     flex: 1,
     fontFamily: 'Manrope-Medium',

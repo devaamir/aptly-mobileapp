@@ -10,6 +10,8 @@ import {
   Modal,
   Pressable,
   ActivityIndicator,
+  Platform,
+  useWindowDimensions,
 } from 'react-native';
 import Video from 'react-native-video';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,8 +20,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding } from '../utils/layout';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import AppointmentInfoCard from '../components/AppointmentInfoCard';
+import DesktopNavHeader from '../components/DesktopNavHeader';
 import PatientSelector from '../components/PatientSelector';
 import { cancelAppointment, getAppointment } from '../services/api';
 import type { Appointment } from '../services/api';
@@ -31,6 +35,8 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function AppointmentDetailScreen() {
   const navigation = useNavigation<Nav>();
+  const { width: screenWidth } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && screenWidth >= 768;
   const { params } = useRoute<Route>();
   const { id, doctor, type, hospital, date, time, token, status } = params;
   const { user } = useAuth();
@@ -154,7 +160,8 @@ export default function AppointmentDetailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
-      <View style={styles.header}>
+      {isDesktop && <DesktopNavHeader />}
+      <View style={[styles.header, isDesktop && styles.columnDesktop]}>
         <TouchableOpacity
           onPress={() => goBackOrHome(navigation)}
           hitSlop={SIZE(10)}
@@ -168,7 +175,7 @@ export default function AppointmentDetailScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, isDesktop && styles.columnDesktop]}
         showsVerticalScrollIndicator={false}
       >
         {/* Token card */}
@@ -394,11 +401,18 @@ export default function AppointmentDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
+  // Wide web: a readable centred column instead of stretching to the full width
+  columnDesktop: {
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SIZE(20),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(12),
   },
   title: {
@@ -406,7 +420,7 @@ const styles = StyleSheet.create({
     fontSize: SIZE(16),
     color: colors.textPrimary,
   },
-  content: { padding: SIZE(20), gap: SIZE(16) },
+  content: { ...headerSidePadding(16), paddingVertical: SIZE(20), gap: SIZE(16) },
   card: {
     flexDirection: 'row',
     alignItems: 'center',

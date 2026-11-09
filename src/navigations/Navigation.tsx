@@ -126,8 +126,16 @@ export default function Navigation() {
             <Stack.Navigator
               initialRouteName={initialRoute}
               screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="PhoneNumber" component={PhoneNumberScreen} />
-              <Stack.Screen name="Otp" component={OtpScreen} />
+              <Stack.Screen
+                name="PhoneNumber"
+                component={PhoneNumberScreen}
+                options={isWideWeb ? { presentation: 'transparentModal', animation: 'fade' } : undefined}
+              />
+              <Stack.Screen
+                name="Otp"
+                component={OtpScreen}
+                options={isWideWeb ? { presentation: 'transparentModal', animation: 'fade' } : undefined}
+              />
               <Stack.Screen name="CreateProfile" component={CreateProfileScreen} />
               <Stack.Screen name="EditProfile" component={CreateProfileScreen} />
               <Stack.Screen name="FamilyMembers" component={FamilyMembersScreen} />

@@ -55,6 +55,11 @@
     <meta name="apple-mobile-web-app-title" content="Aptly" />
     <link rel="manifest" href="/manifest.json" />
 
+    <!-- ─── Favicon ──────────────────────────────────────────────────────── -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="shortcut icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
     <!-- ─── Robots ───────────────────────────────────────────────────────── -->
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
@@ -141,6 +146,15 @@
       svg {
         flex-shrink: 0;
         overflow: hidden;
+      }
+
+      /* No browser focus ring around text inputs */
+      input:focus,
+      input:focus-visible,
+      textarea:focus,
+      textarea:focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
       }
 
       @font-face {

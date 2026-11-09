@@ -21,6 +21,7 @@ import FilterModal from '../components/FilterModal';
 import DistancePicker from '../components/DistancePicker';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding } from '../utils/layout';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
@@ -399,7 +400,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(10),
-    paddingHorizontal: SIZE(18),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(12),
     borderBottomWidth: 1,
     borderBottomColor: colors.border,

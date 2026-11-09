@@ -7,6 +7,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding } from '../utils/layout';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import { getDoctor, Doctor } from '../services/api';
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SIZE(18),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(12),
   },
   backBtn: { width: SIZE(32) },
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: SIZE(18),
     color: colors.textPrimary,
   },
-  content: { padding: SIZE(18), gap: SIZE(16) },
+  content: { ...headerSidePadding(16), paddingVertical: SIZE(18), gap: SIZE(16) },
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',

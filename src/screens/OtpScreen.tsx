@@ -14,7 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, StackActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PrimaryButton from '../components/PrimaryButton';
 import { useLocation } from '../context/LocationContext';
@@ -39,10 +39,23 @@ export default function OtpScreen() {
   const [otp, setOtp] = useState<string[]>(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(60);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const { height: screenHeight } = useWindowDimensions();
+  const { height: screenHeight, width: screenWidth } = useWindowDimensions();
+  // On wide web screens this screen is shown as a centred modal card
+  const isModal = Platform.OS === 'web' && screenWidth >= 768;
   const inputs = useRef<(TextInput | null)[]>([]);
   const navigation = useNavigation();
+
+  // Backdrop tap closes the whole login flow (OTP + phone) when both are stacked
+  const closeFlow = () => {
+    const state = navigation.getState();
+    if (state && state.index >= 2) {
+      navigation.dispatch(StackActions.pop(2));
+    } else {
+      goBackOrHome(navigation, 'PhoneNumber');
+    }
+  };
 
   useEffect(() => {
     const showSub = Keyboard.addListener('keyboardDidShow', e => {
@@ -153,23 +166,32 @@ export default function OtpScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Platform.OS !== 'web' ? Keyboard.dismiss : undefined} accessible={false}>
+    <View style={isModal ? styles.backdrop : styles.fill}>
+    {isModal && (
+      <TouchableOpacity
+        style={StyleSheet.absoluteFill}
+        activeOpacity={1}
+        onPress={closeFlow}
+        accessibilityLabel="Close"
+      />
+    )}
     <SafeAreaView
       style={[
         styles.container,
-        { height: screenHeight - keyboardHeight },
+        isModal ? styles.modalCard : { height: screenHeight - keyboardHeight },
       ]}>
       <StatusBar backgroundColor={colors.textPrimary} barStyle="dark-content" />
-      <View style={styles.content}>
+      <View style={[styles.content, isModal && styles.contentModal]}>
         <TouchableOpacity
           onPress={() => goBackOrHome(navigation, 'PhoneNumber')}
-          style={[styles.backButton, keyboardHeight > 0 && styles.backButtonCompact]}
+          style={[styles.backButton, keyboardHeight > 0 && styles.backButtonCompact, isModal && styles.backButtonModal]}
         >
           <BackArrow width={SIZE(24)} height={SIZE(24)} />
         </TouchableOpacity>
-        <Text allowFontScaling={false} style={styles.title}>
+        <Text allowFontScaling={false} style={[styles.title, isModal && styles.titleModal]}>
           Verification Code
         </Text>
-        <Text allowFontScaling={false} style={styles.subtitle}>
+        <Text allowFontScaling={false} style={[styles.subtitle, isModal && styles.subtitleModal]}>
           {"We've sent an sms with a verification code to "}
           <Text allowFontScaling={false} style={styles.phone}>
             +91 {phone}
@@ -177,13 +199,15 @@ export default function OtpScreen() {
           {' to proceed'}
         </Text>
 
-        <View style={styles.otpRow}>
+        <View style={[styles.otpRow, isModal && styles.otpRowModal]}>
           {otp.map((digit, index) => (
             <TextInput
               allowFontScaling={false}
               key={index}
               ref={ref => (inputs.current[index] = ref)}
-              style={[styles.otpBox, digit ? styles.otpBoxFilled : null]}
+              style={[styles.otpBox, isModal && styles.otpBoxModal, digit ? styles.otpBoxFilled : null, focusedIndex === index && styles.otpBoxFilled]}
+              onFocus={() => setFocusedIndex(index)}
+              onBlur={() => setFocusedIndex(null)}
               value={digit}
               onChangeText={text => handleChange(text, index)}
               onKeyPress={e => handleKeyPress(e, index)}
@@ -222,11 +246,42 @@ export default function OtpScreen() {
         </Text>
       </View>
     </SafeAreaView>
+    </View>
     </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  fill: { flex: 1 },
+  backdrop: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: 'rgba(17,24,39,0.45)',
+  },
+  modalCard: {
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
+    width: '100%',
+    maxWidth: 460,
+    borderRadius: 24,
+    paddingHorizontal: 32,
+    paddingTop: 20,
+    paddingBottom: 36,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 40,
+    shadowOffset: { width: 0, height: 16 },
+  },
+  contentModal: { flex: 0, flexGrow: 0, paddingHorizontal: 0 },
+  backButtonModal: { marginTop: 0, marginBottom: 20 },
+  titleModal: { fontSize: 26, marginRight: 0, marginBottom: 8 },
+  subtitleModal: { fontSize: 14, marginRight: 0, width: '100%', lineHeight: 22, marginBottom: 28 },
+  otpRowModal: { marginBottom: 24 },
+  otpBoxModal: { width: 56, height: 56, fontSize: 24 },
   container: {
     flex: 1,
     backgroundColor: colors.white,

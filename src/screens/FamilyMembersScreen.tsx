@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding } from '../utils/layout';
 import BackArrow from '../assets/icons/back-arrows.svg';
 
 const formatAge = (dob: string): string => {
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SIZE(18),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(12),
   },
   backBtn: { width: SIZE(32) },
@@ -244,7 +245,8 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   content: {
-    padding: SIZE(20),
+    ...headerSidePadding(16),
+    paddingTop: SIZE(20),
     gap: SIZE(16),
     paddingBottom: SIZE(32),
   },
