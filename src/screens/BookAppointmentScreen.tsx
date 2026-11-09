@@ -9,6 +9,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding } from '../utils/layout';
 import BackArrow from '../assets/icons/back-arrows.svg';
 
 const formatAge = (dob: string): string => {
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SIZE(18),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(12),
     gap: SIZE(10),
   },

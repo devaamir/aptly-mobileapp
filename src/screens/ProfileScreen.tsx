@@ -19,6 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding } from '../utils/layout';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import ProfileIcon from '../assets/icons/profile-icon.svg';
 import GroupIcon from '../assets/icons/group-icon.svg';
@@ -333,7 +334,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
   row: { flexDirection: 'row', gap: SIZE(12) },
   header: {
-    paddingHorizontal: SIZE(20),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(12),
   },
   title: {
@@ -342,7 +343,8 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   content: {
-    padding: SIZE(20),
+    ...headerSidePadding(16),
+    paddingTop: SIZE(20),
     gap: SIZE(16),
     paddingBottom: SIZE(32),
   },

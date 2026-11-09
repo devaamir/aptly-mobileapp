@@ -237,6 +237,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    rowGap: SIZE(10),
     marginTop: SIZE(12),
   },
   expYears: {
@@ -251,6 +253,7 @@ const styles = StyleSheet.create({
     marginTop: SIZE(2),
   },
   bookBtn: {
+    maxWidth: '100%',
     backgroundColor: colors.primary,
     paddingHorizontal: SIZE(20),
     paddingVertical: SIZE(16),

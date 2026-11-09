@@ -21,6 +21,7 @@ import FilterModal from '../components/FilterModal';
 import DistancePicker from '../components/DistancePicker';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding } from '../utils/layout';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-icon.svg';
@@ -169,6 +170,7 @@ export default function ClinicsScreen({ navigation }: Props) {
             return (
               <View style={[styles.gridItem, isLastOdd && styles.gridItemHalf]}>
                 <ClinicCard
+                  style={{ marginHorizontal: 0 }}
                   name={item.name}
                   subType={item.specialties[0]?.name ?? item.type}
                   specialties={item.specialties.map((s: { name: string }) => s.name)}
@@ -227,6 +229,7 @@ export default function ClinicsScreen({ navigation }: Props) {
                   return (
                     <View key={item.id} style={[styles.fallbackGridItem, isMobile && styles.fullWidthItem, isLastOdd && styles.fallbackGridItemHalf]}>
                       <ClinicCard
+                        style={{ marginHorizontal: 0 }}
                         name={item.name}
                         subType={item.specialties[0]?.name ?? item.type}
                         specialties={item.specialties.map((s: { name: string }) => s.name)}
@@ -264,7 +267,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(10),
-    paddingHorizontal: SIZE(18),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(12),
     borderBottomWidth: 1,
     borderBottomColor: colors.border,

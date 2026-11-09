@@ -9,6 +9,7 @@ import { RootStackParamList } from '../navigations/Navigation';
 import SearchBar from '../components/SearchBar';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding } from '../utils/layout';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SIZE(18),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(10),
     borderBottomWidth: 1,
     borderBottomColor: colors.border,

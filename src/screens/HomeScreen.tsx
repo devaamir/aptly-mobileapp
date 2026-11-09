@@ -64,6 +64,7 @@ import { useAuth } from '../context/AuthContext';
 import LoginModal from '../components/LoginModal';
 import { FadeInUp, PulseDot } from '../components/PromoAnimations';
 import AppPromoBanner from '../components/AppPromoBanner';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 type HomeNavProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -1242,7 +1243,7 @@ export default function HomeScreen() {
           {/* Header */}
           <View style={screenWidth >= 768 ? styles.headerWrapDesktop : undefined}>
           <View style={[styles.header, screenWidth >= 768 && styles.headerDesktop]}>
-            <View style={styles.headerLeft}>
+            <View style={[styles.headerLeft, screenWidth >= 940 && { flexShrink: 0 }]}>
               {screenWidth >= 768 && (
                 <Image
                   source={require('../assets/images/aptly-logo3.png')}
@@ -1333,7 +1334,7 @@ export default function HomeScreen() {
               </View>
             )}
             <View style={styles.headerRight}>
-              {screenWidth >= 768 && (
+              {screenWidth >= 1024 && (
                 <TouchableOpacity
                   style={styles.headerSearchWrapper}
                   activeOpacity={0.8}
@@ -1351,19 +1352,6 @@ export default function HomeScreen() {
                   <NotificationIcon width={22} height={22} />
                 </TouchableOpacity>
               )}
-              {Platform.OS === 'web' && !isInstalled && screenWidth >= 768 && screenWidth < 1024 && (
-                <TouchableOpacity
-                  style={styles.installBtn}
-                  activeOpacity={0.7}
-                  onPress={() =>
-                    canInstall ? install() : setShowInstallModal(true)
-                  }
-                >
-                  <Text allowFontScaling={false} style={styles.installBtnText}>
-                    Install App
-                  </Text>
-                </TouchableOpacity>
-              )}
               {screenWidth >= 768 && (
                 <>
                   <TouchableOpacity
@@ -1373,17 +1361,9 @@ export default function HomeScreen() {
                   >
                     <NotificationIcon width={22} height={22} />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.headerAvatar}
-                    activeOpacity={0.7}
-                    accessibilityLabel={user ? 'Profile' : 'Login'}
-                    onPress={() => {
-                      if (!user) {
-                        setShowLoginModal(true);
-                        return;
-                      }
-                      (navigation as any).navigate('Main', { screen: 'Profile' });
-                    }}
+                  <ProfileDropdown
+                    buttonStyle={styles.headerAvatar}
+                    onLogin={() => setShowLoginModal(true)}
                   >
                     {user ? (
                       <Text allowFontScaling={false} style={styles.headerAvatarText}>
@@ -1400,16 +1380,16 @@ export default function HomeScreen() {
                         style={styles.headerGuestAvatar}
                       />
                     )}
-                  </TouchableOpacity>
+                  </ProfileDropdown>
                 </>
               )}
             </View>
           </View>
           </View>
 
-          {/* Search - mobile only */}
-          {screenWidth < 768 && (
-            <View style={styles.searchWrapper}>
+          {/* Search below the header on mobile and tablet; inside the header on desktop */}
+          {screenWidth < 1024 && (
+            <View style={[styles.searchWrapper, screenWidth >= 768 && styles.searchWrapperTablet]}>
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => navigation.navigate('Search')}
@@ -2047,7 +2027,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     marginBottom: SIZE(10),
   },
+  searchWrapperTablet: { paddingHorizontal: 24, marginTop: 4 },
   headerDesktop: {
+    paddingHorizontal: 24,
     paddingVertical: SIZE(12),
     marginBottom: 0,
   },
@@ -2055,6 +2037,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SIZE(16),
+    flexShrink: 1,
+    minWidth: 0,
   },
   headerCenter: {
     flexDirection: 'row',
@@ -2137,11 +2121,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    // lets the search box shrink instead of pushing bell / avatar off screen
+    flexShrink: 1,
+    minWidth: 0,
   },
   headerSearchWrapper: {
     width: 340,
     flexShrink: 1,
-    minWidth: 150,
+    minWidth: 120,
     height: SIZE(34),
   },
   installBtn: {

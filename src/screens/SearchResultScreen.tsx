@@ -6,6 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding, sideMargin } from '../utils/layout';
 import BackArrow from '../assets/icons/back-arrows.svg';
 import SearchIcon from '../assets/icons/search-icon.svg';
 import LocationIcon from '../assets/icons/location-black-icon.svg';
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SIZE(18),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(12),
   },
   backBtn: { width: SIZE(32) },
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: SIZE(14),
     paddingVertical: SIZE(8),
-    marginHorizontal: SIZE(18),
+    ...sideMargin(16),
     marginVertical: SIZE(8),
     backgroundColor: colors.white,
   },
@@ -152,8 +153,8 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   distanceText: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(13), color: colors.primary, paddingLeft: SIZE(8) },
-  filterRow: { paddingHorizontal: SIZE(18), marginBottom: SIZE(12) },
-  list: { paddingHorizontal: SIZE(18), gap: SIZE(12), paddingBottom: SIZE(24) },
+  filterRow: { ...headerSidePadding(16), marginBottom: SIZE(12) },
+  list: { ...headerSidePadding(16), gap: SIZE(12), paddingBottom: SIZE(24) },
   emptyText: { fontFamily: 'Manrope-Regular', fontSize: SIZE(14), color: colors.textMuted, textAlign: 'center', marginTop: SIZE(40) },
   emptyContainer: { alignItems: 'center', paddingHorizontal: SIZE(32), paddingVertical: SIZE(32), gap: SIZE(10) },
   emptyTitle: { fontFamily: 'Manrope-SemiBold', fontSize: SIZE(16), color: '#1C1E22', marginTop: SIZE(8) },

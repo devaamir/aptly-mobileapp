@@ -29,6 +29,8 @@ import NotificationIcon from '../assets/icons/notification-icon-grey.svg';
 import DoctorCard from '../components/DoctorCard';
 import LoginModal from '../components/LoginModal';
 import AppPromoBanner from '../components/AppPromoBanner';
+import ProfileDropdown from '../components/ProfileDropdown';
+import { headerSidePadding } from '../utils/layout';
 import { useAuth } from '../context/AuthContext';
 import { buildClinicSchema, buildBreadcrumbSchema, clinicPageMeta, schemaToString, BASE_URL } from '../utils/seo';
 import { getClinic, getDoctor } from '../services/api';
@@ -57,6 +59,8 @@ export default function HospitalDetailScreen() {
   const { id, name, specialty, location } = params;
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth >= 768;
+  // Two doctor cards side by side only when the left column is wide enough for them
+  const twoColumnDoctors = screenWidth >= 1200;
   const { location: userLocation } = useLocation();
   const { user } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -238,7 +242,7 @@ export default function HospitalDetailScreen() {
           {displayClinic.doctors.length === 0
             ? <Text allowFontScaling={false} style={styles.emptyText}>No doctors listed.</Text>
             : (
-              <View style={isDesktop ? styles.doctorsGrid : styles.doctorsList}>
+              <View style={twoColumnDoctors ? styles.doctorsGrid : styles.doctorsList}>
                 {displayClinic.doctors.map(doc => (
                   <DoctorCard
                     key={doc.id}
@@ -247,7 +251,7 @@ export default function HospitalDetailScreen() {
                     experience={doc.yearsOfExperience ? `${doc.yearsOfExperience} years` : ''}
                     image={doc.profilePicture}
                     nextSchedule={doc.nextSchedule}
-                    style={isDesktop ? styles.doctorGridItem : undefined}
+                    style={twoColumnDoctors ? styles.doctorGridItem : undefined}
                     onPress={() => navigation.navigate('DoctorDetail', { doctorId: doc.id })}
                     onBookPress={async () => {
                       const res = await getDoctor(doc.id);
@@ -420,15 +424,16 @@ export default function HospitalDetailScreen() {
             <TouchableOpacity style={[styles.bellBtn, !isDesktop && styles.headerBtnMobile]} activeOpacity={0.7} accessibilityLabel="Notifications">
               <NotificationIcon width={SIZE(22)} height={SIZE(22)} />
             </TouchableOpacity>
-            {user ? (
-              <TouchableOpacity style={[styles.avatarBtn, !isDesktop && styles.avatarBtnMobile]} activeOpacity={0.7} onPress={() => goToTab('Profile')} accessibilityLabel="Profile">
+            <ProfileDropdown
+              buttonStyle={[styles.avatarBtn, !user && styles.guestBtn, !isDesktop && styles.avatarBtnMobile]}
+              onLogin={() => setShowLoginModal(true)}
+            >
+              {user ? (
                 <Text allowFontScaling={false} style={styles.avatarText}>{initials || 'U'}</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={[styles.avatarBtn, styles.guestBtn, !isDesktop && styles.avatarBtnMobile]} activeOpacity={0.7} onPress={() => setShowLoginModal(true)} accessibilityLabel="Login">
+              ) : (
                 <Image source={require('../assets/images/user-profile.png')} style={[styles.guestAvatar, !isDesktop && styles.guestAvatarMobile]} />
-              </TouchableOpacity>
-            )}
+              )}
+            </ProfileDropdown>
           </View>
       </View>
       <View style={styles.headerDivider} />
@@ -488,7 +493,7 @@ const styles = StyleSheet.create({
   webHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    ...headerSidePadding(24),
     paddingVertical: 12,
   },
   webHeaderMobile: { paddingHorizontal: 12, paddingVertical: 8 },

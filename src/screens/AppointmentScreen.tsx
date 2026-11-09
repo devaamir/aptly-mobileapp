@@ -9,6 +9,8 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl,
+  Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -16,7 +18,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
+import { headerSidePadding } from '../utils/layout';
 import AppointmentCard from '../components/AppointmentCard';
+import DesktopNavHeader from '../components/DesktopNavHeader';
 import { getAppointments, Appointment } from '../services/api';
 import { useTracking } from '../context/TrackingContext';
 const upcomingImg = require('../assets/images/appointment-upcoming.png');
@@ -59,6 +63,8 @@ const statusMap: Record<
 
 export default function AppointmentScreen() {
   const navigation = useNavigation<Nav>();
+  const { width: screenWidth } = useWindowDimensions();
+  const isDesktop = Platform.OS === 'web' && screenWidth >= 768;
   const { trackData } = useTracking();
   const [tab, setTab] = useState<Tab>('Upcoming');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -104,13 +110,17 @@ export default function AppointmentScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
-      <View style={styles.header}>
-        <Text allowFontScaling={false} style={styles.title}>
-          Appointments
-        </Text>
-      </View>
+      {isDesktop ? (
+        <DesktopNavHeader active="Appointments" />
+      ) : (
+        <View style={styles.header}>
+          <Text allowFontScaling={false} style={styles.title}>
+            Appointments
+          </Text>
+        </View>
+      )}
 
-      <View style={styles.tabs}>
+      <View style={[styles.tabs, isDesktop && styles.tabsDesktop]}>
         {TABS.map(t => (
           <TouchableOpacity
             key={t}
@@ -142,7 +152,7 @@ export default function AppointmentScreen() {
           keyExtractor={item => item.id}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
-          contentContainerStyle={[styles.list, filtered.length === 0 && styles.listEmpty]}
+          contentContainerStyle={[styles.list, isDesktop && styles.listDesktop, filtered.length === 0 && styles.listEmpty]}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchPage(1, true)} colors={[colors.primary]} tintColor={colors.primary} />}
           onEndReached={() => {
@@ -266,7 +276,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SIZE(20),
+    ...headerSidePadding(16),
     paddingVertical: SIZE(12),
   },
   title: {
@@ -284,6 +294,16 @@ const styles = StyleSheet.create({
     marginTop: SIZE(10),
     marginBottom: SIZE(16),
   },
+  // Wide web: tabs sit in the same centred column as the header and list
+  tabsDesktop: {
+    width: '100%',
+    maxWidth: 1240,
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  listDesktop: { paddingHorizontal: 24 },
   tab: { flex: 1, alignItems: 'center' },
   tabText: {
     fontFamily: 'Manrope-Medium',
@@ -302,7 +322,7 @@ const styles = StyleSheet.create({
     marginTop: SIZE(6),
   },
   list: {
-    paddingHorizontal: SIZE(18),
+    paddingHorizontal: 16,
     gap: SIZE(12),
     paddingBottom: SIZE(24),
     alignSelf: 'center',
