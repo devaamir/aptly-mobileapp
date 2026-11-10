@@ -123,7 +123,8 @@ export default function Navigation() {
     <MetadataProvider>
       <TrackingProvider>
         <LocationProvider>
-          <NavigationContainer ref={navigationRef} linking={linking}>
+          {/* documentTitle off: each screen sets its own SEO title via react-helmet; the default overwrote it with the route name ("Clinics", "specialst") */}
+          <NavigationContainer ref={navigationRef} linking={linking} documentTitle={{ enabled: false }}>
             <Stack.Navigator
               initialRouteName={initialRoute}
               screenOptions={{ headerShown: false }}>
