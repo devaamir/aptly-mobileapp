@@ -109,7 +109,8 @@ export default function Navigation() {
       const token = tokenEntry[1];
       const name = nameEntry[1];
       const skipped = skippedEntry[1];
-      if (!token && skipped === 'true') { setInitialRoute('Main'); }
+      // On the web, visitors browse as guests first; login opens only when needed
+      if (!token && (skipped === 'true' || Platform.OS === 'web')) { setInitialRoute('Main'); }
       else if (!token) { setInitialRoute('PhoneNumber'); }
       else if (!name) { setInitialRoute('CreateProfile'); }
       else { setInitialRoute('Main'); }
