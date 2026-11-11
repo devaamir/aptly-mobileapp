@@ -113,6 +113,7 @@ module.exports = {
         { from: 'public/robots.txt', to: 'robots.txt' },
         { from: 'public/sitemap.xml', to: 'sitemap.xml' },
         { from: 'public/googleeb3d314c65429943.html', to: 'googleeb3d314c65429943.html' },
+        { from: 'public/.well-known', to: '.well-known' },
       ],
     }),
   ],

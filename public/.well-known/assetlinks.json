@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.aptly.aptlycareapp",
+    "sha256_cert_fingerprints": [
+      "84:96:38:FC:4F:58:1A:29:3A:32:C6:42:02:05:CD:20:DA:F2:5C:83:14:D9:E7:BD:54:93:99:AC:EB:B8:91:53"
+    ]
+  }
+}]
