@@ -15,6 +15,15 @@ const PRERENDER_SERVICE_URL = 'https://service.prerender.io';
 // This mirrors what the standard prerender middleware detects.
 const BOT_USER_AGENTS = [
   'googlebot',
+  'google-inspectiontool', // Search Console URL Inspection / live test
+  'googleother',
+  'storebot-google',
+  'adsbot-google',
+  'mediapartners-google',
+  'apis-google',
+  'feedfetcher-google',
+  'google-read-aloud',
+  'google-safety',
   'bingbot',
   'yandexbot',
   'duckduckbot',
@@ -65,7 +74,13 @@ module.exports = async function handler(req, res) {
   let pagePath = req.query.url || '/';
   if (!pagePath.startsWith('/')) pagePath = '/' + pagePath;
 
-  const fullUrl = `${protocol}://${host}${pagePath}`;
+  // Vercel passes the original query string through next to `url`. Keep it:
+  // pages like /DoctorDetail?doctorId=… and /SpecialstDetail?name=… are different
+  // pages and render blank without it.
+  const { url: _ignored, ...originalQuery } = req.query || {};
+  const search = new URLSearchParams(originalQuery).toString();
+
+  const fullUrl = `${protocol}://${host}${pagePath}${search ? `?${search}` : ''}`;
   const prerenderUrl = `${PRERENDER_SERVICE_URL}/${fullUrl}`;
 
   // Use an 8s timeout — safely under Vercel Hobby's 10s function limit.
@@ -109,10 +124,23 @@ module.exports = async function handler(req, res) {
       console.error('[prerender] Error fetching from prerender.io:', err.message);
     }
 
-    // Fallback: redirect bot to the raw SPA (index.html).
-    // The bot will re-crawl later when the page is cached in prerender.io.
+    // Fallback: answer with the raw SPA shell (HTTP 200) instead of redirecting.
+    // A redirect back to the same URL is routed to this function again for bots,
+    // which loops until prerender.io has the page cached and makes crawlers give up.
+    // The internal fetch uses a non-bot user agent so it gets index.html directly.
     res.setHeader('X-Prerendered', 'fallback');
-    res.setHeader('Location', pagePath);
-    res.status(302).end();
+    try {
+      const shell = await fetch(`${protocol}://${host}/`, {
+        headers: { 'User-Agent': 'aptly-prerender-fallback' },
+      });
+      const shellHtml = await shell.text();
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store');
+      res.status(200).send(shellHtml);
+    } catch (fallbackErr) {
+      console.error('[prerender] Fallback shell fetch failed:', fallbackErr.message);
+      res.status(503).setHeader('Retry-After', '60');
+      res.end();
+    }
   }
 };

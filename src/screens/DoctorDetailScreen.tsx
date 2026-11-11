@@ -137,7 +137,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
   const breadcrumb = buildBreadcrumbSchema([
     { name: 'Home', url: BASE_URL },
     { name: 'Doctors', url: `${BASE_URL}/Doctors` },
-    { name: doctor.name, url: `${BASE_URL}/doctor/${doctorId}` },
+    { name: doctor.name, url: `${BASE_URL}/DoctorDetail?doctorId=${doctorId}` },
   ]);
 
   return (
@@ -148,7 +148,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
         <meta property="og:title" content={pageMeta.title} />
         <meta property="og:description" content={pageMeta.description} />
         {doctor.profilePicture && <meta property="og:image" content={doctor.profilePicture} />}
-        <link rel="canonical" href={`${BASE_URL}/doctor/${doctorId}`} />
+        <link rel="canonical" href={`${BASE_URL}/DoctorDetail?doctorId=${doctorId}`} />
         <script type="application/ld+json">{schemaToString(doctorSchema)}</script>
         <script type="application/ld+json">{schemaToString(breadcrumb)}</script>
       </Helmet>
