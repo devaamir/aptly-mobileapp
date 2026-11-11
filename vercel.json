@@ -21,6 +21,13 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/c/:clinicId",
+      "destination": "https://qr.aptly.care/c/:clinicId",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/.well-known/apple-app-site-association",
