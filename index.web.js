@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import { createElement } from 'react';
 import { Alert } from 'react-native';
 import App from './App';
+import { startHeadDedupe } from './src/utils/dedupeHead';
 
 // Polyfill Alert for web
 Alert.alert = (title, message, buttons) => {
@@ -21,6 +22,8 @@ Alert.alert = (title, message, buttons) => {
 if (typeof window !== 'undefined') {
   window.prerenderReady = false;
 }
+
+startHeadDedupe();
 
 const root = createRoot(document.getElementById('root'));
 root.render(createElement(App));

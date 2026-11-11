@@ -167,7 +167,7 @@ export interface DoctorSchemaParams {
  * Signals for "cardiologist near me" type queries.
  */
 export function buildDoctorSchema(params: DoctorSchemaParams): object {
-  const url = `${BASE_URL}/doctor/${params.doctorId}`;
+  const url = `${BASE_URL}/DoctorDetail?doctorId=${params.doctorId}`;
   return {
     '@context': 'https://schema.org',
     '@type': 'Physician',
@@ -194,7 +194,7 @@ export function buildDoctorSchema(params: DoctorSchemaParams): object {
       '@type': 'ReserveAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `${BASE_URL}/doctor/${params.doctorId}`,
+        urlTemplate: `${BASE_URL}/DoctorDetail?doctorId=${params.doctorId}`,
         actionPlatform: [
           'http://schema.org/DesktopWebPlatform',
           'http://schema.org/MobileWebPlatform',

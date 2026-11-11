@@ -109,7 +109,8 @@ export default function Navigation() {
       const token = tokenEntry[1];
       const name = nameEntry[1];
       const skipped = skippedEntry[1];
-      if (!token && skipped === 'true') { setInitialRoute('Main'); }
+      // On the web, visitors browse as guests first; login opens only when needed
+      if (!token && (skipped === 'true' || Platform.OS === 'web')) { setInitialRoute('Main'); }
       else if (!token) { setInitialRoute('PhoneNumber'); }
       else if (!name) { setInitialRoute('CreateProfile'); }
       else { setInitialRoute('Main'); }
@@ -122,7 +123,8 @@ export default function Navigation() {
     <MetadataProvider>
       <TrackingProvider>
         <LocationProvider>
-          <NavigationContainer ref={navigationRef} linking={linking}>
+          {/* documentTitle off: each screen sets its own SEO title via react-helmet; the default overwrote it with the route name ("Clinics", "specialst") */}
+          <NavigationContainer ref={navigationRef} linking={linking} documentTitle={{ enabled: false }}>
             <Stack.Navigator
               initialRouteName={initialRoute}
               screenOptions={{ headerShown: false }}>

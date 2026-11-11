@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { reverseGeocode } from '../services/api';
@@ -77,7 +78,7 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
     AsyncStorage.multiGet(['accessToken', 'skipped']).then(([tokenEntry, skippedEntry]) => {
       const token = tokenEntry[1];
       const skipped = skippedEntry[1];
-      if (token || skipped === 'true') initLocation();
+      if (token || skipped === 'true' || Platform.OS === 'web') initLocation();
       else setReady(true);
     });
   }, []);

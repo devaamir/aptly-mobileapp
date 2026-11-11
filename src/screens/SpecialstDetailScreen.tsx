@@ -79,7 +79,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
   const breadcrumb = buildBreadcrumbSchema([
     { name: 'Home', url: BASE_URL },
     { name: 'Specialties', url: `${BASE_URL}/specialst` },
-    { name: name, url: `${BASE_URL}/specialst/${encodeURIComponent(name)}` },
+    { name: name, url: `${BASE_URL}/SpecialstDetail?name=${encodeURIComponent(name)}` },
   ]);
 
   return (
@@ -89,7 +89,7 @@ export default function SpecialstDetailScreen({ navigation, route }: Props) {
         <meta name="description" content={pageMeta.description} />
         <meta property="og:title" content={pageMeta.title} />
         <meta property="og:description" content={pageMeta.description} />
-        <link rel="canonical" href={`${BASE_URL}/specialst/${encodeURIComponent(name)}`} />
+        <link rel="canonical" href={`${BASE_URL}/SpecialstDetail?name=${encodeURIComponent(name)}`} />
         <script type="application/ld+json">{schemaToString(specialtySchema)}</script>
         <script type="application/ld+json">{schemaToString(breadcrumb)}</script>
       </Helmet>

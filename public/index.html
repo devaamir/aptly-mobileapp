@@ -8,8 +8,9 @@
     />
 
     <!-- ─── Primary SEO ─────────────────────────────────────────────────── -->
-    <title>Aptly – Book Doctor &amp; Clinic Appointments Near You</title>
+    <title data-static-seo>Aptly – Book Doctor &amp; Clinic Appointments Near You</title>
     <meta
+      data-static-seo
       name="description"
       content="Find and book appointments with top doctors and clinics near you. Search by specialty — cardiologist, dermatologist, dentist, and more. Instant confirmation, real-time token tracking."
     />
@@ -17,17 +18,19 @@
       name="keywords"
       content="clinic near me, doctor near me, book doctor appointment, cardiologist near me, dermatologist near me, dentist near me, pediatrician near me, hospital near me, online doctor booking, Aptly, Aptly Care"
     />
-    <link rel="canonical" href="https://app.aptly.care/" />
+    <!-- No static canonical on purpose: every screen sets its own (react-helmet). A static one
+         pointed all deep links at the homepage for crawlers that do not run JavaScript. -->
 
     <!-- ─── Open Graph / Facebook ────────────────────────────────────────── -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Aptly" />
-    <meta property="og:title" content="Aptly – Book Doctor &amp; Clinic Appointments Near You" />
+    <meta data-static-seo property="og:title" content="Aptly – Book Doctor &amp; Clinic Appointments Near You" />
     <meta
+      data-static-seo
       property="og:description"
       content="Find clinics and doctors near you. Book appointments in seconds with real-time token tracking. Cardiologists, dermatologists, dentists, and more."
     />
-    <meta property="og:url" content="https://app.aptly.care/" />
+    <meta data-static-seo property="og:url" content="https://app.aptly.care/" />
     <meta property="og:image" content="https://app.aptly.care/icon-512.png" />
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
@@ -35,8 +38,9 @@
 
     <!-- ─── Twitter Card ─────────────────────────────────────────────────── -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Aptly – Book Doctor &amp; Clinic Appointments Near You" />
+    <meta data-static-seo name="twitter:title" content="Aptly – Book Doctor &amp; Clinic Appointments Near You" />
     <meta
+      data-static-seo
       name="twitter:description"
       content="Find clinics and doctors near you. Book appointments in seconds with real-time token tracking."
     />

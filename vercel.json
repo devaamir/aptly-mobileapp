@@ -14,7 +14,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i).*(googlebot|bingbot|yandexbot|duckduckbot|slurp|baiduspider|facebookexternalhit|twitterbot|linkedinbot|whatsapp|applebot|semrushbot|ahrefsbot|gptbot|claudebot|chatgpt-user|ccbot|ia_archiver).*"
+          "value": "(?i).*(googlebot|google-inspectiontool|googleother|storebot-google|adsbot-google|mediapartners-google|apis-google|feedfetcher-google|google-read-aloud|google-safety|bingbot|yandexbot|duckduckbot|slurp|baiduspider|facebookexternalhit|twitterbot|linkedinbot|whatsapp|applebot|semrushbot|ahrefsbot|gptbot|claudebot|chatgpt-user|ccbot|ia_archiver).*"
         }
       ],
       "destination": "/api/prerender?url=/$1"
