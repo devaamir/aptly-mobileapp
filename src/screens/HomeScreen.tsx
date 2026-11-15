@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
+import FocusedHelmet from '../components/FocusedHelmet';
 import {
   View,
   Image,
@@ -1210,11 +1210,11 @@ export default function HomeScreen() {
   } else {
     return (
       <>
-        <Helmet>
+        <FocusedHelmet>
           <title>Aptly – Book Doctor &amp; Clinic Appointments Near You</title>
           <meta
             name="description"
-            content="Find and book appointments with top doctors and clinics near you. Search by specialty — cardiologist, dermatologist, dentist, and more. Instant confirmation, real-time token tracking."
+            content="Find and book appointments with top doctors and clinics near you. Search by specialty, track your token live and get instant confirmation."
           />
           <meta property="og:title" content="Aptly – Book Doctor & Clinic Appointments Near You" />
           <meta
@@ -1222,7 +1222,7 @@ export default function HomeScreen() {
             content="Find clinics and doctors near you. Book appointments in seconds with real-time token tracking."
           />
           <link rel="canonical" href="https://app.aptly.care/" />
-        </Helmet>
+        </FocusedHelmet>
         <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
           <Svg
             style={StyleSheet.absoluteFill}

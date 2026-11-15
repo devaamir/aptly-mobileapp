@@ -22,6 +22,8 @@ import BookingConfirmedScreen from '../screens/BookingConfirmedScreen';
 import AppointmentDetailScreen from '../screens/AppointmentDetailScreen';
 import HospitalDetailScreen from '../screens/HospitalDetailScreen';
 import ClinicsScreen from '../screens/ClinicsScreen';
+import ShortBookingLinkScreen from '../screens/ShortBookingLinkScreen';
+import NoIndex from '../components/NoIndex';
 import { Doctor, Appointment } from '../services/api';
 import { MetadataProvider } from '../context/MetadataContext';
 import { TrackingProvider } from '../context/TrackingContext';
@@ -43,7 +45,10 @@ export type RootStackParamList = {
   SpecialstDetail: { name: string; id: string; desc: string; clinics: number; doctors: number };
   Doctors: undefined;
   DoctorDetail: { doctorId: string };
-  BookAppointment: { doctor: Doctor; clinicId?: string };
+  // `doctor` is passed in-app; on a refresh / shared link only `doctorId` (from the URL) is there
+  BookAppointment: { doctor?: Doctor; doctorId?: string; clinicId?: string };
+  // Short poster / QR link: d = doctor, c = clinic (see utils/shortId)
+  ShortBooking: { d: string; c?: string };
   BookingConfirmed: { token: number; doctorName: string; hospital: string; date: string };
   AppointmentDetail: { id: string; doctor: string; type: string; hospital: string; date: string; time: string; token: number; status: string };
   /**
@@ -56,6 +61,19 @@ export type RootStackParamList = {
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+// Screens search engines should index. Every other screen (login, profile, booking,
+// search …) is private or a utility page and gets `noindex`.
+// "Main" is the tab container: Home is indexable, the other tabs opt out in BottomTabNavigator.
+const INDEXABLE_ROUTES = new Set<string>([
+  'Main',
+  'HospitalDetail',
+  'Clinics',
+  'Doctors',
+  'specialst',
+  'SpecialstDetail',
+  'DoctorDetail',
+]);
 
 /**
  * A module-level navigation ref so that deep-link handlers outside the
@@ -70,8 +88,24 @@ const linking = {
   prefixes: ['https://qr.aptly.care', 'https://app.aptly.care', 'http://localhost:8080'],
   config: {
     screens: {
+      // Home tab lives at "/" (was /Main/Home, which differed from the canonical URL)
+      Main: {
+        path: '',
+        screens: {
+          Home: '',
+          Appointments: 'Appointments',
+          Profile: 'Profile',
+        },
+      },
       HospitalDetail: {
         path: 'c/:id',
+        // name/specialty/location only fill the page while it loads; keeping them out of
+        // the URL makes it the same as the canonical (/c/:id)
+        stringify: {
+          name: () => undefined as unknown as string,
+          specialty: () => undefined as unknown as string,
+          location: () => undefined as unknown as string,
+        },
       },
       Clinics: 'Clinics',
       Doctors: 'Doctors',
@@ -80,6 +114,12 @@ const linking = {
       DoctorDetail: 'DoctorDetail',
       Search: 'Search',
       SearchResult: 'SearchResult',
+      // Only ids go in the URL (the doctor object would show as [object Object])
+      ShortBooking: 'b/:d/:c?',
+      BookAppointment: {
+        path: 'BookAppointment',
+        stringify: { doctor: () => undefined as unknown as string },
+      },
     },
   },
   async getInitialURL(): Promise<string | null | undefined> {
@@ -127,7 +167,15 @@ export default function Navigation() {
           <NavigationContainer ref={navigationRef} linking={linking} documentTitle={{ enabled: false }}>
             <Stack.Navigator
               initialRouteName={initialRoute}
-              screenOptions={{ headerShown: false }}>
+              screenOptions={{ headerShown: false }}
+              screenLayout={({ route, children }) =>
+                INDEXABLE_ROUTES.has(route.name) ? children : (
+                  <>
+                    <NoIndex />
+                    {children}
+                  </>
+                )
+              }>
               <Stack.Screen
                 name="PhoneNumber"
                 component={PhoneNumberScreen}
@@ -160,6 +208,7 @@ export default function Navigation() {
               <Stack.Screen name="Doctors" component={DoctorsScreen} />
               <Stack.Screen name="DoctorDetail" component={DoctorDetailScreen} />
               <Stack.Screen name="BookAppointment" component={BookAppointmentScreen} />
+              <Stack.Screen name="ShortBooking" component={ShortBookingLinkScreen} />
               <Stack.Screen name="BookingConfirmed" component={BookingConfirmedScreen} />
               <Stack.Screen name="AppointmentDetail" component={AppointmentDetailScreen} />
               <Stack.Screen name="HospitalDetail" component={HospitalDetailScreen} />

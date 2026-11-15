@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { goBackOrHome } from '../utils/goBack';
-import { Helmet } from 'react-helmet-async';
+import FocusedHelmet from '../components/FocusedHelmet';
 import {
   View,
   Text,
@@ -92,13 +92,13 @@ export default function ClinicsScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Helmet>
+      <FocusedHelmet>
         <title>{clinicsMeta.title}</title>
         <meta name="description" content={clinicsMeta.description} />
         <meta property="og:title" content={clinicsMeta.title} />
         <meta property="og:description" content={clinicsMeta.description} />
         <link rel="canonical" href={`${BASE_URL}/Clinics`} />
-      </Helmet>
+      </FocusedHelmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
         <TouchableOpacity

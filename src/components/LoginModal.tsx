@@ -16,9 +16,11 @@ import PrimaryButton from './PrimaryButton';
 type Props = {
   visible: boolean;
   onClose: () => void;
+  /** Defaults to the appointments wording */
+  message?: string;
 };
 
-export default function LoginModal({ visible, onClose }: Props) {
+export default function LoginModal({ visible, onClose, message = 'Please login to view your appointments.' }: Props) {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -39,7 +41,7 @@ export default function LoginModal({ visible, onClose }: Props) {
             Login Required
           </Text>
           <Text allowFontScaling={false} style={styles.subtitle}>
-            Please login to view your appointments.
+            {message}
           </Text>
           <PrimaryButton label="Login" onPress={handleLogin} />
           <TouchableOpacity onPress={onClose}>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { goBackOrHome } from '../utils/goBack';
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert, KeyboardAvoidingView, Modal, useWindowDimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Platform, Image, Alert, KeyboardAvoidingView, Modal, useWindowDimensions, ActivityIndicator } from 'react-native';
 import DateTimePicker from 'react-native-ui-datepicker';
 import dayjs from 'dayjs';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,14 +21,19 @@ const formatAge = (dob: string): string => {
 };
 import DownArrowGrey from '../assets/icons/down-arrow-grey.svg';
 import CalendarIcon from '../assets/icons/calendar-icon.svg';
+import ArrowRight from '../assets/icons/arrow-right.svg';
 import SwipeToBook from '../components/SwipeToBook';
 import PatientSelector from '../components/PatientSelector';
 import BottomModal from '../components/BottomModal';
 import AppInput from '../components/AppInput';
 import AppDropdown from '../components/AppDropdown';
 import PrimaryButton from '../components/PrimaryButton';
-import { createAppointment, getPatients, addPatient, getDoctorSchedule, Patient } from '../services/api';
+import { createAppointment, getPatients, addPatient, getDoctorSchedule, getDoctor, Patient, Doctor } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import LoginModal from '../components/LoginModal';
+import ShareButton from '../components/ShareButton';
+import FocusedHelmet from '../components/FocusedHelmet';
+import { bookingShortUrl } from '../utils/shortId';
 import { Schedule } from '../services/api';
 
 
@@ -40,8 +45,51 @@ const to12h = (time: string) => {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
 };
 
+/**
+ * Uses the doctor passed from the previous screen. When the page is opened from its URL
+ * (refresh, shared link) only `doctorId` is there, so the doctor is loaded first.
+ */
 export default function BookAppointmentScreen({ navigation, route }: Props) {
-  const { doctor, clinicId } = route.params;
+  const { doctor: passedDoctor, doctorId: paramDoctorId } = route.params ?? {};
+  const hasDoctor = !!passedDoctor && typeof passedDoctor === 'object';
+  const doctorId = paramDoctorId ?? (hasDoctor ? passedDoctor.id : undefined);
+  const [doctor, setDoctor] = useState<Doctor | null>(hasDoctor ? passedDoctor : null);
+  const [failed, setFailed] = useState(false);
+
+  // Keep the doctor id in the URL so the page survives a refresh
+  useEffect(() => {
+    if (doctorId && !paramDoctorId) navigation.setParams({ doctorId });
+  }, [doctorId, paramDoctorId, navigation]);
+
+  useEffect(() => {
+    if (doctor) return;
+    if (!doctorId) { setFailed(true); return; }
+    getDoctor(doctorId)
+      .then(res => setDoctor(res.data))
+      .catch(() => setFailed(true));
+  }, [doctor, doctorId]);
+
+  if (!doctor) {
+    return (
+      <View style={styles.loaderScreen}>
+        {failed ? (
+          <>
+            <Text allowFontScaling={false} style={styles.loaderText}>Couldn't load this booking page.</Text>
+            <TouchableOpacity onPress={() => goBackOrHome(navigation)}>
+              <Text allowFontScaling={false} style={styles.loaderLink}>Go back</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <ActivityIndicator color={colors.primary} />
+        )}
+      </View>
+    );
+  }
+  return <BookAppointmentContent navigation={navigation} route={route} doctor={doctor} />;
+}
+
+function BookAppointmentContent({ navigation, route, doctor }: Props & { doctor: Doctor }) {
+  const { clinicId } = route.params ?? {};
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth >= 768;
   const relevantCenters = clinicId
@@ -56,8 +104,16 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
       full: d,
     };
   });
+  // Weekdays the doctor has a session at this clinic (from the weekly schedule).
+  // The real sessions for a date are still loaded when it is selected.
+  const availableWeekdays = new Set(
+    relevantCenters.flatMap(mc => mc.schedules ?? []).map(sc => sc.dayOfWeek?.toLowerCase()),
+  );
+  const hasWeeklySchedule = availableWeekdays.size > 0;
+  const isDayAvailable = (d: Date) => !hasWeeklySchedule || availableWeekdays.has(WEEK_DAYS[d.getDay()]);
   const { user } = useAuth();
-  const [selectedDay, setSelectedDay] = useState(0);
+  // Start on the first date the doctor is available
+  const [selectedDay, setSelectedDay] = useState(() => Math.max(0, DAYS.findIndex(d => isDayAvailable(d.full))));
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<string | null>(() => {
     const todayName = WEEK_DAYS[new Date().getDay()];
@@ -75,6 +131,18 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
   const [memberGender, setMemberGender] = useState('');
   const [memberAge, setMemberAge] = useState('');
   const [addingMember, setAddingMember] = useState(false);
+  // Guests can fill in the booking; login is asked for on Confirm (or Add Member)
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Date row: with a mouse there is no swipe, so arrows page through the dates
+  const daysScrollRef = useRef<ScrollView>(null);
+  const [daysScroll, setDaysScroll] = useState({ x: 0, view: 0, content: 0 });
+  const canScrollDaysBack = daysScroll.x > 4;
+  const canScrollDaysForward = daysScroll.x + daysScroll.view < daysScroll.content - 4;
+  const scrollDays = (dir: 1 | -1) => {
+    const step = Math.max(daysScroll.view - SIZE(80), SIZE(80));
+    daysScrollRef.current?.scrollTo({ x: Math.max(0, daysScroll.x + dir * step), animated: true });
+  };
 
   const handleAddMember = async () => {
     if (!memberName || !memberPhone || !memberGender || !(parseInt(memberAge) > 0 && parseInt(memberAge) < 120)) return;
@@ -94,15 +162,18 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
     }
   };
 
+  // Patients belong to the logged-in account; load them once the user is logged in
   useEffect(() => {
+    if (!user) return;
     getPatients().then(res => {
       const valid = res.data.filter(p => !!p.name);
       setPatients(valid);
-      if (valid.length > 0) setSelectedPatient(valid[0].id);
-    });
-  }, []);
+      if (valid.length > 0) setSelectedPatient(prev => prev ?? valid[0].id);
+    }).catch(() => {});
+  }, [user]);
 
   const handleGetToken = async () => {
+    if (!user) { setShowLoginModal(true); return; }
     if (!selectedPatient || !selectedSession) return;
     try {
       setLoading(true);
@@ -201,19 +272,57 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           </TouchableOpacity>
         )}
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysRow}>
+      <View style={styles.daysWrapper}>
+      <ScrollView
+        ref={daysScrollRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.daysRow}
+        scrollEventThrottle={16}
+        onScroll={e => { const x = e.nativeEvent.contentOffset.x; setDaysScroll(p => ({ ...p, x })); }}
+        onLayout={e => { const view = e.nativeEvent.layout.width; setDaysScroll(p => ({ ...p, view })); }}
+        onContentSizeChange={w => setDaysScroll(p => ({ ...p, content: w }))}>
         {DAYS.map((d, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[styles.dayChip, selectedDay === i && styles.dayChipActive]}
-            onPress={() => setSelectedDay(i)}
-            activeOpacity={0.8}>
-            <Text allowFontScaling={false} style={[styles.dayLabel, selectedDay === i && styles.dayLabelActive]}>{d.weekday}</Text>
-            <Text allowFontScaling={false} style={[styles.dayDate, selectedDay === i && styles.dayLabelActive]}>{d.dateMonth}</Text>
-            {i === 0 && <View style={styles.todayDot} />}
-          </TouchableOpacity>
+          (() => {
+            const active = selectedDay === i;
+            const available = isDayAvailable(d.full);
+            return (
+              <TouchableOpacity
+                key={i}
+                style={[styles.dayChip, !available && !active && styles.dayChipUnavailable, active && styles.dayChipActive]}
+                onPress={() => setSelectedDay(i)}
+                accessibilityLabel={`${d.weekday} ${d.dateMonth}${available ? ', available' : ', not available'}`}
+                activeOpacity={0.8}>
+                <Text allowFontScaling={false} style={[styles.dayLabel, !available && styles.dayTextUnavailable, active && styles.dayLabelActive]}>{i === 0 ? 'Today' : d.weekday}</Text>
+                <Text allowFontScaling={false} style={[styles.dayDate, !available && styles.dayTextUnavailable, active && styles.dayLabelActive]}>{d.dateMonth}</Text>
+                <View style={[styles.availDot, available ? (active ? styles.availDotActive : null) : styles.availDotHidden]} />
+              </TouchableOpacity>
+            );
+          })()
         ))}
       </ScrollView>
+      {/* Arrows float over the ends of the row and only show when there is more to scroll */}
+      {Platform.OS === 'web' && canScrollDaysBack && (
+        <TouchableOpacity
+          style={[styles.daysArrow, styles.daysArrowLeft]}
+          onPress={() => scrollDays(-1)}
+          accessibilityLabel="Previous dates"
+          activeOpacity={0.8}>
+          <View style={{ transform: [{ rotate: '180deg' }] }}>
+            <ArrowRight width={SIZE(16)} height={SIZE(16)} />
+          </View>
+        </TouchableOpacity>
+      )}
+      {Platform.OS === 'web' && canScrollDaysForward && (
+        <TouchableOpacity
+          style={[styles.daysArrow, styles.daysArrowRight]}
+          onPress={() => scrollDays(1)}
+          accessibilityLabel="Next dates"
+          activeOpacity={0.8}>
+          <ArrowRight width={SIZE(16)} height={SIZE(16)} />
+        </TouchableOpacity>
+      )}
+      </View>
 
       {scheduleFetching ? (
         <View style={styles.slotCard}>
@@ -260,7 +369,7 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
         selectedId={selectedPatient}
         onSelect={setSelectedPatient}
         showRadio
-        onAddMember={() => setShowAddMember(true)}
+        onAddMember={() => (user ? setShowAddMember(true) : setShowLoginModal(true))}
       />
     </>
   );
@@ -292,9 +401,9 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
       </View>
       <View style={styles.summaryDivider} />
       <TouchableOpacity
-        style={[styles.getTokenBtn, (!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(selectedSession_obj ?? { stopTime: '00:00:00' })) && styles.getTokenBtnDisabled]}
+        style={[styles.getTokenBtn, ((!!user && !selectedPatient) || loading || todaySessions.length === 0 || isSessionExpired(selectedSession_obj ?? { stopTime: '00:00:00' })) && styles.getTokenBtnDisabled]}
         activeOpacity={0.8}
-        disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(selectedSession_obj ?? { stopTime: '00:00:00' })}
+        disabled={(!!user && !selectedPatient) || loading || todaySessions.length === 0 || isSessionExpired(selectedSession_obj ?? { stopTime: '00:00:00' })}
         onPress={handleGetToken}
       >
         <Text allowFontScaling={false} style={styles.getTokenBtnText}>{loading ? 'Booking...' : 'Get Token'}</Text>
@@ -304,6 +413,10 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
 
   return (
     <GestureHandlerRootView style={styles.container}>
+      {/* Private page (noindex, set in Navigation); the title is for the browser tab / share previews */}
+      <FocusedHelmet>
+        <title>{`Book ${doctor.name}${relevantCenters[0]?.name ? ` at ${relevantCenters[0].name}` : ''} | Aptly`}</title>
+      </FocusedHelmet>
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
@@ -326,6 +439,11 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
                 </Text>
               : null}
           </View>
+          {/* Short link straight to this booking page (for clinic posters / QR codes) */}
+          <ShareButton
+            url={bookingShortUrl(doctor.id, clinicId ?? relevantCenters[0]?.id)}
+            title={`Book ${doctor.name}${relevantCenters[0]?.name ? ` at ${relevantCenters[0].name}` : ''} on Aptly`}
+          />
         </View>
         <View style={styles.divider} />
 
@@ -367,12 +485,12 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
                   <PrimaryButton
                     label={loading ? 'Booking...' : 'Confirm Appointment'}
                     onPress={handleGetToken}
-                    disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
+                    disabled={(!!user && !selectedPatient) || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
                     loading={loading}
                   />
                 ) : (
                   <SwipeToBook
-                    disabled={!selectedPatient || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
+                    disabled={(!!user && !selectedPatient) || loading || todaySessions.length === 0 || isSessionExpired(todaySessions.find(s => s.id === selectedSession) ?? { stopTime: '00:00:00' })}
                     onSwipeComplete={handleGetToken}
                   />
                 )}
@@ -430,11 +548,34 @@ export default function BookAppointmentScreen({ navigation, route }: Props) {
           />
         </KeyboardAvoidingView>
       </BottomModal>
+
+      <LoginModal
+        visible={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        message="Please login to confirm your booking."
+      />
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  loaderScreen: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SIZE(12),
+    backgroundColor: colors.white,
+  },
+  loaderText: {
+    fontFamily: 'Manrope-Medium',
+    fontSize: SIZE(14),
+    color: colors.textSecondary,
+  },
+  loaderLink: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: SIZE(14),
+    color: colors.primary,
+  },
   container: { flex: 1, backgroundColor: colors.white },
   header: {
     flexDirection: 'row',
@@ -738,6 +879,46 @@ const styles = StyleSheet.create({
     fontSize: SIZE(14),
     color: colors.cardBorder,
   },
+  daysWrapper: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  daysArrow: {
+    position: 'absolute',
+    top: '50%',
+    marginTop: -SIZE(16),
+    width: SIZE(32),
+    height: SIZE(32),
+    borderRadius: SIZE(16),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.inputBg,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+    zIndex: 1,
+  },
+  daysArrowLeft: { left: -SIZE(4) },
+  daysArrowRight: { right: -SIZE(4) },
+  dayChipUnavailable: {
+    opacity: 0.55,
+  },
+  dayTextUnavailable: {
+    color: colors.textMuted,
+  },
+  availDot: {
+    width: SIZE(5),
+    height: SIZE(5),
+    borderRadius: SIZE(3),
+    marginTop: SIZE(4),
+    backgroundColor: colors.onlineIndicator,
+  },
+  availDotActive: { backgroundColor: colors.white },
+  availDotHidden: { backgroundColor: 'transparent' },
   daysRow: {
     flexDirection: 'row',
     gap: SIZE(8),
@@ -764,15 +945,6 @@ const styles = StyleSheet.create({
     marginTop: SIZE(2),
   },
   dayLabelActive: { color: colors.white },
-  todayDot: {
-    position: 'absolute',
-    top: SIZE(6),
-    right: SIZE(6),
-    width: SIZE(6),
-    height: SIZE(6),
-    borderRadius: SIZE(3),
-    backgroundColor: colors.onlineIndicator,
-  },
   slotsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

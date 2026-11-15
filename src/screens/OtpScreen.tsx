@@ -149,6 +149,13 @@ export default function OtpScreen() {
         dateOfBirth: patient?.dateOfBirth ?? '',
       });
       initLocation();
+      // Logged in from the booking page: go back to it so the booking can be confirmed
+      const routes = navigation.getState()?.routes ?? [];
+      const phoneIdx = routes.findIndex(r => r.name === 'PhoneNumber');
+      if (user.name && phoneIdx > 0 && routes[phoneIdx - 1].name === 'BookAppointment') {
+        navigation.dispatch(StackActions.pop(routes.length - phoneIdx));
+        return;
+      }
       navigation.reset({
         index: 0,
         routes: [

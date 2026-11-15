@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ViewStyle, StyleProp, Platform } from 'react-native';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import LocationIcon from '../assets/icons/location-icon.svg';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import type { Schedule } from '../types/api.types';
-import { useAuth } from '../context/AuthContext';
-import LoginModal from './LoginModal';
 
 type Props = {
   name: string;
@@ -74,16 +72,8 @@ const statusConfig = {
 const DoctorCard = ({ name, type, hospital, clinicType, experience, image, location, distance, nextSchedule, onPress, onBookPress, style }: Props) => {
   const { label, status } = getScheduleInfo(nextSchedule);
   const s = statusConfig[status];
-  const { user } = useAuth();
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
-  const handleBookPress = () => {
-    if (!user) {
-      setShowLoginModal(true);
-      return;
-    }
-    onBookPress?.();
-  };
+  // Guests can open the booking page; login is asked for on Confirm
+  const handleBookPress = () => onBookPress?.();
 
   return (
     <>
@@ -139,8 +129,6 @@ const DoctorCard = ({ name, type, hospital, clinicType, experience, image, locat
           </View>
         </View>
       </TouchableOpacity>
-
-      <LoginModal visible={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </>
   );
 };

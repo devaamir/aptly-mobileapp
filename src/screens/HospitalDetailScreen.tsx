@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { goBackOrHome } from '../utils/goBack';
-import { Helmet } from 'react-helmet-async';
+import FocusedHelmet from '../components/FocusedHelmet';
 import {
   View,
   Text,
@@ -21,10 +21,11 @@ import { RootStackParamList } from '../navigations/Navigation';
 import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import BackArrow from '../assets/icons/back-arrows.svg';
+import ShareButton from '../components/ShareButton';
 import LocationIcon from '../assets/icons/location-icon.svg';
 import PhoneIcon from '../assets/icons/phone-icon-blue.svg';
 import MapIcon from '../assets/icons/map-icon-blue.svg';
-import WebIcon from '../assets/icons/web-icon-blue.svg';
+import WhatsAppIcon from '../components/WhatsAppIcon';
 import NotificationIcon from '../assets/icons/notification-icon-grey.svg';
 import DoctorCard from '../components/DoctorCard';
 import LoginModal from '../components/LoginModal';
@@ -125,10 +126,17 @@ export default function HospitalDetailScreen() {
     }
   };
 
-  const openWebsite = () => {
-    const url = clinic?.websiteUrl;
-    if (url) Linking.openURL(url.startsWith('http') ? url : `https://${url}`);
-    else Alert.alert('Not available', 'No website found for this clinic.');
+  // WhatsApp chat with the clinic's booking number, with a booking message ready to send
+  const openWhatsApp = () => {
+    let digits = (clinic?.phoneNumber ?? '').replace(/\D/g, '');
+    if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
+    if (digits.length === 10) digits = `91${digits}`; // Indian numbers are stored without the country code
+    if (digits.length < 11) {
+      Alert.alert('Not available', 'No WhatsApp number found for this clinic.');
+      return;
+    }
+    const text = encodeURIComponent(`Hi, I'd like to book an appointment at ${displayClinic.name || 'your clinic'}.`);
+    Linking.openURL(`https://wa.me/${digits}?text=${text}`);
   };
 
   // Left column: image + clinic name/info + tabs + tab content.
@@ -151,7 +159,7 @@ export default function HospitalDetailScreen() {
       {/* Clinic title row */}
       <View style={styles.titleRow}>
         <View style={{ flex: 1 }}>
-          <Text allowFontScaling={false} style={styles.clinicTitle}>{displayClinic.name}</Text>
+          <Text allowFontScaling={false} role="heading" aria-level={1} style={styles.clinicTitle}>{displayClinic.name}</Text>
           <Text allowFontScaling={false} style={styles.clinicType}>
             {displayClinic.medicalSystem?.name
               ? `${displayClinic.type ?? ''} • ${displayClinic.medicalSystem.name}`
@@ -167,6 +175,11 @@ export default function HospitalDetailScreen() {
             </Text>
           </View>
         </View>
+        <ShareButton
+          variant="icon"
+          url={`${BASE_URL}/c/${id}`}
+          title={`${displayClinic.name || 'Clinic'} – Book an appointment on Aptly`}
+        />
       </View>
 
       {/* Specialties */}
@@ -211,9 +224,9 @@ export default function HospitalDetailScreen() {
             <MapIcon width={SIZE(20)} height={SIZE(20)} />
             <Text allowFontScaling={false} style={styles.mobileActionText}>Maps</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={openWebsite}>
-            <WebIcon width={SIZE(20)} height={SIZE(20)} />
-            <Text allowFontScaling={false} style={styles.mobileActionText}>Website</Text>
+          <TouchableOpacity style={styles.mobileActionBtn} activeOpacity={0.7} onPress={openWhatsApp} accessibilityLabel="WhatsApp the clinic">
+            <WhatsAppIcon size={SIZE(20)} />
+            <Text allowFontScaling={false} style={styles.mobileActionText}>WhatsApp</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -356,9 +369,9 @@ export default function HospitalDetailScreen() {
           <MapIcon width={SIZE(18)} height={SIZE(18)} />
           <Text allowFontScaling={false} style={styles.infoActionText}>Open in maps</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.infoActionBtn} activeOpacity={0.7} onPress={openWebsite}>
-          <WebIcon width={SIZE(18)} height={SIZE(18)} />
-          <Text allowFontScaling={false} style={styles.infoActionText}>Website</Text>
+        <TouchableOpacity style={styles.infoActionBtn} activeOpacity={0.7} onPress={openWhatsApp} accessibilityLabel="WhatsApp the clinic">
+          <WhatsAppIcon size={SIZE(18)} />
+          <Text allowFontScaling={false} style={styles.infoActionText}>WhatsApp</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -367,7 +380,10 @@ export default function HospitalDetailScreen() {
   // Compute SEO data once clinic is loaded
   const clinicCity = clinic?.district ?? clinic?.state ?? '';
   const clinicLocation = [clinic?.address, clinicCity].filter(Boolean).join(', ');
-  const pageMeta = clinicPageMeta(displayClinic.name || name || 'Clinic', clinicLocation || location);
+  const pageMeta = clinicPageMeta(displayClinic.name || name || 'Clinic', clinicLocation || location, {
+    system: clinic?.medicalSystem?.name,
+    specialties: clinic?.specialties?.map((s: { name: string }) => s.name),
+  });
   const clinicSchema = clinic
     ? buildClinicSchema({
         id: clinic.id ?? id,
@@ -391,7 +407,7 @@ export default function HospitalDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Helmet>
+      <FocusedHelmet>
         <title>{pageMeta.title}</title>
         <meta name="description" content={pageMeta.description} />
         <meta property="og:title" content={pageMeta.title} />
@@ -402,7 +418,7 @@ export default function HospitalDetailScreen() {
         {clinicSchema && (
           <script type="application/ld+json">{schemaToString(clinicSchema)}</script>
         )}
-      </Helmet>
+      </FocusedHelmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
 
       <AppPromoBanner />
@@ -828,9 +844,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: SIZE(6),
-    paddingVertical: SIZE(10),
-    borderRadius: SIZE(10),
-    backgroundColor: colors.backgroundLight,
+    paddingVertical: SIZE(12),
+    borderRadius: SIZE(12),
+    backgroundColor: colors.primaryLight,
   },
   mobileActionText: {
     fontFamily: 'Manrope-Medium',
@@ -885,7 +901,7 @@ const styles = StyleSheet.create({
     gap: SIZE(8),
     paddingVertical: SIZE(11),
     borderRadius: SIZE(10),
-    backgroundColor: colors.backgroundLight,
+    backgroundColor: colors.primaryLight,
   },
   infoActionText: {
     fontFamily: 'Manrope-Medium',
