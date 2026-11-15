@@ -14,6 +14,7 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import { useAuth } from '../context/AuthContext';
 import LoginModal from '../components/LoginModal';
+import NoIndex from '../components/NoIndex';
 
 const Tab = createBottomTabNavigator();
 
@@ -28,6 +29,15 @@ export default function BottomTabNavigator() {
   return (
     <>
       <Tab.Navigator
+        // Appointments and Profile are private: keep them out of search results (Home stays indexable)
+        screenLayout={({ route, children }) =>
+          route.name === 'Home' ? children : (
+            <>
+              <NoIndex />
+              {children}
+            </>
+          )
+        }
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: colors.primary,

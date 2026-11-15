@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { goBackOrHome } from '../utils/goBack';
-import { Helmet } from 'react-helmet-async';
+import FocusedHelmet from '../components/FocusedHelmet';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -9,13 +9,12 @@ import colors from '../themes/colors';
 import { SIZE } from '../themes/sizes';
 import { headerSidePadding } from '../utils/layout';
 import BackArrow from '../assets/icons/back-arrows.svg';
+import ShareButton from '../components/ShareButton';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 import { getDoctor, Doctor } from '../services/api';
 import { buildDoctorSchema, buildBreadcrumbSchema, doctorPageMeta, schemaToString, BASE_URL } from '../utils/seo';
 import BottomModal from '../components/BottomModal';
-import LoginModal from '../components/LoginModal';
 import LocationIcon from '../assets/icons/location-icon.svg';
-import { useAuth } from '../context/AuthContext';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DoctorDetail'>;
 
@@ -35,8 +34,6 @@ const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 
 function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0]; navigation: any; doctor: Doctor }) {
   const [showHours, setShowHours] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const { user } = useAuth();
   const grouped = (mc.schedules ?? []).reduce<Record<string, typeof mc.schedules>>((acc, s) => {
     (acc[s!.dayOfWeek] = acc[s!.dayOfWeek] || []).push(s);
     return acc;
@@ -65,7 +62,6 @@ function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0
           <Text allowFontScaling={false} style={[styles.hoursBtnText, { color: colors.gold }]}>View Hours</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.bookClinicBtn} activeOpacity={0.8} onPress={() => {
-          if (!user) { setShowLoginModal(true); return; }
           navigation.navigate('BookAppointment', { doctor, clinicId: mc.id });
         }}>
           <Text allowFontScaling={false} style={styles.bookClinicBtnText}>Book Appointment</Text>
@@ -90,7 +86,6 @@ function ClinicCard({ mc, navigation, doctor }: { mc: Doctor['medicalCenters'][0
           )}
         </View>
       </BottomModal>
-      <LoginModal visible={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </View>
   );
 }
@@ -123,7 +118,12 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
     ? `${getDistance(USER_LAT, USER_LON, doctor.latitude, doctor.longitude)} km`
     : null;
 
-  const pageMeta = doctorPageMeta(doctor.name, specialty || undefined);
+  const pageMeta = doctorPageMeta(doctor.name, specialty || undefined, {
+    qualifications: doctor.qualifications.map(q => q.name),
+    experienceYears: doctor.yearsOfExperience,
+    clinicName: doctor.medicalCenters.length === 1 ? doctor.medicalCenters[0]?.name : undefined,
+    area: doctor.medicalCenters[0]?.district || doctor.district,
+  });
   const firstClinic = doctor.medicalCenters[0];
   const doctorSchema = buildDoctorSchema({
     doctorId,
@@ -142,7 +142,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Helmet>
+      <FocusedHelmet>
         <title>{pageMeta.title}</title>
         <meta name="description" content={pageMeta.description} />
         <meta property="og:title" content={pageMeta.title} />
@@ -151,14 +151,21 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
         <link rel="canonical" href={`${BASE_URL}/DoctorDetail?doctorId=${doctorId}`} />
         <script type="application/ld+json">{schemaToString(doctorSchema)}</script>
         <script type="application/ld+json">{schemaToString(breadcrumb)}</script>
-      </Helmet>
+      </FocusedHelmet>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7}>
-          <BackArrow width={SIZE(22)} height={SIZE(22)} />
-        </TouchableOpacity>
+        <View style={styles.headerSide}>
+          <TouchableOpacity onPress={() => goBackOrHome(navigation)} style={styles.backBtn} activeOpacity={0.7}>
+            <BackArrow width={SIZE(22)} height={SIZE(22)} />
+          </TouchableOpacity>
+        </View>
         <Text allowFontScaling={false} style={styles.title}>Doctor Details</Text>
-        <View style={styles.backBtn} />
+        <View style={[styles.headerSide, styles.headerSideRight]}>
+          <ShareButton
+            url={`${BASE_URL}/DoctorDetail?doctorId=${doctorId}`}
+            title={`${doctor.name}${specialty ? ` (${specialty})` : ''} – Book an appointment on Aptly`}
+          />
+        </View>
       </View>
       <View style={styles.divider} />
 
@@ -171,7 +178,7 @@ export default function DoctorDetailScreen({ navigation, route }: Props) {
             />
           </View>
           <View style={styles.profileInfo}>
-            <Text allowFontScaling={false} style={styles.doctorName}>{doctor.name}</Text>
+            <Text allowFontScaling={false} role="heading" aria-level={1} style={styles.doctorName}>{doctor.name}</Text>
             {qualifications ? <Text allowFontScaling={false} style={styles.qualification}>{qualifications}</Text> : null}
             <Text allowFontScaling={false} style={styles.doctorType}>{specialty}</Text>
           </View>
@@ -220,6 +227,9 @@ const styles = StyleSheet.create({
     paddingVertical: SIZE(12),
   },
   backBtn: { width: SIZE(32) },
+  // Equal-width sides keep the title centred
+  headerSide: { width: SIZE(100), flexDirection: 'row' },
+  headerSideRight: { justifyContent: 'flex-end' },
   divider: {
     height: 1,
     backgroundColor: colors.border,

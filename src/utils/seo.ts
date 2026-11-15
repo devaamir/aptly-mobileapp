@@ -19,7 +19,7 @@ export const DEFAULT_OG_IMAGE = `${BASE_URL}/icon-512.png`;
 export const homeMeta = {
   title: 'Aptly – Book Doctor & Clinic Appointments Near You',
   description:
-    'Find and book appointments with top doctors and clinics near you. Search by specialty — cardiologist, dermatologist, dentist, and more. Instant confirmation, real-time token tracking.',
+    'Find and book appointments with top doctors and clinics near you. Search by specialty, track your token live and get instant confirmation.',
 };
 
 /** Returns title + description for the Clinics listing page */
@@ -54,17 +54,79 @@ export function specialtyPageMeta(specialtyName: string) {
   };
 }
 
+const TITLE_MAX = 60; // Google shows roughly this many characters of a title
+const DESCRIPTION_MAX = 155; // ...and of a description
+
+const clampText = (text: string, max: number) =>
+  text.length <= max ? text : `${text.slice(0, max - 1).replace(/[\s,.;:-]+\S*$/, '')}…`;
+
+/** First non-empty candidate within `max` characters, else `fallback` */
+const firstThatFits = (candidates: string[], max: number, fallback: string) =>
+  candidates.find(c => c && c.length <= max) ?? fallback;
+
 /**
  * Returns title + description for a Doctor detail page.
  * @param doctorName  e.g. "Dr. Rahul Sharma"
  * @param specialty   e.g. "Cardiologist"
  */
-export function doctorPageMeta(doctorName: string, specialty?: string) {
-  const spec = specialty ? ` – ${specialty}` : '';
-  return {
-    title: `${doctorName}${spec} | Book Appointment on Aptly`,
-    description: `Book an appointment with ${doctorName}${specialty ? `, ${specialty},` : ''} on Aptly. View clinic locations, working hours, and available slots.`,
-  };
+export function doctorPageMeta(
+  doctorName: string,
+  specialty?: string,
+  extra?: { qualifications?: string[]; experienceYears?: number; clinicName?: string; area?: string },
+) {
+  // Title: name + main specialty + area, i.e. what people type ("cardiologist in Manjeri")
+  const mainSpec = specialty?.split(',')[0].trim();
+  const area = extra?.area?.trim();
+  const title = firstThatFits(
+    [
+      mainSpec && area ? `${doctorName} – ${mainSpec} in ${area} | Book Appointment` : '',
+      mainSpec ? `${doctorName} – ${mainSpec} | Book Appointment` : '',
+      mainSpec ? `${doctorName} – ${mainSpec} | Aptly` : '',
+      `${doctorName} | Book Appointment on Aptly`,
+      `${doctorName} | Book Appointment`,
+    ],
+    TITLE_MAX,
+    doctorName,
+  );
+
+  // Description, most useful first: name (degree), specialties, clinic + area, experience, call to action.
+  // e.g. "Dr. Amrutha P (BAMS) – Postnatal Care and more at Ayushee Ayur Clinic, Malappuram.
+  //       10 years of experience. Book an appointment on Aptly."
+  const quals = (extra?.qualifications ?? []).filter(Boolean).join(', ');
+  // Some doctors list many specialties; name only the first few so the rest still fits
+  const specs = (specialty ?? '').split(',').map(x => x.trim()).filter(Boolean);
+  const specText = (n: number) =>
+    specs.length ? ` – ${specs.slice(0, n).join(', ')}${specs.length > n ? ' and more' : ''}` : '';
+  const at = (withClinic: boolean) =>
+    withClinic && extra?.clinicName ? ` at ${extra.clinicName}${area ? `, ${area}` : ''}` : area ? ` in ${area}` : '';
+  const years = extra?.experienceYears && extra.experienceYears > 0
+    ? ` ${extra.experienceYears} ${extra.experienceYears === 1 ? 'year' : 'years'} of experience.`
+    : '';
+  const who = (n: number, withClinic = true) =>
+    `${doctorName}${quals ? ` (${quals})` : ''}${specText(n)}${at(withClinic)}.`;
+  const tail = ' Book an appointment and track your token live on Aptly.';
+  const shortTail = ' Book an appointment on Aptly.';
+  const tiny = ' Book on Aptly.';
+  const description = clampText(
+    firstThatFits(
+      [
+        who(3) + years + tail,
+        who(3) + years + shortTail,
+        who(2) + years + shortTail,
+        who(1) + years + shortTail,
+        who(1) + years + tiny,
+        who(2, false) + years + shortTail,
+        who(1, false) + years + shortTail,
+        who(1, false) + shortTail,
+        who(1, false),
+      ],
+      DESCRIPTION_MAX,
+      who(1, false),
+    ),
+    DESCRIPTION_MAX,
+  );
+
+  return { title, description };
 }
 
 /**
@@ -72,12 +134,78 @@ export function doctorPageMeta(doctorName: string, specialty?: string) {
  * @param clinicName  e.g. "City Health Clinic"
  * @param location    e.g. "Kozhikode, Kerala"
  */
-export function clinicPageMeta(clinicName: string, location?: string) {
+// How people describe the kind of clinic when searching.
+const SYSTEM_LABELS: Record<string, string> = {
+  homeopathy: 'Homeopathy clinic',
+  ayurveda: 'Ayurveda clinic',
+  unani: 'Unani clinic',
+  dentistry: 'Dental clinic',
+};
+const article = (word: string) => (/^[aeio]/i.test(word) ? 'an' : 'a');
+
+/**
+ * Title + description for a Clinic / Hospital detail page.
+ * Title (kept within TITLE_MAX): clinic name + type of clinic + area + "Book Appointment",
+ * i.e. the words people search for. The full address and specialties go in the description.
+ * @param location  "address, district"; the last part is used as the area in the title
+ */
+export function clinicPageMeta(
+  clinicName: string,
+  location?: string,
+  extra?: { system?: string; specialties?: string[] },
+) {
   const loc = location ? ` in ${location}` : '';
-  return {
-    title: `${clinicName}${loc} – Book Appointment | Aptly`,
-    description: `Book an appointment at ${clinicName}${loc} on Aptly. View doctors, specialties, working hours, and get real-time queue updates.`,
-  };
+  const area = location ? location.split(',').pop()!.trim() : '';
+
+  const label = extra?.system ? SYSTEM_LABELS[extra.system.toLowerCase()] : undefined;
+  const labelWord = label?.split(' ')[0].toLowerCase();
+  const showLabel = !!label && !clinicName.toLowerCase().includes(labelWord!);
+  const inArea = area ? ` in ${area}` : '';
+
+  const title =
+    [
+      showLabel ? `${clinicName} – ${label}${inArea} | Book Appointment` : '',
+      `${clinicName}${inArea} | Book Appointment`,
+      `${clinicName}${area ? `, ${area}` : ''} – Book Appointment | Aptly`,
+      `${clinicName}${area ? `, ${area}` : ''} – Book Appointment`,
+      `${clinicName} | Book Appointment`,
+      `${clinicName}${area ? `, ${area}` : ''} | Aptly`,
+      `${clinicName}${area ? `, ${area}` : ''}`,
+    ].find(c => c && c.length <= TITLE_MAX) ?? clinicName;
+
+  // Description: what the clinic is and where, what it treats, then the call to action
+  const specs = extra?.specialties?.filter(Boolean) ?? [];
+  const specList = (n: number) =>
+    specs.length ? ` Specialties: ${specs.slice(0, n).join(', ')}${specs.length > n ? ' and more' : ''}.` : '';
+  // Full address first; with a long name the area alone leaves room for the specialties
+  const introAt = (where: string) =>
+    showLabel && label ? `${clinicName}, ${article(label)} ${label}${where}.` : `${clinicName}${where}.`;
+  const intro = introAt(loc);
+  const shortIntro = introAt(inArea);
+  const tail = ' Book an appointment online and track your token live on Aptly.';
+  const shortTail = ' Book an appointment on Aptly.';
+  const description = clampText(
+    firstThatFits(
+      [
+        intro + specList(4) + tail,
+        intro + specList(3) + tail,
+        intro + specList(2) + tail,
+        intro + specList(3) + shortTail,
+        intro + specList(2) + shortTail,
+        intro + specList(1) + shortTail,
+        shortIntro + specList(3) + shortTail,
+        shortIntro + specList(2) + shortTail,
+        shortIntro + specList(1) + shortTail,
+        intro + tail,
+        intro + shortTail,
+      ],
+      DESCRIPTION_MAX,
+      `Book an appointment at ${clinicName}${loc}.`,
+    ),
+    DESCRIPTION_MAX,
+  );
+
+  return { title, description };
 }
 
 // ─── JSON-LD Structured Data builders ────────────────────────────────────────
