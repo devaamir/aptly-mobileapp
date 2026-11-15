@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["4MMGBFP3KS.com.aptly.aptlycareapp"],
+        "components": [
+          { "/": "/c/*", "comment": "QR deep link: /c/<clinic-uuid>" }
+        ]
+      }
+    ]
+  }
+}
